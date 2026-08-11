@@ -1,765 +1,1790 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دوحة المِداد</title>
 
-  <title>دوحة المِداد</title>
+<style>
+:root{
+    --bg:#F4EBDD;
+    --surface:#FBF6ED;
+    --surface-soft:#EFE2D0;
+    --primary:#805F49;
+    --primary-dark:#604332;
+    --accent:#B58A5A;
+    --text:#4B392E;
+    --text-soft:#806D5D;
+    --border:#DDCDBA;
+    --white:#FFFDF8;
+    --shadow:0 8px 25px rgba(96,67,50,.08);
+}
 
-  <style>
-    :root {
-      --background: #F4EBDD;
-      --surface: #FBF6ED;
-      --surface-soft: #EFE2D0;
-      --primary: #805F49;
-      --primary-dark: #604332;
-      --accent: #B58A5A;
-      --text: #4B392E;
-      --text-soft: #806D5D;
-      --border: #DDCDBA;
-      --shadow: rgba(96, 67, 50, 0.08);
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:"Tahoma","Arial",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.8;
+}
+
+button,
+input,
+textarea{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+/* ================= HEADER ================= */
+
+header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:rgba(251,246,237,.96);
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(12px);
+}
+
+.navbar{
+    max-width:1250px;
+    margin:auto;
+    height:76px;
+    display:flex;
+    align-items:center;
+    gap:30px;
+    padding:0 25px;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-left:auto;
+    font-weight:bold;
+    font-size:20px;
+    color:var(--primary-dark);
+}
+
+.logo-mark{
+    width:44px;
+    height:44px;
+    border:1px solid var(--accent);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    background:var(--surface);
+}
+
+.nav-links{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.nav-links button{
+    border:0;
+    background:transparent;
+    color:var(--text);
+    padding:11px 14px;
+    border-radius:12px;
+    font-size:14px;
+}
+
+.nav-links button:hover,
+.nav-links button.active{
+    background:var(--surface-soft);
+    color:var(--primary-dark);
+}
+
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.icon-btn{
+    width:42px;
+    height:42px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--primary);
+    border-radius:50%;
+    font-size:18px;
+}
+
+.icon-btn:hover{
+    background:var(--surface-soft);
+}
+
+/* ================= MAIN ================= */
+
+main{
+    max-width:1250px;
+    margin:auto;
+    padding:45px 25px 80px;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+/* ================= HERO ================= */
+
+.hero{
+    background:
+        radial-gradient(circle at 10% 20%,rgba(181,138,90,.12),transparent 30%),
+        linear-gradient(135deg,var(--surface),#F7EEDF);
+    border:1px solid var(--border);
+    border-radius:30px;
+    padding:70px 50px;
+    min-height:380px;
+    display:flex;
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+}
+
+.hero-content{
+    max-width:700px;
+}
+
+.eyebrow{
+    color:var(--accent);
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.hero h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:48px;
+    color:var(--primary-dark);
+    margin-bottom:15px;
+}
+
+.hero p{
+    color:var(--text-soft);
+    font-size:18px;
+    max-width:620px;
+}
+
+.hero-actions{
+    display:flex;
+    gap:12px;
+    margin-top:28px;
+    flex-wrap:wrap;
+}
+
+.primary-btn,
+.secondary-btn{
+    border-radius:13px;
+    padding:12px 22px;
+    font-size:15px;
+}
+
+.primary-btn{
+    border:1px solid var(--primary);
+    background:var(--primary);
+    color:white;
+}
+
+.secondary-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--primary-dark);
+}
+
+.primary-btn:hover{
+    background:var(--primary-dark);
+}
+
+/* ================= SECTIONS ================= */
+
+.section{
+    margin-top:42px;
+}
+
+.section-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.section-heading h2{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:26px;
+    color:var(--primary-dark);
+}
+
+.section-heading button{
+    border:0;
+    background:transparent;
+    color:var(--accent);
+}
+
+/* ================= CARDS ================= */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:22px;
+    box-shadow:var(--shadow);
+}
+
+.card:hover{
+    transform:translateY(-2px);
+}
+
+.card small{
+    color:var(--text-soft);
+}
+
+.card h3{
+    margin:8px 0;
+    color:var(--primary-dark);
+    font-family:Georgia,"Times New Roman",serif;
+}
+
+.card p{
+    color:var(--text-soft);
+    font-size:14px;
+}
+
+.card-link{
+    margin-top:15px;
+    display:inline-block;
+    color:var(--accent);
+    font-size:14px;
+}
+
+/* ================= TWO COLUMNS ================= */
+
+.two-columns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+/* ================= LEADERBOARD ================= */
+
+.leader{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 0;
+    border-bottom:1px solid var(--border);
+}
+
+.leader:last-child{
+    border-bottom:0;
+}
+
+.avatar{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:var(--surface-soft);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary);
+}
+
+.leader-info{
+    flex:1;
+}
+
+.leader-info strong{
+    display:block;
+}
+
+.leader-info small{
+    color:var(--text-soft);
+}
+
+/* ================= SEARCH ================= */
+
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.search-box input{
+    flex:1;
+    padding:14px 17px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    outline:none;
+}
+
+.search-box input:focus{
+    border-color:var(--accent);
+}
+
+/* ================= PROFILE ================= */
+
+.profile-top{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:28px;
+    padding:40px;
+    text-align:center;
+    box-shadow:var(--shadow);
+}
+
+.profile-avatar{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    background:var(--surface-soft);
+    border:3px solid var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 15px;
+    font-size:40px;
+}
+
+.profile-name{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:30px;
+    color:var(--primary-dark);
+}
+
+.username{
+    color:var(--text-soft);
+}
+
+.level{
+    margin:18px auto;
+    max-width:450px;
+}
+
+.level-title{
+    display:flex;
+    justify-content:space-between;
+    color:var(--text-soft);
+    font-size:14px;
+}
+
+.progress{
+    height:9px;
+    border-radius:20px;
+    background:var(--surface-soft);
+    margin-top:8px;
+    overflow:hidden;
+}
+
+.progress span{
+    display:block;
+    width:42%;
+    height:100%;
+    background:var(--accent);
+    border-radius:20px;
+}
+
+/* ================= PROFILE STATS ================= */
+
+.profile-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-top:22px;
+}
+
+.info-box{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:25px;
+}
+
+.info-box h3{
+    font-family:Georgia,"Times New Roman",serif;
+    margin-bottom:12px;
+    color:var(--primary-dark);
+}
+
+.info-row{
+    display:flex;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid var(--border);
+}
+
+.info-row:last-child{
+    border-bottom:0;
+}
+
+.info-row span:last-child{
+    color:var(--accent);
+}
+
+/* ================= BADGES ================= */
+
+.badges{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+}
+
+.badge{
+    text-align:center;
+    padding:18px 10px;
+}
+
+.badge-icon{
+    width:76px;
+    height:76px;
+    margin:auto;
+    border-radius:22px;
+    background:var(--surface-soft);
+    border:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:29px;
+}
+
+.badge.locked .badge-icon{
+    filter:grayscale(1);
+    opacity:.48;
+}
+
+.badge-name{
+    margin-top:9px;
+    font-size:13px;
+    color:var(--text-soft);
+}
+
+/* ================= ACTIVITY ================= */
+
+.streak{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:25px;
+}
+
+.streak-grid{
+    display:grid;
+    grid-template-columns:repeat(14,1fr);
+    gap:5px;
+    margin-top:18px;
+}
+
+.day{
+    aspect-ratio:1;
+    border-radius:4px;
+    background:var(--surface-soft);
+}
+
+.day.active-1{
+    background:#DCC09C;
+}
+
+.day.active-2{
+    background:#C79C69;
+}
+
+.day.active-3{
+    background:#A96F3F;
+}
+
+/* ================= EVENT ================= */
+
+.event-card{
+    position:relative;
+}
+
+.event-status{
+    position:absolute;
+    top:18px;
+    left:18px;
+    background:var(--surface-soft);
+    color:var(--primary);
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.event-meta{
+    display:flex;
+    gap:16px;
+    margin:15px 0;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.challenge-box{
+    margin-top:20px;
+    background:var(--surface-soft);
+    border-radius:16px;
+    padding:18px;
+}
+
+.challenge-box strong{
+    display:block;
+    color:var(--primary-dark);
+    margin-bottom:6px;
+}
+
+/* ================= ARTICLE ================= */
+
+.article-page{
+    max-width:850px;
+    margin:auto;
+}
+
+.article-header{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:25px;
+    padding:38px;
+}
+
+.article-header h1{
+    font-family:Georgia,"Times New Roman",serif;
+    color:var(--primary-dark);
+    font-size:38px;
+    margin:10px 0;
+}
+
+.article-body{
+    margin-top:20px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:25px;
+    padding:40px;
+}
+
+.article-body p{
+    margin-bottom:20px;
+    color:var(--text-soft);
+    font-size:17px;
+}
+
+/* ================= NOTICE ================= */
+
+.notice{
+    background:#F1E4D3;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:15px 18px;
+    color:var(--primary-dark);
+    margin-bottom:20px;
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(70,50,38,.38);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:500;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-content{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:25px;
+    width:min(600px,100%);
+    padding:30px;
+    box-shadow:0 20px 60px rgba(60,40,30,.2);
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.close{
+    border:0;
+    background:transparent;
+    font-size:24px;
+    color:var(--text-soft);
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:900px){
+
+    .navbar{
+        height:auto;
+        min-height:70px;
+        flex-wrap:wrap;
+        padding:12px 16px;
+        gap:10px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    .logo{
+        order:1;
     }
 
-    body {
-      font-family: "Tahoma", "Arial", sans-serif;
-      background: var(--background);
-      color: var(--text);
-      line-height: 1.8;
+    .header-actions{
+        order:2;
     }
 
-    a {
-      text-decoration: none;
-      color: inherit;
+    .nav-links{
+        order:3;
+        width:100%;
+        overflow-x:auto;
+        padding-bottom:5px;
     }
 
-    /* =========================
-       HEADER
-    ========================= */
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(251, 246, 237, 0.96);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
+    .nav-links button{
+        white-space:nowrap;
     }
 
-    .navbar {
-      max-width: 1250px;
-      margin: auto;
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
+    .hero{
+        padding:45px 25px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 190px;
+    .hero h1{
+        font-size:36px;
     }
 
-    .brand-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
+    .cards,
+    .two-columns{
+        grid-template-columns:1fr;
     }
 
-    .brand-name {
-      font-family: Georgia, serif;
-      font-size: 22px;
-      font-weight: bold;
-      color: var(--primary-dark);
+    .badges{
+        grid-template-columns:repeat(2,1fr);
     }
 
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 22px;
-      flex: 1;
+    .profile-grid{
+        grid-template-columns:1fr;
     }
 
-    nav a {
-      font-size: 14px;
-      color: var(--text-soft);
-      padding: 8px 4px;
-      transition: 0.2s;
+    .streak-grid{
+        grid-template-columns:repeat(10,1fr);
+    }
+}
+
+@media(max-width:500px){
+
+    main{
+        padding:25px 15px 60px;
     }
 
-    nav a:hover,
-    nav a.active {
-      color: var(--primary-dark);
+    .hero{
+        border-radius:22px;
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .hero h1{
+        font-size:31px;
     }
 
-    .icon-button {
-      width: 40px;
-      height: 40px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--primary);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 17px;
+    .hero p{
+        font-size:15px;
     }
 
-    /* =========================
-       HERO
-    ========================= */
-
-    .hero {
-      max-width: 1250px;
-      margin: 45px auto 30px;
-      padding: 0 28px;
+    .card{
+        padding:18px;
     }
 
-    .hero-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 55px 60px;
-      min-height: 320px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 40px;
-      box-shadow: 0 12px 35px var(--shadow);
-      overflow: hidden;
+    .profile-top{
+        padding:30px 18px;
     }
 
-    .hero-text {
-      max-width: 650px;
+    .article-header,
+    .article-body{
+        padding:25px 18px;
     }
-
-    .hero-label {
-      color: var(--accent);
-      font-size: 14px;
-      margin-bottom: 12px;
-      font-weight: bold;
-    }
-
-    .hero h1 {
-      font-family: Georgia, serif;
-      font-size: 48px;
-      color: var(--primary-dark);
-      margin-bottom: 15px;
-    }
-
-    .hero p {
-      color: var(--text-soft);
-      font-size: 17px;
-      max-width: 580px;
-    }
-
-    .hero-decoration {
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: var(--surface-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 80px;
-      color: var(--primary);
-      flex-shrink: 0;
-    }
-
-    /* =========================
-       GENERAL
-    ========================= */
-
-    .container {
-      max-width: 1250px;
-      margin: auto;
-      padding: 0 28px 60px;
-    }
-
-    .section {
-      margin-top: 45px;
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      gap: 20px;
-    }
-
-    .section-heading h2 {
-      font-family: Georgia, serif;
-      color: var(--primary-dark);
-      font-size: 25px;
-    }
-
-    .section-heading p {
-      color: var(--text-soft);
-      font-size: 13px;
-    }
-
-    .section-link {
-      color: var(--accent);
-      font-size: 13px;
-    }
-
-    /* =========================
-       CARDS
-    ========================= */
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 22px;
-      box-shadow: 0 8px 25px var(--shadow);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px var(--shadow);
-    }
-
-    .card-icon {
-      width: 45px;
-      height: 45px;
-      border-radius: 14px;
-      background: var(--surface-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      font-size: 20px;
-      margin-bottom: 15px;
-    }
-
-    .card h3 {
-      color: var(--primary-dark);
-      font-size: 17px;
-      margin-bottom: 7px;
-    }
-
-    .card p {
-      color: var(--text-soft);
-      font-size: 13px;
-    }
-
-    /* =========================
-       FEATURED POSTS
-    ========================= */
-
-    .featured {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 18px;
-    }
-
-    .featured-main {
-      min-height: 230px;
-      background: var(--primary);
-      color: var(--surface);
-      border-radius: 22px;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      justify-content: end;
-    }
-
-    .featured-main small {
-      color: #EBD9C1;
-      margin-bottom: 10px;
-    }
-
-    .featured-main h3 {
-      font-family: Georgia, serif;
-      font-size: 25px;
-      margin-bottom: 8px;
-    }
-
-    .featured-main p {
-      color: #F3E7D8;
-      font-size: 14px;
-    }
-
-    .featured-side {
-      display: grid;
-      gap: 18px;
-    }
-
-    /* =========================
-       EVENTS
-    ========================= */
-
-    .event-card {
-      position: relative;
-    }
-
-    .event-status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: var(--surface-soft);
-      color: var(--accent);
-      font-size: 11px;
-      margin-bottom: 13px;
-    }
-
-    .event-card h3 {
-      font-family: Georgia, serif;
-      font-size: 19px;
-      margin-bottom: 8px;
-    }
-
-    /* =========================
-       LEADERBOARD
-    ========================= */
-
-    .leaderboard {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      overflow: hidden;
-    }
-
-    .leader-row {
-      display: grid;
-      grid-template-columns: 60px 1fr 120px;
-      align-items: center;
-      padding: 17px 22px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .leader-row:last-child {
-      border-bottom: none;
-    }
-
-    .rank {
-      color: var(--accent);
-      font-weight: bold;
-    }
-
-    .leader-name {
-      color: var(--primary-dark);
-      font-weight: bold;
-    }
-
-    .leader-score {
-      color: var(--text-soft);
-      text-align: left;
-      font-size: 13px;
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
-
-    footer {
-      margin-top: 70px;
-      border-top: 1px solid var(--border);
-      padding: 30px 28px;
-      text-align: center;
-      color: var(--text-soft);
-      font-size: 13px;
-    }
-
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 1000px) {
-      nav {
-        display: none;
-      }
-
-      .hero-card {
-        padding: 40px;
-      }
-
-      .cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .featured {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 650px) {
-      .navbar {
-        padding: 14px 18px;
-      }
-
-      .brand-name {
-        font-size: 19px;
-      }
-
-      .hero {
-        margin-top: 25px;
-        padding: 0 16px;
-      }
-
-      .hero-card {
-        padding: 30px 24px;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hero h1 {
-        font-size: 36px;
-      }
-
-      .hero-decoration {
-        width: 120px;
-        height: 120px;
-        font-size: 45px;
-      }
-
-      .container {
-        padding: 0 16px 40px;
-      }
-
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .header-actions {
-        gap: 5px;
-      }
-
-      .icon-button {
-        width: 36px;
-        height: 36px;
-      }
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
-  <!-- =========================
-       HEADER
-  ========================= -->
+<header>
+    <nav class="navbar">
 
-  <header>
-    <div class="navbar">
+        <div class="logo">
+            <div class="logo-mark">✒</div>
+            <span>دوحة المِداد</span>
+        </div>
 
-      <a href="#" class="brand">
-        <div class="brand-icon">✒</div>
-        <div class="brand-name">دوحة المِداد</div>
-      </a>
+        <div class="nav-links">
 
-      <nav>
-        <a href="#" class="active">الرئيسية</a>
-        <a href="#">الكتابة</a>
-        <a href="#">القراءة</a>
-        <a href="#">المقالات والدروس</a>
-        <a href="#">الفعاليات والأنشطة</a>
-        <a href="#">الإحصائيات</a>
-      </nav>
+            <button class="active" onclick="showPage('home',this)">
+                الرئيسية
+            </button>
 
-      <div class="header-actions">
-        <button class="icon-button" title="الإشعارات">♧</button>
-        <button class="icon-button" title="الحساب">◉</button>
-      </div>
+            <button onclick="showPage('writing',this)">
+                الكتابة
+            </button>
+
+            <button onclick="showPage('reading',this)">
+                القراءة
+            </button>
+
+            <button onclick="showPage('articles',this)">
+                المقالات والدروس
+            </button>
+
+            <button onclick="showPage('events',this)">
+                الفعاليات والأنشطة
+            </button>
+
+            <button onclick="showPage('stats',this)">
+                الإحصائيات
+            </button>
+
+        </div>
+
+        <div class="header-actions">
+
+            <button class="icon-btn" title="الإشعارات" onclick="openModal('notifications')">
+                ♡
+            </button>
+
+            <button class="icon-btn" title="الحساب" onclick="showPage('profile')">
+                ♙
+            </button>
+
+            <button class="icon-btn" title="الإعدادات" onclick="openModal('settings')">
+                ⚙
+            </button>
+
+        </div>
+
+    </nav>
+</header>
+
+
+<main>
+
+<!-- ================= HOME ================= -->
+
+<section id="home" class="page active">
+
+    <div class="hero">
+
+        <div class="hero-content">
+
+            <div class="eyebrow">مرحبًا بك في</div>
+
+            <h1>دوحة المِداد</h1>
+
+            <p>
+                مساحة أدبية تجمع الكاتبات والقارئات،
+                وتمنح الشغف بالقراءة والكتابة مساحة للنمو،
+                والمشاركة، والإبداع.
+            </p>
+
+            <div class="hero-actions">
+
+                <button class="primary-btn"
+                        onclick="showPage('writing')">
+                    ابدأ بالكتابة
+                </button>
+
+                <button class="secondary-btn"
+                        onclick="showPage('reading')">
+                    اكتشف عالم القراءة
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
-  </header>
 
 
-  <!-- =========================
-       HERO
-  ========================= -->
+    <div class="section">
 
-  <section class="hero">
-    <div class="hero-card">
+        <div class="section-heading">
+            <h2>أبرز المنشورات</h2>
+            <button>عرض الكل ←</button>
+        </div>
 
-      <div class="hero-text">
-        <div class="hero-label">مرحبًا بك في</div>
+        <div class="cards">
 
-        <h1>دوحة المِداد</h1>
+            <article class="card">
+                <small>كتابة</small>
+                <h3>بين السطور</h3>
+                <p>
+                    نص أدبي قصير يأخذك إلى مساحة بين ما قيل وما لم يُقل.
+                </p>
+                <a class="card-link">قراءة المنشور ←</a>
+            </article>
+
+            <article class="card">
+                <small>مراجعة</small>
+                <h3>كتاب ترك أثرًا</h3>
+                <p>
+                    مراجعة أدبية لكتاب ترك أثرًا مختلفًا لدى قارئته.
+                </p>
+                <a class="card-link">قراءة المراجعة ←</a>
+            </article>
+
+            <article class="card">
+                <small>نص</small>
+                <h3>رسالة إلى يوم غد</h3>
+                <p>
+                    مساحة قصيرة للكتابة والتأمل.
+                </p>
+                <a class="card-link">قراءة النص ←</a>
+            </article>
+
+        </div>
+
+    </div>
+
+
+    <div class="section two-columns">
+
+        <div>
+
+            <div class="section-heading">
+                <h2>أحدث المقالات</h2>
+                <button onclick="showPage('articles')">عرض الكل ←</button>
+            </div>
+
+            <div class="cards" style="grid-template-columns:1fr;">
+
+                <article class="card">
+                    <small>درس أدبي</small>
+                    <h3>كيف تبدأ كتابة شخصية روائية؟</h3>
+                    <p>
+                        خطوات تساعدك على بناء شخصية لها حضورها وصوتها الخاص.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <small>مقال</small>
+                    <h3>لماذا نقرأ؟</h3>
+                    <p>
+                        عن علاقتنا بالكتب وما تمنحه لنا القراءة.
+                    </p>
+                </article>
+
+            </div>
+
+        </div>
+
+
+        <div>
+
+            <div class="section-heading">
+                <h2>المتصدرون</h2>
+                <button onclick="showPage('stats')">عرض الإحصائيات ←</button>
+            </div>
+
+            <div class="card">
+
+                <div class="leader">
+                    <div class="avatar">١</div>
+                    <div class="leader-info">
+                        <strong>عضوة متميزة</strong>
+                        <small>بيانات الترتيب تظهر هنا</small>
+                    </div>
+                </div>
+
+                <div class="leader">
+                    <div class="avatar">٢</div>
+                    <div class="leader-info">
+                        <strong>عضوة متميزة</strong>
+                        <small>بيانات الترتيب تظهر هنا</small>
+                    </div>
+                </div>
+
+                <div class="leader">
+                    <div class="avatar">٣</div>
+                    <div class="leader-info">
+                        <strong>عضوة متميزة</strong>
+                        <small>بيانات الترتيب تظهر هنا</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-heading">
+            <h2>الفعاليات الحالية</h2>
+            <button onclick="showPage('events')">عرض الفعاليات ←</button>
+        </div>
+
+        <div class="cards">
+
+            <article class="card event-card">
+
+                <span class="event-status">مستمرة</span>
+
+                <small>تحدي كتابة</small>
+
+                <h3>تحدٍ أدبي</h3>
+
+                <p>
+                    تفاصيل التحدي وآلية المشاركة والإنجاز ستظهر في صفحة الفعالية.
+                </p>
+
+                <button class="primary-btn"
+                        style="margin-top:16px"
+                        onclick="openEvent()">
+                    فتح الفعالية
+                </button>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= WRITING ================= -->
+
+<section id="writing" class="page">
+
+    <div class="section-heading">
+        <h2>الكتابة</h2>
+    </div>
+
+    <div class="hero" style="min-height:280px;">
+
+        <div class="hero-content">
+
+            <div class="eyebrow">مساحتك الخاصة</div>
+
+            <h1>اكتبي ما يجول في داخلك</h1>
+
+            <p>
+                أنشئي كتاباتك وشاركيها مع مجتمع دوحة المِداد.
+            </p>
+
+            <div class="hero-actions">
+                <button class="primary-btn"
+                        onclick="openModal('writing')">
+                    كتابة جديدة
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= READING ================= -->
+
+<section id="reading" class="page">
+
+    <div class="section-heading">
+        <h2>القراءة</h2>
+    </div>
+
+    <div class="notice">
+        هنا ستكون مساحة الكتب والقراءة وقوائم القراءة والمراجعات.
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <small>كتبي</small>
+            <h3>مكتبة القراءة</h3>
+            <p>
+                الكتب التي تضيفينها إلى مساحتك القرائية.
+            </p>
+        </div>
+
+        <div class="card">
+            <small>مراجعات</small>
+            <h3>المراجعات</h3>
+            <p>
+                مراجعاتك ومشاركاتك حول الكتب.
+            </p>
+        </div>
+
+        <div class="card">
+            <small>اقتراحات</small>
+            <h3>اقتراحات القراءة</h3>
+            <p>
+                كتب مقترحة لاكتشاف عوالم جديدة.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ARTICLES ================= -->
+
+<section id="articles" class="page">
+
+    <div class="section-heading">
+        <h2>المقالات والدروس</h2>
+    </div>
+
+    <div class="search-box">
+
+        <input
+            id="articleSearch"
+            type="search"
+            placeholder="ابحثي في المقالات والدروس..."
+            oninput="filterArticles()"
+        >
+
+        <button class="primary-btn">
+            بحث
+        </button>
+
+    </div>
+
+
+    <div id="articleCards" class="cards">
+
+        <article class="card searchable">
+            <small>مقال</small>
+            <h3>لماذا نقرأ؟</h3>
+            <p>
+                تأملات حول علاقتنا بالكتب والقراءة.
+            </p>
+            <button class="card-link"
+                    onclick="openArticle()">
+                فتح المقال ←
+            </button>
+        </article>
+
+        <article class="card searchable">
+            <small>درس</small>
+            <h3>بناء الشخصية الروائية</h3>
+            <p>
+                أساسيات تساعدك على بناء شخصية مقنعة.
+            </p>
+            <button class="card-link"
+                    onclick="openArticle()">
+                فتح الدرس ←
+            </button>
+        </article>
+
+        <article class="card searchable">
+            <small>مقال</small>
+            <h3>كيف نصنع عادة للكتابة؟</h3>
+            <p>
+                أفكار تساعد على الاستمرار في الكتابة.
+            </p>
+            <button class="card-link"
+                    onclick="openArticle()">
+                فتح المقال ←
+            </button>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ARTICLE DETAIL ================= -->
+
+<section id="article-detail" class="page article-page">
+
+    <button class="secondary-btn"
+            onclick="showPage('articles')">
+        ← العودة إلى المقالات
+    </button>
+
+    <div class="article-header" style="margin-top:20px;">
+
+        <small>مقال</small>
+
+        <h1>لماذا نقرأ؟</h1>
+
+        <p style="color:var(--text-soft);">
+            بقلم دوحة المِداد
+        </p>
+
+    </div>
+
+    <div class="article-body">
 
         <p>
-          مساحة تجمع القارئات والكاتبات،
-          وتمنح الأدب مساحة للنمو،
-          والكتابة مساحة للتعبير،
-          والشغف مساحة للقاء.
+            القراءة ليست مجرد انتقال بين صفحات كتاب،
+            بل هي مساحة نلتقي فيها بأفكار وتجارب وأصوات
+            مختلفة عن أصواتنا.
         </p>
-      </div>
 
-      <div class="hero-decoration">
-        ✒
-      </div>
+        <p>
+            في دوحة المِداد نؤمن بأن الكتاب يمكن أن يكون
+            بداية لحوار، وفكرة، وتجربة جديدة.
+        </p>
+
+        <p>
+            ولهذا نمنح المقالات والدروس صفحات مستقلة
+            تسمح للقارئة بالاطلاع والمشاركة والتفاعل.
+        </p>
 
     </div>
-  </section>
+
+</section>
 
 
-  <main class="container">
+<!-- ================= EVENTS ================= -->
+
+<section id="events" class="page">
+
+    <div class="section-heading">
+        <h2>الفعاليات والأنشطة</h2>
+    </div>
+
+    <div class="search-box">
+
+        <input
+            id="eventSearch"
+            type="search"
+            placeholder="ابحثي في الفعاليات والتحديات..."
+            oninput="filterEvents()"
+        >
+
+        <button class="primary-btn">
+            بحث
+        </button>
+
+    </div>
 
 
-    <!-- =========================
-         FEATURED POSTS
-    ========================= -->
+    <div id="eventCards" class="cards">
 
-    <section class="section">
+        <article class="card searchable-event">
 
-      <div class="section-heading">
-        <div>
-          <h2>أبرز المنشورات</h2>
-          <p>ما يستحق أن يُقرأ اليوم</p>
-        </div>
+            <span class="event-status">مستمرة</span>
 
-        <a href="#" class="section-link">عرض الكل</a>
-      </div>
+            <small>تحدي كتابة</small>
 
-      <div class="featured">
+            <h3>تحدٍ أدبي</h3>
 
-        <article class="featured-main">
-          <small>من منشورات المجتمع</small>
-          <h3>مساحة للأفكار والكلمات</h3>
-          <p>
-            هنا ستظهر المنشورات التي يشاركها أعضاء
-            دوحة المِداد.
-          </p>
-        </article>
+            <div class="event-meta">
+                <span>✦ تحدي</span>
+                <span>✦ مستمر</span>
+            </div>
 
-        <div class="featured-side">
-
-          <article class="card">
-            <div class="card-icon">✍</div>
-            <h3>كتابات الأعضاء</h3>
             <p>
-              اكتشفي النصوص والكتابات الجديدة
-              من أعضاء المجتمع.
+                اطلعي على تفاصيل التحدي وآلية المشاركة
+                وكيفية تسجيل الإنجاز وإثباته.
             </p>
-          </article>
 
-          <article class="card">
-            <div class="card-icon">♡</div>
-            <h3>ما يلفت الانتباه</h3>
+            <button class="primary-btn"
+                    style="margin-top:16px"
+                    onclick="openEvent()">
+                فتح الفعالية
+            </button>
+
+        </article>
+
+        <article class="card searchable-event">
+
+            <small>فعالية</small>
+
+            <h3>جلسة أدبية</h3>
+
             <p>
-              محتوى مختار يظهر هنا بناءً على
-              نشاط المجتمع.
+                فعالية أدبية سيتم عرض تفاصيلها داخل صفحتها المستقلة.
             </p>
-          </article>
+
+            <button class="secondary-btn"
+                    style="margin-top:16px"
+                    onclick="openEvent()">
+                التفاصيل
+            </button>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- ================= EVENT DETAIL ================= -->
+
+<section id="event-detail" class="page">
+
+    <button class="secondary-btn"
+            onclick="showPage('events')">
+        ← العودة إلى الفعاليات
+    </button>
+
+    <div class="article-header" style="margin-top:20px;">
+
+        <small>تحدي كتابة</small>
+
+        <h1>تحدٍ أدبي</h1>
+
+        <p style="color:var(--text-soft);">
+            صفحة الفعالية الكاملة
+        </p>
+
+    </div>
+
+    <div class="section two-columns">
+
+        <div class="card">
+
+            <h3>عن الفعالية</h3>
+
+            <p>
+                هنا تظهر جميع تفاصيل الفعالية،
+                أهدافها، مدتها، شروط المشاركة،
+                وآلية احتساب الإنجاز.
+            </p>
+
+            <div class="challenge-box">
+
+                <strong>آلية المشاركة</strong>
+
+                <p>
+                    مثال توضيحي: تنفيذ مهمة كتابية وفق
+                    الشروط المحددة داخل الفعالية.
+                </p>
+
+            </div>
 
         </div>
 
-      </div>
 
-    </section>
+        <div class="card">
 
+            <h3>تسجيل الإنجاز</h3>
 
-    <!-- =========================
-         ARTICLES
-    ========================= -->
+            <p>
+                عند إنجاز المهمة، يستطيع العضو تسجيل الإنجاز
+                من هنا وفق الآلية التي تحددها إدارة الفعالية.
+            </p>
 
-    <section class="section">
+            <button class="primary-btn"
+                    style="margin-top:18px"
+                    onclick="openModal('achievement')">
+                تسجيل الإنجاز
+            </button>
 
-      <div class="section-heading">
-        <div>
-          <h2>أحدث المقالات</h2>
-          <p>معرفة وأفكار في عالم الأدب</p>
         </div>
 
-        <a href="#" class="section-link">المقالات والدروس</a>
-      </div>
+    </div>
 
-      <div class="cards">
-
-        <article class="card">
-          <div class="card-icon">📖</div>
-          <h3>عنوان المقال الأول</h3>
-          <p>
-            سيظهر هنا وصف مختصر للمقال.
-          </p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">✒</div>
-          <h3>عنوان المقال الثاني</h3>
-          <p>
-            سيظهر هنا وصف مختصر للمقال.
-          </p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">❦</div>
-          <h3>عنوان الدرس</h3>
-          <p>
-            سيظهر هنا وصف مختصر للدرس.
-          </p>
-        </article>
-
-      </div>
-
-    </section>
+</section>
 
 
-    <!-- =========================
-         EVENTS
-    ========================= -->
+<!-- ================= STATISTICS ================= -->
 
-    <section class="section">
+<section id="stats" class="page">
 
-      <div class="section-heading">
-        <div>
-          <h2>الفعاليات والأنشطة</h2>
-          <p>شاركِ المجتمع شغفه</p>
+    <div class="section-heading">
+        <h2>الإحصائيات</h2>
+    </div>
+
+    <div class="notice">
+        الإحصائيات والمراكز والمتصدرون ستكون مرتبطة لاحقًا
+        ببيانات النظام وReward Engine.
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <small>المتصدرون</small>
+            <h3>لوحة المتصدرين</h3>
+            <p>
+                ستظهر هنا وفق النظام المعتمد لاحقًا.
+            </p>
         </div>
 
-        <a href="#" class="section-link">عرض الفعاليات</a>
-      </div>
-
-      <div class="cards">
-
-        <article class="card event-card">
-          <span class="event-status">فعالية</span>
-          <h3>فعالية جديدة</h3>
-          <p>
-            ستظهر هنا تفاصيل مختصرة عن الفعالية
-            وطريقة المشاركة.
-          </p>
-        </article>
-
-        <article class="card event-card">
-          <span class="event-status">تحدي</span>
-          <h3>تحدٍ أدبي</h3>
-          <p>
-            ستظهر هنا تفاصيل التحدي ومدة المشاركة.
-          </p>
-        </article>
-
-        <article class="card event-card">
-          <span class="event-status">قريبًا</span>
-          <h3>فعالية قادمة</h3>
-          <p>
-            ستظهر هنا معلومات الفعالية القادمة.
-          </p>
-        </article>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         LEADERBOARD
-    ========================= -->
-
-    <section class="section">
-
-      <div class="section-heading">
-        <div>
-          <h2>المتصدرون</h2>
-          <p>أعضاء المجتمع الأكثر نشاطًا</p>
+        <div class="card">
+            <small>النشاط</small>
+            <h3>نشاط المجتمع</h3>
+            <p>
+                مؤشرات النشاط والمشاركة.
+            </p>
         </div>
 
-        <a href="#" class="section-link">الإحصائيات</a>
-      </div>
-
-      <div class="leaderboard">
-
-        <div class="leader-row">
-          <div class="rank">—</div>
-          <div class="leader-name">ستظهر بيانات الأعضاء هنا</div>
-          <div class="leader-score">—</div>
+        <div class="card">
+            <small>الإنجازات</small>
+            <h3>إنجازات الأعضاء</h3>
+            <p>
+                البيانات التي يتم تسجيلها فعليًا فقط.
+            </p>
         </div>
 
-        <div class="leader-row">
-          <div class="rank">—</div>
-          <div class="leader-name">لا توجد بيانات بعد</div>
-          <div class="leader-score">—</div>
+    </div>
+
+</section>
+
+
+<!-- ================= PROFILE ================= -->
+
+<section id="profile" class="page">
+
+    <div class="profile-top">
+
+        <div class="profile-avatar">✒</div>
+
+        <div class="profile-name">اسم العضوة</div>
+
+        <div class="username">@username</div>
+
+        <div class="level">
+
+            <div class="level-title">
+                <span>المستوى</span>
+                <span>يُحدد بواسطة النظام</span>
+            </div>
+
+            <div class="progress">
+                <span></span>
+            </div>
+
         </div>
 
-        <div class="leader-row">
-          <div class="rank">—</div>
-          <div class="leader-name">لا توجد بيانات بعد</div>
-          <div class="leader-score">—</div>
+        <button class="primary-btn"
+                onclick="openModal('profile-edit')">
+            تعديل الملف الشخصي
+        </button>
+
+    </div>
+
+
+    <div class="profile-grid">
+
+        <div class="info-box">
+
+            <h3>نبذة العضوة</h3>
+
+            <p style="color:var(--text-soft);">
+                ستظهر هنا النبذة التي تختار العضوة تسجيلها.
+            </p>
+
         </div>
 
-      </div>
 
-    </section>
+        <div class="info-box">
 
+            <h3>المعلومات المسجلة</h3>
 
-    <!-- =========================
-         DISCOVER
-    ========================= -->
+            <!--
+                مهم:
+                لا نضع صفرًا للمعلومات غير المسجلة.
+                إذا لم تكن هناك بيانات فعلية، لا تظهر الخانة.
+            -->
 
-    <section class="section">
+            <div class="info-row">
+                <span>النقاط</span>
+                <span>تحدد من Reward Engine</span>
+            </div>
 
-      <div class="section-heading">
-        <div>
-          <h2>اقتراحات للقراءة والاستكشاف</h2>
-          <p>مساحات جديدة تنتظر أن تكتشفيها</p>
+            <div class="info-row">
+                <span>المركز</span>
+                <span>يحدد من النظام</span>
+            </div>
+
         </div>
-      </div>
 
-      <div class="cards">
-
-        <article class="card">
-          <div class="card-icon">📚</div>
-          <h3>كتب</h3>
-          <p>
-            اقتراحات للكتب التي قد تهمك.
-          </p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">📝</div>
-          <h3>مقالات</h3>
-          <p>
-            مقالات ودروس مختارة من المجتمع.
-          </p>
-        </article>
-
-        <article class="card">
-          <div class="card-icon">🌿</div>
-          <h3>من المجتمع</h3>
-          <p>
-            محتوى جديد يستحق القراءة.
-          </p>
-        </article>
-
-      </div>
-
-    </section>
-
-  </main>
+    </div>
 
 
-  <footer>
-    <p>دوحة المِداد — مساحة للأدب والكلمة.</p>
-  </footer>
+    <div class="section">
+
+        <div class="section-heading">
+            <h2>الأوسمة</h2>
+        </div>
+
+        <div class="card">
+
+            <div class="badges">
+
+                <div class="badge">
+                    <div class="badge-icon">✒</div>
+                    <div class="badge-name">وسام</div>
+                </div>
+
+                <div class="badge">
+                    <div class="badge-icon">✦</div>
+                    <div class="badge-name">وسام</div>
+                </div>
+
+                <div class="badge locked">
+                    <div class="badge-icon">🔒</div>
+                    <div class="badge-name">وسام مقفل</div>
+                </div>
+
+                <div class="badge locked">
+                    <div class="badge-icon">🔒</div>
+                    <div class="badge-name">وسام مقفل</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-heading">
+            <h2>حماسة الكتابة</h2>
+        </div>
+
+        <div class="streak">
+
+            <p style="color:var(--text-soft);">
+                تسجل الحماسة بناءً على النشاط والمشاركة
+                الفعلية التي يحددها النظام.
+            </p>
+
+            <div class="streak-grid">
+
+                <div class="day"></div>
+                <div class="day active-1"></div>
+                <div class="day active-2"></div>
+                <div class="day"></div>
+                <div class="day active-1"></div>
+                <div class="day active-3"></div>
+                <div class="day"></div>
+                <div class="day active-2"></div>
+                <div class="day active-1"></div>
+                <div class="day"></div>
+                <div class="day active-3"></div>
+                <div class="day"></div>
+                <div class="day active-2"></div>
+                <div class="day active-1"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-heading">
+            <h2>آخر ما نشرته العضوة</h2>
+        </div>
+
+        <div class="cards">
+
+            <article class="card">
+                <small>كتابة</small>
+                <h3>عنوان الكتابة</h3>
+                <p>
+                    يظهر هنا المحتوى الذي نشرته العضوة.
+                </p>
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- ================= MODAL ================= -->
+
+<div id="modal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">تنبيه</h2>
+
+            <button class="close"
+                    onclick="closeModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div id="modalBody"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ================= NAVIGATION ================= */
+
+function showPage(pageId, button){
+
+    document.querySelectorAll(".page")
+        .forEach(page => page.classList.remove("active"));
+
+    const page = document.getElementById(pageId);
+
+    if(page){
+        page.classList.add("active");
+        window.scrollTo({top:0,behavior:"smooth"});
+    }
+
+    if(button){
+
+        document.querySelectorAll(".nav-links button")
+            .forEach(btn => btn.classList.remove("active"));
+
+        button.classList.add("active");
+    }
+}
+
+
+/* ================= ARTICLES ================= */
+
+function openArticle(){
+
+    document.querySelectorAll(".page")
+        .forEach(page => page.classList.remove("active"));
+
+    document.getElementById("article-detail")
+        .classList.add("active");
+
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+
+function filterArticles(){
+
+    const value =
+        document.getElementById("articleSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    document.querySelectorAll(".searchable")
+        .forEach(card => {
+
+            const text =
+                card.innerText.toLowerCase();
+
+            card.style.display =
+                text.includes(value) ? "" : "none";
+
+        });
+}
+
+
+/* ================= EVENTS ================= */
+
+function openEvent(){
+
+    document.querySelectorAll(".page")
+        .forEach(page => page.classList.remove("active"));
+
+    document.getElementById("event-detail")
+        .classList.add("active");
+
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+
+function filterEvents(){
+
+    const value =
+        document.getElementById("eventSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    document.querySelectorAll(".searchable-event")
+        .forEach(card => {
+
+            const text =
+                card.innerText.toLowerCase();
+
+            card.style.display =
+                text.includes(value) ? "" : "none";
+
+        });
+}
+
+
+/* ================= MODALS ================= */
+
+function openModal(type){
+
+    const modal =
+        document.getElementById("modal");
+
+    const title =
+        document.getElementById("modalTitle");
+
+    const body =
+        document.getElementById("modalBody");
+
+
+    if(type === "notifications"){
+
+        title.innerText = "الإشعارات";
+
+        body.innerHTML = `
+            <div class="notice">
+                لا توجد إشعارات جديدة حاليًا.
+            </div>
+        `;
+
+    }
+
+
+    else if(type === "settings"){
+
+        title.innerText = "الإعدادات";
+
+        body.innerHTML = `
+            <div class="card">
+                <h3>إعدادات الحساب</h3>
+                <p>
+                    ستحتوي هذه المساحة لاحقًا على إعدادات
+                    الحساب والخصوصية والإشعارات.
+                </p>
+            </div>
+        `;
+
+    }
+
+
+    else if(type === "writing"){
+
+        title.innerText = "كتابة جديدة";
+
+        body.innerHTML = `
+            <div class="notice">
+                سيتم لاحقًا ربط هذه الواجهة بنظام الكتابة
+                وحفظ المنشورات.
+            </div>
+
+            <textarea
+                style="
+                    width:100%;
+                    min-height:180px;
+                    border:1px solid var(--border);
+                    border-radius:15px;
+                    padding:15px;
+                    background:var(--white);
+                    resize:vertical;
+                "
+                placeholder="ابدئي الكتابة هنا..."
+            ></textarea>
+
+            <button class="primary-btn"
+                    style="margin-top:15px;">
+                حفظ المسودة
+            </button>
+        `;
+
+    }
+
+
+    else if(type === "achievement"){
+
+        title.innerText = "تسجيل الإنجاز";
+
+        body.innerHTML = `
+            <div class="notice">
+                هنا سيتم لاحقًا تطبيق آلية إثبات الإنجاز
+                الخاصة بكل فعالية.
+            </div>
+
+            <p style="color:var(--text-soft);">
+                طريقة الإثبات ليست ثابتة لكل الفعاليات؛
+                تحدد حسب نوع الفعالية وشروطها.
+            </p>
+
+            <button class="primary-btn"
+                    style="margin-top:18px;">
+                إرسال الإنجاز للمراجعة
+            </button>
+        `;
+
+    }
+
+
+    else if(type === "profile-edit"){
+
+        title.innerText = "تعديل الملف الشخصي";
+
+        body.innerHTML = `
+            <p style="color:var(--text-soft);">
+                ستتمكن العضوة من تعديل المعلومات التي
+                تسمح المنصة بتسجيلها.
+            </p>
+        `;
+    }
+
+
+    modal.classList.add("show");
+}
+
+
+function closeModal(){
+
+    document.getElementById("modal")
+        .classList.remove("show");
+}
+
+
+document.getElementById("modal")
+    .addEventListener("click",function(e){
+
+        if(e.target === this){
+            closeModal();
+        }
+
+    });
+
+</script>
 
 </body>
 </html>
