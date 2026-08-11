@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>دوحة المِداد</title>
+
+  <style>
+    :root {
+      --background: #F4EBDD;
+      --surface: #FBF6ED;
+      --surface-soft: #EFE2D0;
+      --primary: #805F49;
+      --primary-dark: #604332;
+      --accent: #B58A5A;
+      --text: #4B392E;
+      --text-soft: #806D5D;
+      --border: #DDCDBA;
+      --shadow: rgba(96, 67, 50, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Tahoma", "Arial", sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(251, 246, 237, 0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .navbar {
+      max-width: 1250px;
+      margin: auto;
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 190px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .brand-name {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--primary-dark);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      flex: 1;
+    }
+
+    nav a {
+      font-size: 14px;
+      color: var(--text-soft);
+      padding: 8px 4px;
+      transition: 0.2s;
+    }
+
+    nav a:hover,
+    nav a.active {
+      color: var(--primary-dark);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 17px;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      max-width: 1250px;
+      margin: 45px auto 30px;
+      padding: 0 28px;
+    }
+
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 55px 60px;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      box-shadow: 0 12px 35px var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-text {
+      max-width: 650px;
+    }
+
+    .hero-label {
+      color: var(--accent);
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .hero h1 {
+      font-family: Georgia, serif;
+      font-size: 48px;
+      color: var(--primary-dark);
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      color: var(--text-soft);
+      font-size: 17px;
+      max-width: 580px;
+    }
+
+    .hero-decoration {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: var(--surface-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    /* =========================
+       GENERAL
+    ========================= */
+
+    .container {
+      max-width: 1250px;
+      margin: auto;
+      padding: 0 28px 60px;
+    }
+
+    .section {
+      margin-top: 45px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 20px;
+    }
+
+    .section-heading h2 {
+      font-family: Georgia, serif;
+      color: var(--primary-dark);
+      font-size: 25px;
+    }
+
+    .section-heading p {
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .section-link {
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    /* =========================
+       CARDS
+    ========================= */
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 8px 25px var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px var(--shadow);
+    }
+
+    .card-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      color: var(--primary-dark);
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .card p {
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    /* =========================
+       FEATURED POSTS
+    ========================= */
+
+    .featured {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+    }
+
+    .featured-main {
+      min-height: 230px;
+      background: var(--primary);
+      color: var(--surface);
+      border-radius: 22px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+    }
+
+    .featured-main small {
+      color: #EBD9C1;
+      margin-bottom: 10px;
+    }
+
+    .featured-main h3 {
+      font-family: Georgia, serif;
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+
+    .featured-main p {
+      color: #F3E7D8;
+      font-size: 14px;
+    }
+
+    .featured-side {
+      display: grid;
+      gap: 18px;
+    }
+
+    /* =========================
+       EVENTS
+    ========================= */
+
+    .event-card {
+      position: relative;
+    }
+
+    .event-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--surface-soft);
+      color: var(--accent);
+      font-size: 11px;
+      margin-bottom: 13px;
+    }
+
+    .event-card h3 {
+      font-family: Georgia, serif;
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    /* =========================
+       LEADERBOARD
+    ========================= */
+
+    .leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 120px;
+      align-items: center;
+      padding: 17px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .leader-row:last-child {
+      border-bottom: none;
+    }
+
+    .rank {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .leader-name {
+      color: var(--primary-dark);
+      font-weight: bold;
+    }
+
+    .leader-score {
+      color: var(--text-soft);
+      text-align: left;
+      font-size: 13px;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      margin-top: 70px;
+      border-top: 1px solid var(--border);
+      padding: 30px 28px;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 1000px) {
+      nav {
+        display: none;
+      }
+
+      .hero-card {
+        padding: 40px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .featured {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .navbar {
+        padding: 14px 18px;
+      }
+
+      .brand-name {
+        font-size: 19px;
+      }
+
+      .hero {
+        margin-top: 25px;
+        padding: 0 16px;
+      }
+
+      .hero-card {
+        padding: 30px 24px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .hero-decoration {
+        width: 120px;
+        height: 120px;
+        font-size: 45px;
+      }
+
+      .container {
+        padding: 0 16px 40px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        gap: 5px;
+      }
+
+      .icon-button {
+        width: 36px;
+        height: 36px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       HEADER
+  ========================= -->
+
+  <header>
+    <div class="navbar">
+
+      <a href="#" class="brand">
+        <div class="brand-icon">✒</div>
+        <div class="brand-name">دوحة المِداد</div>
+      </a>
+
+      <nav>
+        <a href="#" class="active">الرئيسية</a>
+        <a href="#">الكتابة</a>
+        <a href="#">القراءة</a>
+        <a href="#">المقالات والدروس</a>
+        <a href="#">الفعاليات والأنشطة</a>
+        <a href="#">الإحصائيات</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-button" title="الإشعارات">♧</button>
+        <button class="icon-button" title="الحساب">◉</button>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- =========================
+       HERO
+  ========================= -->
+
+  <section class="hero">
+    <div class="hero-card">
+
+      <div class="hero-text">
+        <div class="hero-label">مرحبًا بك في</div>
+
+        <h1>دوحة المِداد</h1>
+
+        <p>
+          مساحة تجمع القارئات والكاتبات،
+          وتمنح الأدب مساحة للنمو،
+          والكتابة مساحة للتعبير،
+          والشغف مساحة للقاء.
+        </p>
+      </div>
+
+      <div class="hero-decoration">
+        ✒
+      </div>
+
+    </div>
+  </section>
+
+
+  <main class="container">
+
+
+    <!-- =========================
+         FEATURED POSTS
+    ========================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <h2>أبرز المنشورات</h2>
+          <p>ما يستحق أن يُقرأ اليوم</p>
+        </div>
+
+        <a href="#" class="section-link">عرض الكل</a>
+      </div>
+
+      <div class="featured">
+
+        <article class="featured-main">
+          <small>من منشورات المجتمع</small>
+          <h3>مساحة للأفكار والكلمات</h3>
+          <p>
+            هنا ستظهر المنشورات التي يشاركها أعضاء
+            دوحة المِداد.
+          </p>
+        </article>
+
+        <div class="featured-side">
+
+          <article class="card">
+            <div class="card-icon">✍</div>
+            <h3>كتابات الأعضاء</h3>
+            <p>
+              اكتشفي النصوص والكتابات الجديدة
+              من أعضاء المجتمع.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="card-icon">♡</div>
+            <h3>ما يلفت الانتباه</h3>
+            <p>
+              محتوى مختار يظهر هنا بناءً على
+              نشاط المجتمع.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         ARTICLES
+    ========================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <h2>أحدث المقالات</h2>
+          <p>معرفة وأفكار في عالم الأدب</p>
+        </div>
+
+        <a href="#" class="section-link">المقالات والدروس</a>
+      </div>
+
+      <div class="cards">
+
+        <article class="card">
+          <div class="card-icon">📖</div>
+          <h3>عنوان المقال الأول</h3>
+          <p>
+            سيظهر هنا وصف مختصر للمقال.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">✒</div>
+          <h3>عنوان المقال الثاني</h3>
+          <p>
+            سيظهر هنا وصف مختصر للمقال.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">❦</div>
+          <h3>عنوان الدرس</h3>
+          <p>
+            سيظهر هنا وصف مختصر للدرس.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         EVENTS
+    ========================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <h2>الفعاليات والأنشطة</h2>
+          <p>شاركِ المجتمع شغفه</p>
+        </div>
+
+        <a href="#" class="section-link">عرض الفعاليات</a>
+      </div>
+
+      <div class="cards">
+
+        <article class="card event-card">
+          <span class="event-status">فعالية</span>
+          <h3>فعالية جديدة</h3>
+          <p>
+            ستظهر هنا تفاصيل مختصرة عن الفعالية
+            وطريقة المشاركة.
+          </p>
+        </article>
+
+        <article class="card event-card">
+          <span class="event-status">تحدي</span>
+          <h3>تحدٍ أدبي</h3>
+          <p>
+            ستظهر هنا تفاصيل التحدي ومدة المشاركة.
+          </p>
+        </article>
+
+        <article class="card event-card">
+          <span class="event-status">قريبًا</span>
+          <h3>فعالية قادمة</h3>
+          <p>
+            ستظهر هنا معلومات الفعالية القادمة.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         LEADERBOARD
+    ========================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <h2>المتصدرون</h2>
+          <p>أعضاء المجتمع الأكثر نشاطًا</p>
+        </div>
+
+        <a href="#" class="section-link">الإحصائيات</a>
+      </div>
+
+      <div class="leaderboard">
+
+        <div class="leader-row">
+          <div class="rank">—</div>
+          <div class="leader-name">ستظهر بيانات الأعضاء هنا</div>
+          <div class="leader-score">—</div>
+        </div>
+
+        <div class="leader-row">
+          <div class="rank">—</div>
+          <div class="leader-name">لا توجد بيانات بعد</div>
+          <div class="leader-score">—</div>
+        </div>
+
+        <div class="leader-row">
+          <div class="rank">—</div>
+          <div class="leader-name">لا توجد بيانات بعد</div>
+          <div class="leader-score">—</div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         DISCOVER
+    ========================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <h2>اقتراحات للقراءة والاستكشاف</h2>
+          <p>مساحات جديدة تنتظر أن تكتشفيها</p>
+        </div>
+      </div>
+
+      <div class="cards">
+
+        <article class="card">
+          <div class="card-icon">📚</div>
+          <h3>كتب</h3>
+          <p>
+            اقتراحات للكتب التي قد تهمك.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">📝</div>
+          <h3>مقالات</h3>
+          <p>
+            مقالات ودروس مختارة من المجتمع.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🌿</div>
+          <h3>من المجتمع</h3>
+          <p>
+            محتوى جديد يستحق القراءة.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    <p>دوحة المِداد — مساحة للأدب والكلمة.</p>
+  </footer>
+
+</body>
+</html>
