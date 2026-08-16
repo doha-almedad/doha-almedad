@@ -1,1 +1,412 @@
+/* ================================
+   دوحة المِداد — التصميم الأساسي
+   ================================ */
 
+:root {
+    --bg: #f4ebdd;
+    --surface: #fbf6ed;
+    --surface-soft: #efe2d0;
+
+    --primary: #805f49;
+    --primary-dark: #604332;
+    --accent: #b58a5a;
+
+    --text: #4b392e;
+    --text-soft: #806d5d;
+    --border: #ddcdba;
+
+    --white: #fffdf8;
+
+    --radius: 18px;
+    --shadow: 0 8px 25px rgba(96, 67, 50, 0.08);
+}
+
+/* ---------- الأساس ---------- */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    direction: rtl;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* ---------- الحاوية ---------- */
+
+.container {
+    width: min(1100px, calc(100% - 32px));
+    margin-inline: auto;
+}
+
+/* ---------- الشريط العلوي ---------- */
+
+header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+nav {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    width: min(1100px, calc(100% - 32px));
+    margin-inline: auto;
+}
+
+.logo {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+}
+
+.nav-links a {
+    display: block;
+    padding: 9px 14px;
+    color: var(--text-soft);
+    border-radius: 12px;
+    transition: 0.2s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    background: var(--surface-soft);
+    color: var(--primary-dark);
+}
+
+/* ---------- المحتوى ---------- */
+
+main {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 45px 0 70px;
+}
+
+section {
+    margin-bottom: 45px;
+}
+
+/* ---------- العناوين ---------- */
+
+h1,
+h2,
+h3 {
+    color: var(--primary-dark);
+    line-height: 1.3;
+}
+
+h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-bottom: 14px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+}
+
+p {
+    color: var(--text-soft);
+}
+
+/* ---------- الصفحة الرئيسية ---------- */
+
+.hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: clamp(35px, 7vw, 75px);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.hero p {
+    max-width: 650px;
+    margin: 0 auto 25px;
+    font-size: 1.05rem;
+}
+
+/* ---------- الأزرار ---------- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 11px 20px;
+    border-radius: 13px;
+    border: 1px solid transparent;
+
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--primary-dark);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-soft);
+}
+
+/* ---------- البطاقات ---------- */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(96, 67, 50, 0.12);
+}
+
+/* ---------- الإحصائيات ---------- */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.stat {
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+
+.stat strong {
+    display: block;
+    color: var(--primary);
+    font-size: 1.8rem;
+}
+
+/* ---------- النماذج ---------- */
+
+form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 25px;
+    box-shadow: var(--shadow);
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 700;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: var(--white);
+    color: var(--text);
+
+    outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(181, 138, 90, 0.12);
+}
+
+textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+/* ---------- الملف الشخصي ---------- */
+
+.profile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    background: var(--surface-soft);
+    color: var(--primary);
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.bio {
+    background: var(--surface-soft);
+    border-radius: 15px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+/* ---------- الفوتر ---------- */
+
+footer {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 30px 16px;
+    text-align: center;
+}
+
+footer p {
+    color: rgba(255, 253, 248, 0.75);
+}
+
+/* ---------- الجوال ---------- */
+
+@media (max-width: 800px) {
+
+    nav {
+        min-height: 64px;
+    }
+
+    .nav-links {
+        gap: 2px;
+    }
+
+    .nav-links a {
+        padding: 7px 9px;
+        font-size: 0.9rem;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-header {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 520px) {
+
+    .container,
+    main,
+    nav {
+        width: min(100% - 22px, 1100px);
+    }
+
+    main {
+        padding-top: 25px;
+    }
+
+    .hero {
+        padding: 35px 20px;
+        border-radius: 20px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+}
