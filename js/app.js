@@ -1,120 +1,89 @@
 // ==========================================
-// Literary Community — Main Application
+// تشغيل الموقع
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    initializeApp();
+  const data = window.LITERARY_DATA;
+
+  if (!data) {
+    console.error("بيانات الموقع غير موجودة.");
+    return;
+  }
+
+  initializeNavigation();
+  initializeApp();
 });
 
+
+// ==========================================
+// تهيئة الموقع
+// ==========================================
+
 function initializeApp() {
-    console.log("Literary Community app initialized.");
-
-    setupNavigation();
-    setupButtons();
+  renderSiteName();
+  renderNavigation();
 }
 
 
 // ==========================================
-// Navigation
+// اسم المجتمع
 // ==========================================
 
-function setupNavigation() {
-    const navigationLinks = document.querySelectorAll("[data-page]");
+function renderSiteName() {
+  const elements = document.querySelectorAll("[data-site-name]");
 
-    navigationLinks.forEach((link) => {
-        link.addEventListener("click", () => {
-            const page = link.dataset.page;
+  elements.forEach((element) => {
+    element.textContent = window.LITERARY_DATA.SITE.name;
+  });
+}
 
-            if (page) {
-                navigateTo(page);
-            }
-        });
+
+// ==========================================
+// التنقل
+// ==========================================
+
+function renderNavigation() {
+  const navigation = document.querySelector("[data-navigation]");
+
+  if (!navigation) return;
+
+  navigation.innerHTML = "";
+
+  window.LITERARY_DATA.SITE.sections.forEach((section) => {
+    const link = document.createElement("a");
+
+    link.href = `#${section.id}`;
+    link.textContent = section.title;
+    link.className = "nav-link";
+
+    navigation.appendChild(link);
+  });
+}
+
+
+// ==========================================
+// التنقل بين الأقسام
+// ==========================================
+
+function initializeNavigation() {
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest('a[href^="#"]');
+
+    if (!link) return;
+
+    const targetId = link.getAttribute("href");
+
+    if (!targetId || targetId === "#") return;
+
+    const target = document.querySelector(targetId);
+
+    if (!target) return;
+
+    event.preventDefault();
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
     });
+  });
 }
-
-function navigateTo(page) {
-    console.log(`Navigating to: ${page}`);
-
-    window.dispatchEvent(
-        new CustomEvent("page:navigate", {
-            detail: { page }
-        })
-    );
-}
-
-
-// ==========================================
-// Buttons
-// ==========================================
-
-function setupButtons() {
-    const buttons = document.querySelectorAll("[data-action]");
-
-    buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const action = button.dataset.action;
-
-            if (action) {
-                handleAction(action, button);
-            }
-        });
-    });
-}
-
-function handleAction(action, element) {
-    switch (action) {
-        case "open-profile":
-            openProfile();
-            break;
-
-        case "open-settings":
-            openSettings();
-            break;
-
-        case "logout":
-            logout();
-            break;
-
-        default:
-            console.log(`Unknown action: ${action}`);
-    }
-}
-
-
-// ==========================================
-// Profile
-// ==========================================
-
-function openProfile() {
-    navigateTo("profile");
-}
-
-
-// ==========================================
-// Settings
-// ==========================================
-
-function openSettings() {
-    navigateTo("settings");
-}
-
-
-// ==========================================
-// Authentication
-// ==========================================
-
-function logout() {
-    console.log("Logout requested.");
-}
-
-
-// ==========================================
-// Global App State
-// ==========================================
-
-window.LiteraryApp = {
-    navigateTo,
-    openProfile,
-    openSettings,
-    logout
-};
