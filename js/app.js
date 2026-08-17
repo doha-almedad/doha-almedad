@@ -1,216 +1,414 @@
+// ============================================================
+// دوحة المداد — التطبيق الرئيسي
 // js/app.js
+// ============================================================
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
 
 function initializeApp() {
-  setupNavigation();
-  setupMobileMenu();
-  setupInteractiveElements();
+  renderApp();
+  setupGlobalEvents();
 
-  // تشغيل الـ Router إذا كان موجودًا
   if (window.Router) {
-    window.Router.start();
+    setupRoutes();
+    Router.start();
   }
 }
 
-/* =========================================
-   Navigation
-========================================= */
 
-function setupNavigation() {
-  document.addEventListener("click", (event) => {
-    const link = event.target.closest("[data-route]");
+// ============================================================
+// Routes
+// ============================================================
 
-    if (!link) return;
+function setupRoutes() {
 
-    event.preventDefault();
+  Router.register("/", renderHome);
 
-    const route = link.dataset.route;
+  Router.register("/members", () => renderSimplePage(
+    "الأعضاء",
+    "اكتشفي أعضاء دوحة المداد"
+  ));
 
-    if (window.Router && route) {
-      window.Router.navigate(route);
+  Router.register("/events", () => renderSimplePage(
+    "الفعاليات والأنشطة",
+    "مساحة تجمع فعاليات المجتمع الأدبي"
+  ));
+
+  Router.register("/statistics", () => renderSimplePage(
+    "الإحصائيات",
+    "تابعي رحلتك الأدبية وتطور نشاطك في المجتمع"
+  ));
+
+  Router.register("/titles", () => renderSimplePage(
+    "الألقاب",
+    "الأوسمة والإنجازات الأدبية"
+  ));
+
+  Router.register("/articles", () => renderSimplePage(
+    "المقالات والدروس",
+    "مساحة المعرفة والإلهام الأدبي"
+  ));
+
+  Router.register("/profile", () => renderSimplePage(
+    "الملف الشخصي",
+    "مساحتك في دوحة المداد"
+  ));
+
+  Router.register("/settings", () => renderSimplePage(
+    "الإعدادات",
+    "إعدادات الحساب والخصوصية"
+  ));
+
+  Router.register("/404", () => renderSimplePage(
+    "الصفحة غير موجودة",
+    "يبدو أن هذه الصفحة غير متاحة حاليًا."
+  ));
+}
+
+
+// ============================================================
+// App Container
+// ============================================================
+
+function renderApp() {
+
+  const app = document.getElementById("app");
+
+  if (!app) return;
+
+  app.innerHTML = `
+    ${Components.navigation()}
+
+    <main id="page-content"></main>
+
+    ${Components.footer()}
+  `;
+
+  Components.init();
+}
+
+
+// ============================================================
+// الصفحة الرئيسية
+// ============================================================
+
+function renderHome() {
+
+  const container = document.getElementById("page-content");
+
+  if (!container) return;
+
+  container.innerHTML = `
+
+    <section class="hero section-home">
+
+      <div class="container hero-inner">
+
+        <div class="hero-content">
+
+          <span class="hero-label">
+            دوحة المداد
+          </span>
+
+          <h1>
+            مرحبًا بكِ في
+            <span>دوحة المداد</span>
+          </h1>
+
+          <p>
+            مساحة أدبية تجمع القارئات والكاتبات،
+            وتمنح الشغف الأدبي مكانًا للنمو والمشاركة والإبداع.
+          </p>
+
+          <div class="hero-actions">
+
+            <a
+              href="/members"
+              data-route
+              class="primary-button">
+              استكشفي دوحة المداد
+            </a>
+
+          </div>
+
+        </div>
+
+        <div class="hero-decoration" aria-hidden="true">
+
+          <div class="hero-book">
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="hero-star hero-star-one">✦</div>
+          <div class="hero-star hero-star-two">✧</div>
+          <div class="hero-star hero-star-three">·</div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="home-sections">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <span>اكتشفي المجتمع</span>
+
+          <h2>
+            مساحات دوحة المداد
+          </h2>
+
+          <p>
+            تنقلي بين مساحات المجتمع واكتشفي ما يناسب رحلتك الأدبية.
+          </p>
+
+        </div>
+
+
+        <div class="section-grid">
+
+          ${homeSectionCard(
+            "الكتابة",
+            "مساحة الكتابات والمشاركات الأدبية في المجتمع.",
+            "/writing",
+            "writing"
+          )}
+
+          ${homeSectionCard(
+            "القراءة",
+            "اكتشفي الكتب والقراءات والمراجعات التي يشاركها الأعضاء.",
+            "/reading",
+            "reading"
+          )}
+
+          ${homeSectionCard(
+            "المقالات والدروس",
+            "مقالات ودروس تساعدك على توسيع معرفتك الأدبية.",
+            "/articles",
+            "articles"
+          )}
+
+          ${homeSectionCard(
+            "الفعاليات والأنشطة",
+            "تحديات وفعاليات ومساحات تجمع أعضاء المجتمع.",
+            "/events",
+            "activities"
+          )}
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="home-community">
+
+      <div class="container">
+
+        <div class="community-box">
+
+          <div>
+
+            <span class="section-label">
+              المجتمع
+            </span>
+
+            <h2>
+              للحرف مكان،
+              وللشغف مجتمع.
+            </h2>
+
+            <p>
+              شاركي، اقرئي، اكتشفي، وتابعي رحلتك الأدبية
+              وسط مجتمع يشاركك الاهتمام نفسه.
+            </p>
+
+          </div>
+
+          <a
+            href="/members"
+            data-route
+            class="secondary-button">
+            اكتشفي الأعضاء
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  `;
+
+  Components.init();
+}
+
+
+// ============================================================
+// بطاقة قسم في الرئيسية
+// ============================================================
+
+function homeSectionCard(title, description, route, theme) {
+
+  return `
+
+    <a
+      href="${route}"
+      data-route
+      class="home-section-card section-${theme}">
+
+      <div class="home-section-icon" aria-hidden="true">
+        ${getSectionSymbol(theme)}
+      </div>
+
+      <div>
+
+        <h3>
+          ${title}
+        </h3>
+
+        <p>
+          ${description}
+        </p>
+
+      </div>
+
+      <span
+        class="home-section-arrow"
+        aria-hidden="true">
+        ←
+      </span>
+
+    </a>
+
+  `;
+}
+
+
+// ============================================================
+// رموز الأقسام
+// ============================================================
+
+function getSectionSymbol(theme) {
+
+  const symbols = {
+
+    writing: "✒",
+
+    reading: "▤",
+
+    articles: "✦",
+
+    activities: "◇"
+
+  };
+
+  return symbols[theme] || "✦";
+}
+
+
+// ============================================================
+// الصفحات المؤقتة
+// ============================================================
+
+function renderSimplePage(title, description) {
+
+  const container = document.getElementById("page-content");
+
+  if (!container) return;
+
+  container.innerHTML = `
+
+    <section class="inner-page">
+
+      <div class="container">
+
+        ${Components.backButton()}
+
+        ${Components.pageHeader(title, description)}
+
+        <div class="coming-section">
+
+          <div class="coming-icon" aria-hidden="true">
+            ✦
+          </div>
+
+          <h2>
+            ${title}
+          </h2>
+
+          <p>
+            هذه المساحة سنبنيها لاحقًا
+            وربطها بالبيانات والتفاعل الحقيقي.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  `;
+
+  Components.init();
+}
+
+
+// ============================================================
+// الأحداث العامة
+// ============================================================
+
+function setupGlobalEvents() {
+
+  window.addEventListener("popstate", () => {
+
+    if (window.Router) {
+      Router.render();
     }
-  });
-}
 
-/* =========================================
-   Mobile Menu
-========================================= */
-
-function setupMobileMenu() {
-  const menuButton = document.querySelector("[data-menu-button]");
-  const mobileMenu = document.querySelector("[data-mobile-menu]");
-  const closeButton = document.querySelector("[data-menu-close]");
-
-  if (!menuButton || !mobileMenu) return;
-
-  menuButton.addEventListener("click", () => {
-    mobileMenu.classList.toggle("is-open");
-    document.body.classList.toggle("menu-open");
   });
 
-  if (closeButton) {
-    closeButton.addEventListener("click", closeMobileMenu);
-  }
-
-  mobileMenu.addEventListener("click", (event) => {
-    const link = event.target.closest("[data-route]");
-
-    if (link) {
-      closeMobileMenu();
-    }
-  });
 }
 
-function closeMobileMenu() {
-  const mobileMenu = document.querySelector("[data-mobile-menu]");
 
-  if (mobileMenu) {
-    mobileMenu.classList.remove("is-open");
-  }
-
-  document.body.classList.remove("menu-open");
-}
-
-/* =========================================
-   Interactive Elements
-========================================= */
-
-function setupInteractiveElements() {
-  setupBackButtons();
-  setupModals();
-  setupTabs();
-}
-
-/* =========================================
-   Back Buttons
-========================================= */
-
-function setupBackButtons() {
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-back]");
-
-    if (!button) return;
-
-    event.preventDefault();
-
-    if (window.history.length > 1) {
-      window.history.back();
-    } else if (window.Router) {
-      window.Router.navigate("/");
-    }
-  });
-}
-
-/* =========================================
-   Modals
-========================================= */
-
-function setupModals() {
-  document.addEventListener("click", (event) => {
-    const openButton = event.target.closest("[data-modal-open]");
-
-    if (openButton) {
-      const modalId = openButton.dataset.modalOpen;
-      openModal(modalId);
-      return;
-    }
-
-    const closeButton = event.target.closest("[data-modal-close]");
-
-    if (closeButton) {
-      const modalId = closeButton.dataset.modalClose;
-      closeModal(modalId);
-      return;
-    }
-
-    if (event.target.classList.contains("modal-overlay")) {
-      closeModal(event.target.id);
-    }
-  });
-}
-
-function openModal(modalId) {
-  if (!modalId) return;
-
-  const modal = document.getElementById(modalId);
-
-  if (!modal) return;
-
-  modal.classList.add("is-open");
-  document.body.classList.add("modal-open");
-}
-
-function closeModal(modalId) {
-  if (!modalId) return;
-
-  const modal = document.getElementById(modalId);
-
-  if (!modal) return;
-
-  modal.classList.remove("is-open");
-
-  if (!document.querySelector(".modal-overlay.is-open")) {
-    document.body.classList.remove("modal-open");
-  }
-}
-
-/* =========================================
-   Tabs
-========================================= */
-
-function setupTabs() {
-  document.addEventListener("click", (event) => {
-    const tab = event.target.closest("[data-tab]");
-
-    if (!tab) return;
-
-    const tabGroup = tab.closest("[data-tabs]");
-
-    if (!tabGroup) return;
-
-    const target = tab.dataset.tab;
-
-    tabGroup.querySelectorAll("[data-tab]").forEach((item) => {
-      item.classList.remove("active");
-    });
-
-    tab.classList.add("active");
-
-    tabGroup.querySelectorAll("[data-tab-content]").forEach((content) => {
-      content.classList.remove("active");
-
-      if (content.dataset.tabContent === target) {
-        content.classList.add("active");
-      }
-    });
-  });
-}
-
-/* =========================================
-   Utility Functions
-========================================= */
+// ============================================================
+// أدوات التطبيق
+// ============================================================
 
 window.App = {
+
   navigate(path) {
+
     if (window.Router) {
-      window.Router.navigate(path);
+      Router.navigate(path);
     }
+
   },
 
   back() {
+
     if (window.Router) {
-      window.Router.back();
+      Router.back();
     } else {
-      window.history.back();
+      history.back();
     }
+
   },
 
-  openModal,
+  refresh() {
+    renderApp();
 
-  closeModal,
+    if (window.Router) {
+      Router.render();
+    }
+  }
 
-  closeMobileMenu
 };
