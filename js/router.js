@@ -8,6 +8,8 @@ const Router = {
   },
 
   navigate(path) {
+    if (!path) return;
+
     history.pushState({}, "", path);
     this.render();
   },
@@ -16,15 +18,20 @@ const Router = {
     history.back();
   },
 
-  render() {
-    const path = window.location.pathname;
+  getCurrentPath() {
+    return window.location.pathname;
+  },
 
-    const route =
+  render() {
+    const path = this.getCurrentPath();
+
+    const renderFunction =
       this.routes[path] ||
+      this.routes["/404"] ||
       this.routes["/"];
 
-    if (route) {
-      route();
+    if (typeof renderFunction === "function") {
+      renderFunction();
     }
   },
 
