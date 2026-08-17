@@ -1,86 +1,117 @@
-// ==========================================
-// بيانات وهوية المجتمع الأدبي
-// ==========================================
-
-const SITE = {
-  name: "المجتمع الأدبي",
-  tagline: "مساحة تجمع القارئات والكاتبات",
-  description:
-    "مساحة للإبداع والشغف الأدبي، تجمع القارئات والكاتبات في مجتمع واحد.",
-
-  colors: {
-    rawUmber: "#9E6438",
-    ecru: "#D3AF7C",
-    frenchGray: "#C5CFDF",
-    mossGreen: "#8F884F",
-    drabDarkBrown: "#3E401F",
-    background: "#F4EEE5",
-    card: "#FBF8F2",
+const SiteData = {
+  site: {
+    name: "دوحة المداد",
+    description: "مساحة أدبية تجمع القارئات والكاتبات في مجتمع واحد.",
+    logo: "/assets/logo.png"
   },
 
-  sections: [
+  navigation: [
     {
       id: "home",
-      title: "الرئيسية",
+      label: "الرئيسية",
+      route: "/"
     },
     {
-      id: "members",
-      title: "الأعضاء",
+      id: "writing",
+      label: "الكتابة",
+      route: "/writing"
     },
     {
-      id: "events",
-      title: "الفعاليات",
-    },
-    {
-      id: "goals",
-      title: "الأهداف",
-    },
-    {
-      id: "statistics",
-      title: "الإحصائيات",
-    },
-    {
-      id: "titles",
-      title: "الألقاب",
-    },
-    {
-      id: "books",
-      title: "الكتب المنشورة",
-    },
-    {
-      id: "reviews",
-      title: "مراجعات الكتب",
+      id: "reading",
+      label: "القراءة",
+      route: "/reading"
     },
     {
       id: "articles",
-      title: "المقالات",
+      label: "المقالات والدروس",
+      route: "/articles"
     },
+    {
+      id: "activities",
+      label: "الفعاليات والأنشطة",
+      route: "/activities"
+    },
+    {
+      id: "statistics",
+      label: "الإحصائيات",
+      route: "/statistics"
+    }
   ],
+
+  sections: {
+    home: {
+      name: "الرئيسية",
+      theme: "home"
+    },
+
+    writing: {
+      name: "الكتابة",
+      theme: "writing"
+    },
+
+    reading: {
+      name: "القراءة",
+      theme: "reading"
+    },
+
+    articles: {
+      name: "المقالات والدروس",
+      theme: "articles"
+    },
+
+    activities: {
+      name: "الفعاليات والأنشطة",
+      theme: "activities"
+    },
+
+    statistics: {
+      name: "الإحصائيات",
+      theme: "statistics"
+    }
+  },
+
+  member: {
+    id: null,
+    name: "",
+    username: "",
+    avatar: "",
+    bio: "",
+
+    literaryEnthusiasm: 0,
+
+    points: 0,
+    rank: null,
+
+    words: 0,
+    booksPublished: 0,
+    booksRead: 0,
+
+    badges: []
+  },
+
+  posts: [],
+
+  books: [],
+
+  reviews: [],
+
+  articles: [],
+
+  lessons: [],
+
+  activities: [],
+
+  badges: [],
+
+  statistics: {
+    literaryEnthusiasm: 0,
+    words: 0,
+    booksRead: 0,
+    booksPublished: 0,
+    points: 0,
+    rank: null
+  }
 };
 
 
-// ==========================================
-// بيانات تجريبية مؤقتة
-// سنربطها لاحقًا بقاعدة البيانات
-// ==========================================
-
-const MEMBERS = [];
-
-const EVENTS = [];
-
-const BOOKS = [];
-
-const ARTICLES = [];
-
-
-// ==========================================
-// تصدير البيانات
-// ==========================================
-
-window.LITERARY_DATA = {
-  SITE,
-  MEMBERS,
-  EVENTS,
-  BOOKS,
-  ARTICLES,
-};
+window.SiteData = SiteData;
