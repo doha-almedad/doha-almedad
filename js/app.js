@@ -1,976 +1,376 @@
 // ============================================================
-// DOHAT AL-MIDAD — APP
+// دوحة المداد — APP
+// التطبيق الرئيسي
 // ============================================================
 
 const app = document.getElementById("app");
 
-const state = {
-  currentPage: "/",
-  mobileMenu: false,
-  profile: {
-    name: "عضوة دوحة المداد",
-    username: "@member",
-    bio: "مساحتي في المجتمع الأدبي.",
-    points: 0,
-    rank: null,
-    words: 0,
-    books: 0,
-    reading: 0,
-    badges: []
-  }
-};
+const App = {
 
+  // ----------------------------------------------------------
+  // تشغيل التطبيق
+  // ----------------------------------------------------------
 
-// ============================================================
-// DATA
-// ============================================================
+  init() {
+    if (!app) {
+      console.error("لم يتم العثور على #app");
+      return;
+    }
 
-const sections = [
-  {
-    id: "writing",
-    title: "الكتابة",
-    text: "مساحة الكتابات والمشاركات الأدبية.",
-    color: "writing"
+    this.render();
+
+    window.addEventListener("popstate", () => {
+      this.render();
+    });
   },
-  {
-    id: "reading",
-    title: "القراءة",
-    text: "اكتشفي الكتب والقراءات والمراجعات.",
-    color: "reading"
+
+
+  // ----------------------------------------------------------
+  // تحديد المسار
+  // ----------------------------------------------------------
+
+  getPath() {
+    let path = window.location.pathname;
+
+    if (path.length > 1 && path.endsWith("/")) {
+      path = path.slice(0, -1);
+    }
+
+    return path || "/";
   },
-  {
-    id: "articles",
-    title: "المقالات والدروس",
-    text: "معرفة وأفكار ودروس أدبية.",
-    color: "articles"
+
+
+  // ----------------------------------------------------------
+  // التنقل
+  // ----------------------------------------------------------
+
+  navigate(path) {
+
+    if (!path) return;
+
+    if (window.location.pathname === path) {
+      this.render();
+      return;
+    }
+
+    window.history.pushState({}, "", path);
+
+    this.render();
+
+    window.scrollTo({
+      top: 0,
+      behavior: "instant"
+    });
   },
-  {
-    id: "activities",
-    title: "الفعاليات والأنشطة",
-    text: "تحديات وفعاليات المجتمع.",
-    color: "activities"
+
+
+  // ----------------------------------------------------------
+  // العودة
+  // ----------------------------------------------------------
+
+  back() {
+
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      this.navigate("/");
+    }
   },
-  {
-    id: "members",
-    title: "الأعضاء",
-    text: "تعرّفي على أعضاء دوحة المداد.",
-    color: "members"
+
+
+  // ----------------------------------------------------------
+  // بناء التطبيق
+  // ----------------------------------------------------------
+
+  render() {
+
+    const path = this.getPath();
+
+    let page = "";
+
+    switch (true) {
+
+      case path === "/":
+        page = this.home();
+        break;
+
+      case path === "/writing":
+        page = this.writing();
+        break;
+
+      case path === "/reading":
+        page = this.reading();
+        break;
+
+      case path === "/articles":
+        page = this.articles();
+        break;
+
+      case path.startsWith("/articles/"):
+        page = this.articleDetails(path);
+        break;
+
+      case path === "/events":
+      case path === "/activities":
+        page = this.events();
+        break;
+
+      case path.startsWith("/events/"):
+        page = this.eventDetails(path);
+        break;
+
+      case path === "/members":
+        page = this.members();
+        break;
+
+      case path === "/statistics":
+        page = this.statistics();
+        break;
+
+      case path === "/titles":
+        page = this.titles();
+        break;
+
+      case path === "/books":
+        page = this.books();
+        break;
+
+      case path === "/reviews":
+        page = this.reviews();
+        break;
+
+      case path === "/profile":
+        page = this.profile();
+        break;
+
+      case path.startsWith("/profile/"):
+        page = this.memberProfile(path);
+        break;
+
+      case path === "/settings":
+        page = this.settings();
+        break;
+
+      case path.startsWith("/post/"):
+        page = this.postDetails(path);
+        break;
+
+      default:
+        page = this.notFound();
+    }
+
+
+    app.innerHTML = `
+      ${Components.navigation()}
+
+      <main id="main-content">
+        ${page}
+      </main>
+
+      ${Components.footer()}
+    `;
+
+
+    Components.init();
+
+    this.bindNavigation();
   },
-  {
-    id: "statistics",
-    title: "الإحصائيات",
-    text: "تابعي رحلتك الأدبية.",
-    color: "statistics"
-  }
-];
 
 
-// ============================================================
-// APP
-// ============================================================
+  // ----------------------------------------------------------
+  // ربط الروابط
+  // ----------------------------------------------------------
 
-function render() {
+  bindNavigation() {
 
-  if (!app) {
-    console.error("لم يتم العثور على #app");
-    return;
-  }
+    document.querySelectorAll("[data-route]").forEach(link => {
 
-  app.innerHTML = `
-    ${renderNavigation()}
-    <main id="main-content"></main>
-  `;
+      link.addEventListener("click", event => {
 
-  renderPage();
-  bindEvents();
-}
+        const href = link.getAttribute("href");
 
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-
-function renderNavigation() {
-
-  return `
-    <header class="site-header">
-
-      <div class="nav-container">
-
-        <a href="/" class="brand" data-link>
-          <img
-            src="assets/logo.png"
-            alt="دوحة المداد"
-            class="brand-logo"
-            onerror="this.style.display='none'"
-          />
-
-          <span class="brand-name">
-            دوحة المداد
-          </span>
-        </a>
-
-
-        <nav class="desktop-nav">
-
-          <a href="/" data-link>الرئيسية</a>
-
-          <a href="/writing" data-link>الكتابة</a>
-
-          <a href="/reading" data-link>القراءة</a>
-
-          <a href="/articles" data-link>
-            المقالات والدروس
-          </a>
-
-          <a href="/activities" data-link>
-            الفعاليات والأنشطة
-          </a>
-
-          <a href="/statistics" data-link>
-            الإحصائيات
-          </a>
-
-          <a href="/members" data-link>
-            الأعضاء
-          </a>
-
-        </nav>
-
-
-        <div class="nav-actions">
-
-          <a
-            href="/profile"
-            data-link
-            class="nav-profile">
-            الملف الشخصي
-          </a>
-
-          <button
-            class="mobile-menu-button"
-            id="mobile-menu-button"
-            aria-label="فتح القائمة">
-            ☰
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <div
-        id="mobile-menu"
-        class="mobile-menu">
-
-        <a href="/" data-link>الرئيسية</a>
-        <a href="/writing" data-link>الكتابة</a>
-        <a href="/reading" data-link>القراءة</a>
-        <a href="/articles" data-link>المقالات والدروس</a>
-        <a href="/activities" data-link>الفعاليات والأنشطة</a>
-        <a href="/statistics" data-link>الإحصائيات</a>
-        <a href="/members" data-link>الأعضاء</a>
-        <a href="/profile" data-link>الملف الشخصي</a>
-
-      </div>
-
-    </header>
-  `;
-}
-
-
-// ============================================================
-// PAGE ROUTER
-// ============================================================
-
-function getPath() {
-
-  let path = window.location.pathname;
-
-  if (path.length > 1 && path.endsWith("/")) {
-    path = path.slice(0, -1);
-  }
-
-  return path || "/";
-}
-
-
-function renderPage() {
-
-  const main = document.getElementById("main-content");
-
-  if (!main) return;
-
-  const path = getPath();
-
-  state.currentPage = path;
-
-
-  switch (path) {
-
-    case "/":
-      main.innerHTML = renderHome();
-      break;
-
-    case "/writing":
-      main.innerHTML = renderWriting();
-      break;
-
-    case "/reading":
-      main.innerHTML = renderReading();
-      break;
-
-    case "/articles":
-      main.innerHTML = renderArticles();
-      break;
-
-    case "/activities":
-      main.innerHTML = renderActivities();
-      break;
-
-    case "/statistics":
-      main.innerHTML = renderStatistics();
-      break;
-
-    case "/members":
-      main.innerHTML = renderMembers();
-      break;
-
-    case "/profile":
-      main.innerHTML = renderProfile();
-      break;
-
-    default:
-      main.innerHTML = renderNotFound();
-  }
-}
-
-
-// ============================================================
-// HOME
-// ============================================================
-
-function renderHome() {
-
-  return `
-
-    <section class="hero">
-
-      <div class="hero-content">
-
-        <span class="eyebrow">
-          دوحة المداد
-        </span>
-
-        <h1>
-          حيث يلتقي
-          <span>الشغف الأدبي</span>
-          بالمجتمع
-        </h1>
-
-        <p>
-          مجتمع يجمع القارئات والكاتبات،
-          ويصنع مساحة للإبداع والمعرفة والمشاركة.
-        </p>
-
-        <a
-          href="/members"
-          data-link
-          class="primary-button">
-          استكشفي المجتمع
-        </a>
-
-      </div>
-
-      <div class="hero-art">
-
-        <div class="book-art">
-          <div></div>
-          <div></div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <section class="home-content">
-
-      <div class="section-title">
-
-        <span>اكتشفي</span>
-
-        <h2>
-          مساحات دوحة المداد
-        </h2>
-
-        <p>
-          لكل جانب من رحلتك الأدبية مساحة.
-        </p>
-
-      </div>
-
-
-      <div class="section-cards">
-
-        ${sections
-          .slice(0, 4)
-          .map(section => renderSectionCard(section))
-          .join("")}
-
-      </div>
-
-    </section>
-
-
-    <section class="featured-posts">
-
-      <div class="section-title">
-
-        <span>من المجتمع</span>
-
-        <h2>
-          أبرز المنشورات
-        </h2>
-
-      </div>
-
-
-      <div class="empty-content">
-
-        <p>
-          ستظهر هنا المنشورات التي يشاركها أعضاء المجتمع.
-        </p>
-
-        <a
-          href="/writing"
-          data-link
-          class="secondary-button">
-          استكشفي الكتابات
-        </a>
-
-      </div>
-
-    </section>
-
-  `;
-}
-
-
-// ============================================================
-// SECTION CARD
-// ============================================================
-
-function renderSectionCard(section) {
-
-  return `
-
-    <a
-      href="/${section.id}"
-      data-link
-      class="section-card section-card-${section.color}">
-
-      <div class="section-card-symbol">
-        <span></span>
-      </div>
-
-      <div class="section-card-content">
-
-        <h3>
-          ${section.title}
-        </h3>
-
-        <p>
-          ${section.text}
-        </p>
-
-      </div>
-
-      <span class="card-arrow">
-        ←
-      </span>
-
-    </a>
-
-  `;
-}
-
-
-// ============================================================
-// WRITING
-// ============================================================
-
-function renderWriting() {
-
-  return renderCommunityPage(
-    "الكتابة",
-    "مساحة الكتابات والمشاركات الأدبية في المجتمع.",
-    "writing",
-    `
-      <div class="empty-content">
-
-        <h3>
-          شاركي صوتك الأدبي
-        </h3>
-
-        <p>
-          ستظهر هنا المشاركات الأدبية المنشورة من أعضاء المجتمع.
-        </p>
-
-        <button class="primary-button">
-          + مشاركة جديدة
-        </button>
-
-      </div>
-    `
-  );
-}
-
-
-// ============================================================
-// READING
-// ============================================================
-
-function renderReading() {
-
-  return renderCommunityPage(
-    "القراءة",
-    "اكتشفي ما يقرأه المجتمع وما يوصي به أعضاؤه.",
-    "reading",
-    `
-      <div class="content-grid">
-
-        <article class="content-card">
-
-          <div class="content-image"></div>
-
-          <div class="content-card-body">
-
-            <span>قراءة</span>
-
-            <h3>
-              كتب ومراجعات المجتمع
-            </h3>
-
-            <p>
-              ستظهر هنا الكتب والمراجعات التي يشاركها الأعضاء.
-            </p>
-
-          </div>
-
-        </article>
-
-      </div>
-    `
-  );
-}
-
-
-// ============================================================
-// ARTICLES
-// ============================================================
-
-function renderArticles() {
-
-  return renderCommunityPage(
-    "المقالات والدروس",
-    "مساحة المعرفة والإلهام الأدبي.",
-    "articles",
-    `
-      <div class="content-grid">
-
-        <article class="content-card">
-
-          <div class="content-image"></div>
-
-          <div class="content-card-body">
-
-            <span>مقال</span>
-
-            <h3>
-              المقالات والدروس الأدبية
-            </h3>
-
-            <p>
-              ستظهر هنا المقالات والدروس المنشورة في المجتمع.
-            </p>
-
-            <button class="secondary-button">
-              قراءة
-            </button>
-
-          </div>
-
-        </article>
-
-      </div>
-    `
-  );
-}
-
-
-// ============================================================
-// ACTIVITIES
-// ============================================================
-
-function renderActivities() {
-
-  return renderCommunityPage(
-    "الفعاليات والأنشطة",
-    "تحديات وفعاليات ومساحات تجمع أعضاء المجتمع.",
-    "activities",
-    `
-      <div class="content-grid">
-
-        <article class="content-card">
-
-          <div class="content-image"></div>
-
-          <div class="content-card-body">
-
-            <span>فعالية</span>
-
-            <h3>
-              فعاليات دوحة المداد
-            </h3>
-
-            <p>
-              ستظهر هنا التحديات والمسابقات والأنشطة القادمة.
-            </p>
-
-            <button class="secondary-button">
-              التفاصيل
-            </button>
-
-          </div>
-
-        </article>
-
-      </div>
-    `
-  );
-}
-
-
-// ============================================================
-// STATISTICS
-// ============================================================
-
-function renderStatistics() {
-
-  return `
-
-    <section class="page statistics-page">
-
-      <div class="page-container">
-
-        ${renderBackButton()}
-
-        <div class="page-heading">
-
-          <span>
-            رحلتك
-          </span>
-
-          <h1>
-            الإحصائيات
-          </h1>
-
-          <p>
-            تابعي تطور رحلتك الأدبية.
-          </p>
-
-        </div>
-
-
-        <div class="stats-grid">
-
-          ${statCard("النقاط", state.profile.points)}
-          ${statCard("الكلمات", state.profile.words)}
-          ${statCard("الكتب المقروءة", state.profile.reading)}
-
-        </div>
-
-
-        <div class="literary-passion">
-
-          <span>
-            الحماسة الأدبية
-          </span>
-
-          <div class="flames">
-
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  `;
-}
-
-
-function statCard(title, value) {
-
-  return `
-
-    <div class="stat-card">
-
-      <span>
-        ${title}
-      </span>
-
-      <strong>
-        ${value}
-      </strong>
-
-    </div>
-
-  `;
-}
-
-
-// ============================================================
-// MEMBERS
-// ============================================================
-
-function renderMembers() {
-
-  return `
-
-    <section class="page members-page">
-
-      <div class="page-container">
-
-        ${renderBackButton()}
-
-        <div class="page-heading">
-
-          <span>
-            المجتمع
-          </span>
-
-          <h1>
-            الأعضاء
-          </h1>
-
-          <p>
-            تعرّفي على أعضاء دوحة المداد.
-          </p>
-
-        </div>
-
-
-        <div class="members-grid">
-
-          ${renderMember(
-            "عضوة دوحة المداد",
-            "@member"
-          )}
-
-        </div>
-
-      </div>
-
-    </section>
-
-  `;
-}
-
-
-function renderMember(name, username) {
-
-  return `
-
-    <a
-      href="/profile"
-      data-link
-      class="member-card">
-
-      <div class="member-avatar">
-        ${name.charAt(0)}
-      </div>
-
-      <div>
-
-        <h3>
-          ${name}
-        </h3>
-
-        <span>
-          ${username}
-        </span>
-
-      </div>
-
-    </a>
-
-  `;
-}
-
-
-// ============================================================
-// PROFILE
-// ============================================================
-
-function renderProfile() {
-
-  const p = state.profile;
-
-  return `
-
-    <section class="page profile-page">
-
-      <div class="page-container">
-
-        ${renderBackButton()}
-
-
-        <div class="profile-header">
-
-          <div class="profile-avatar">
-            ${p.name.charAt(0)}
-          </div>
-
-          <div class="profile-info">
-
-            <h1>
-              ${p.name}
-            </h1>
-
-            <span>
-              ${p.username}
-            </span>
-
-            <p>
-              ${p.bio}
-            </p>
-
-          </div>
-
-          <a
-            href="/settings"
-            data-link
-            class="icon-button"
-            aria-label="الإعدادات">
-            ⚙
-          </a>
-
-        </div>
-
-
-        <div class="profile-stats">
-
-          ${profileStat("النقاط", p.points)}
-          ${profileStat("الكلمات", p.words)}
-          ${profileStat("الكتب المقروءة", p.reading)}
-
-        </div>
-
-
-        <section class="profile-section">
-
-          <div class="section-title">
-
-            <span>
-              الإنجازات
-            </span>
-
-            <h2>
-              أوسمتك
-            </h2>
-
-          </div>
-
-
-          <div class="badges-row">
-
-            ${
-              p.badges.length
-                ? p.badges.map(renderBadge).join("")
-                : `
-                  <div class="empty-content">
-                    لم تحصل العضوة على أوسمة بعد.
-                  </div>
-                `
-            }
-
-          </div>
-
-        </section>
-
-
-        ${
-          p.books > 0
-            ? `
-              <section class="profile-section">
-
-                <div class="section-title">
-
-                  <span>
-                    الكتب
-                  </span>
-
-                  <h2>
-                    الكتب المنشورة
-                  </h2>
-
-                </div>
-
-              </section>
-            `
-            : ""
+        if (!href || href.startsWith("http")) {
+          return;
         }
 
-      </div>
+        event.preventDefault();
 
-    </section>
+        this.navigate(href);
+      });
 
-  `;
-}
-
-
-function profileStat(title, value) {
-
-  return `
-
-    <div>
-
-      <span>
-        ${title}
-      </span>
-
-      <strong>
-        ${value}
-      </strong>
-
-    </div>
-
-  `;
-}
+    });
 
 
-function renderBadge(badge) {
+    document.querySelectorAll("[data-back]").forEach(button => {
 
-  return `
+      button.addEventListener("click", () => {
+        this.back();
+      });
 
-    <button
-      class="badge"
-      type="button">
-
-      <span class="badge-symbol">
-        ✦
-      </span>
-
-      <strong>
-        ${badge.name}
-      </strong>
-
-      <small>
-        حصلتِ عليه ${badge.times} مرة
-      </small>
-
-    </button>
-
-  `;
-}
+    });
+  },
 
 
-// ============================================================
-// SETTINGS
-// ============================================================
+  // ==========================================================
+  // الصفحة الرئيسية
+  // ==========================================================
 
-function renderSettings() {
+  home() {
 
-  return `
+    const data =
+      window.SiteData?.posts ||
+      [];
 
-    <section class="page settings-page">
+    const posts = data.slice(0, 3);
 
-      <div class="page-container">
+    return `
+      <section class="home-page">
 
-        ${renderBackButton()}
+        <div class="container">
 
-        <div class="page-heading">
+          <section class="hero-section">
 
-          <span>
-            الحساب
-          </span>
+            <div class="hero-content">
 
-          <h1>
-            الإعدادات
-          </h1>
+              <span class="eyebrow">
+                دوحة المداد
+              </span>
+
+              <h1>
+                حيث يلتقي
+                <span>الشغف الأدبي</span>
+                بالمجتمع
+              </h1>
+
+              <p>
+                مجتمع يجمع القارئات والكاتبات،
+                ويصنع مساحة للإبداع والمعرفة والمشاركة.
+              </p>
+
+              <a
+                href="/members"
+                data-route
+                class="primary-button">
+                استكشفي المجتمع
+              </a>
+
+            </div>
+
+            <div class="hero-visual">
+
+              <div class="hero-book">
+                <div class="book-cover"></div>
+                <div class="book-page"></div>
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <section class="home-sections">
+
+            ${this.sectionTitle(
+              "اكتشفي",
+              "مساحات دوحة المداد",
+              "لكل جانب من رحلتك الأدبية مساحة."
+            )}
+
+            <div class="section-cards-grid">
+
+              ${this.sectionCard(
+                "writing",
+                "الكتابة",
+                "مساحة الكتابات والمشاركات الأدبية."
+              )}
+
+              ${this.sectionCard(
+                "reading",
+                "القراءة",
+                "اكتشفي الكتب والقراءات والمراجعات."
+              )}
+
+              ${this.sectionCard(
+                "articles",
+                "المقالات والدروس",
+                "معرفة وأفكار ودروس أدبية."
+              )}
+
+              ${this.sectionCard(
+                "events",
+                "الفعاليات والأنشطة",
+                "تحديات وفعاليات المجتمع."
+              )}
+
+            </div>
+
+          </section>
+
+
+          <section class="featured-section">
+
+            <div class="section-heading-row">
+
+              ${this.sectionTitle(
+                "من المجتمع",
+                "أبرز المنشورات"
+              )}
+
+              <a
+                href="/writing"
+                data-route
+                class="text-link">
+                عرض الكل ←
+              </a>
+
+            </div>
+
+
+            ${
+              posts.length
+                ? `
+                  <div class="posts-grid">
+                    ${posts
+                      .map(post => Components.postCard(post))
+                      .join("")}
+                  </div>
+                `
+                : Components.emptyState(
+                    "لا توجد منشورات بعد",
+                    "ستظهر هنا المشاركات التي ينشرها أعضاء المجتمع."
+                  )
+            }
+
+          </section>
 
         </div>
 
+      </section>
+    `;
+  },
 
-        <div class="settings-list">
 
-          <button>
-            الحساب
-            <span>›</span>
-          </button>
+  // ==========================================================
+  // بطاقة القسم
+  // ==========================================================
 
-          <button>
-            الخصوصية
-            <span>›</span>
-          </button>
+  sectionCard(id, title, description) {
 
-          <button>
-            الإشعارات
-            <span>›</span>
-          </button>
+    return `
+      <a
+        href="/${id}"
+        data-route
+        class="section-card section-card-${id}">
 
-          <button>
-            الأمان
-            <span>›</span>
-          </button>
-
+        <div class="section-card-icon">
+          <span></span>
         </div>
 
-      </div>
+        <div>
 
-    </section>
-
-  `;
-}
-
-
-// ============================================================
-// COMMUNITY PAGE
-// ============================================================
-
-function renderCommunityPage(
-  title,
-  description,
-  theme,
-  content
-) {
-
-  return `
-
-    <section class="page community-page theme-${theme}">
-
-      <div class="page-container">
-
-        ${renderBackButton()}
-
-        <div class="page-heading">
-
-          <span>
-            دوحة المداد
-          </span>
-
-          <h1>
+          <h3>
             ${title}
-          </h1>
+          </h3>
 
           <p>
             ${description}
@@ -978,167 +378,1022 @@ function renderCommunityPage(
 
         </div>
 
-        ${content}
+        <span class="card-arrow">
+          ←
+        </span>
 
-      </div>
-
-    </section>
-
-  `;
-}
-
-
-// ============================================================
-// BACK
-// ============================================================
-
-function renderBackButton() {
-
-  return `
-
-    <button
-      class="back-button"
-      data-back
-      type="button">
-
-      ← العودة
-
-    </button>
-
-  `;
-}
+      </a>
+    `;
+  },
 
 
-// ============================================================
-// 404
-// ============================================================
+  // ==========================================================
+  // الكتابة
+  // ==========================================================
 
-function renderNotFound() {
+  writing() {
 
-  return `
+    const posts =
+      window.SiteData?.posts ||
+      [];
 
-    <section class="page">
+    return this.communityPage(
+      "الكتابة",
+      "مساحة الكتابات والمشاركات الأدبية في المجتمع.",
+      "writing",
 
-      <div class="page-container">
+      posts.length
+        ? `
+          <div class="posts-grid">
+            ${posts
+              .map(post => Components.postCard(post))
+              .join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد مشاركات بعد",
+            "ستظهر هنا الكتابات التي ينشرها أعضاء المجتمع."
+          )
+    );
+  },
 
-        <div class="empty-content">
 
-          <h1>
-            الصفحة غير موجودة
-          </h1>
+  // ==========================================================
+  // القراءة
+  // ==========================================================
 
-          <a
-            href="/"
-            data-link
-            class="primary-button">
-            العودة للرئيسية
-          </a>
+  reading() {
+
+    const books =
+      window.SiteData?.books ||
+      [];
+
+    return this.communityPage(
+      "القراءة",
+      "اكتشفي الكتب والقراءات والمراجعات في المجتمع.",
+      "reading",
+
+      books.length
+        ? `
+          <div class="content-grid">
+            ${books.map(book => this.bookCard(book)).join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد كتب بعد",
+            "ستظهر هنا الكتب والقراءات المنشورة."
+          )
+    );
+  },
+
+
+  // ==========================================================
+  // المقالات والدروس
+  // ==========================================================
+
+  articles() {
+
+    const articles =
+      window.SiteData?.articles ||
+      [];
+
+    return this.communityPage(
+      "المقالات والدروس",
+      "مساحة المعرفة والإلهام الأدبي.",
+      "articles",
+
+      articles.length
+        ? `
+          <div class="content-grid">
+            ${articles
+              .map(article => Components.articleCard(article))
+              .join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد مقالات أو دروس بعد",
+            "سيظهر المحتوى الأدبي هنا عند نشره."
+          )
+    );
+  },
+
+
+  // ==========================================================
+  // تفاصيل المقال
+  // ==========================================================
+
+  articleDetails(path) {
+
+    const id =
+      decodeURIComponent(
+        path.split("/")[2] || ""
+      );
+
+    const articles =
+      window.SiteData?.articles ||
+      [];
+
+    const article =
+      articles.find(item =>
+        String(item.id) === String(id)
+      );
+
+
+    if (!article) {
+      return this.notFound();
+    }
+
+
+    return `
+      <section class="page article-details-page">
+
+        <div class="container">
+
+          ${Components.backButton(
+            "العودة إلى المقالات والدروس"
+          )}
+
+          <article class="single-content">
+
+            ${
+              article.image
+                ? `
+                  <img
+                    class="single-content-image"
+                    src="${Components.escape(article.image)}"
+                    alt="${Components.escape(article.title)}">
+                `
+                : ""
+            }
+
+            ${
+              article.type
+                ? `
+                  <span class="content-type">
+                    ${Components.escape(article.type)}
+                  </span>
+                `
+                : ""
+            }
+
+            <h1>
+              ${Components.escape(article.title)}
+            </h1>
+
+            ${
+              article.description
+                ? `<p>${Components.escape(article.description)}</p>`
+                : ""
+            }
+
+          </article>
 
         </div>
 
+      </section>
+    `;
+  },
+
+
+  // ==========================================================
+  // الفعاليات
+  // ==========================================================
+
+  events() {
+
+    const events =
+      window.SiteData?.events ||
+      [];
+
+    return this.communityPage(
+      "الفعاليات والأنشطة",
+      "تحديات وفعاليات ومساحات تجمع أعضاء المجتمع.",
+      "events",
+
+      events.length
+        ? `
+          <div class="content-grid">
+            ${events
+              .map(event => Components.eventCard(event))
+              .join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد فعاليات حاليًا",
+            "ستظهر هنا الفعاليات والأنشطة القادمة."
+          )
+    );
+  },
+
+
+  // ==========================================================
+  // تفاصيل فعالية
+  // ==========================================================
+
+  eventDetails(path) {
+
+    const id =
+      decodeURIComponent(
+        path.split("/")[2] || ""
+      );
+
+    const events =
+      window.SiteData?.events ||
+      [];
+
+    const event =
+      events.find(item =>
+        String(item.id) === String(id)
+      );
+
+
+    if (!event) {
+      return this.notFound();
+    }
+
+
+    return `
+      <section class="page event-details-page">
+
+        <div class="container">
+
+          ${Components.backButton(
+            "العودة إلى الفعاليات والأنشطة"
+          )}
+
+          <article class="single-content">
+
+            ${
+              event.image
+                ? `
+                  <img
+                    class="single-content-image"
+                    src="${Components.escape(event.image)}"
+                    alt="${Components.escape(event.title)}">
+                `
+                : ""
+            }
+
+            ${
+              event.type
+                ? `
+                  <span class="content-type">
+                    ${Components.escape(event.type)}
+                  </span>
+                `
+                : ""
+            }
+
+            <h1>
+              ${Components.escape(event.title)}
+            </h1>
+
+            ${
+              event.description
+                ? `<p>${Components.escape(event.description)}</p>`
+                : ""
+            }
+
+            ${
+              event.date
+                ? `<time>${Components.escape(event.date)}</time>`
+                : ""
+            }
+
+          </article>
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  // ==========================================================
+  // الأعضاء
+  // ==========================================================
+
+  members() {
+
+    const members =
+      window.SiteData?.members ||
+      [];
+
+    return this.communityPage(
+      "الأعضاء",
+      "تعرّفي على أعضاء دوحة المداد.",
+      "members",
+
+      members.length
+        ? `
+          <div class="members-grid">
+            ${members
+              .map(member => Components.memberCard(member))
+              .join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا يوجد أعضاء للعرض",
+            ""
+          )
+    );
+  },
+
+
+  // ==========================================================
+  // الإحصائيات
+  // ==========================================================
+
+  statistics() {
+
+    const profile =
+      window.SiteData?.currentMember ||
+      {};
+
+    const words =
+      Number(profile.words || 0);
+
+    const reading =
+      Number(profile.reading || 0);
+
+    const points =
+      Number(profile.points || 0);
+
+
+    return `
+      <section class="page statistics-page">
+
+        <div class="container">
+
+          <div class="page-heading">
+            <span>رحلتك</span>
+
+            <h1>
+              الإحصائيات
+            </h1>
+
+            <p>
+              تابعي رحلتك الأدبية وتطور حماستك الأدبية.
+            </p>
+          </div>
+
+
+          <div class="stats-grid">
+
+            ${this.statCard("النقاط", points)}
+            ${this.statCard("الكلمات", words)}
+            ${this.statCard("الكتب المقروءة", reading)}
+
+          </div>
+
+
+          <section class="passion-section">
+
+            <span>
+              الحماسة الأدبية
+            </span>
+
+            <div class="passion-flames">
+
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+
+            </div>
+
+          </section>
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  statCard(title, value) {
+
+    return `
+      <div class="stat-card">
+
+        <span>
+          ${title}
+        </span>
+
+        <strong>
+          ${value}
+        </strong>
+
       </div>
-
-    </section>
-
-  `;
-}
+    `;
+  },
 
 
-// ============================================================
-// EVENTS
-// ============================================================
+  // ==========================================================
+  // الألقاب
+  // ==========================================================
 
-function bindEvents() {
+  titles() {
 
-  document.querySelectorAll("[data-link]")
-    .forEach(link => {
+    const badges =
+      window.SiteData?.badges ||
+      [];
 
-      link.addEventListener("click", event => {
+    return this.communityPage(
+      "الألقاب",
+      "إنجازات وأوسمة أعضاء دوحة المداد.",
+      "titles",
 
-        const href = link.getAttribute("href");
-
-        if (!href || !href.startsWith("/")) return;
-
-        event.preventDefault();
-
-        navigate(href);
-
-      });
-
-    });
-
-
-  const menuButton =
-    document.getElementById("mobile-menu-button");
-
-  const mobileMenu =
-    document.getElementById("mobile-menu");
-
-
-  if (menuButton && mobileMenu) {
-
-    menuButton.addEventListener("click", () => {
-
-      mobileMenu.classList.toggle("open");
-
-    });
-
-  }
+      badges.length
+        ? `
+          <div class="badges-row">
+            ${badges
+              .map(badge => Components.badgeCard(badge))
+              .join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد أوسمة بعد",
+            ""
+          )
+    );
+  },
 
 
-  document.querySelectorAll("[data-back]")
-    .forEach(button => {
+  // ==========================================================
+  // الكتب
+  // ==========================================================
 
-      button.addEventListener("click", () => {
+  books() {
 
-        if (history.length > 1) {
-          history.back();
-        } else {
-          navigate("/");
+    const books =
+      window.SiteData?.books ||
+      [];
+
+    return this.communityPage(
+      "الكتب",
+      "الكتب المنشورة في دوحة المداد.",
+      "books",
+
+      books.length
+        ? `
+          <div class="content-grid">
+            ${books.map(book => this.bookCard(book)).join("")}
+          </div>
+        `
+        : Components.emptyState(
+            "لا توجد كتب منشورة",
+            ""
+          )
+    );
+  },
+
+
+  bookCard(book) {
+
+    return `
+      <article class="content-card book-card">
+
+        ${
+          book.image
+            ? `
+              <img
+                class="content-card-image"
+                src="${Components.escape(book.image)}"
+                alt="${Components.escape(book.title || "")}">
+            `
+            : `
+              <div class="content-card-image content-card-image-empty"></div>
+            `
         }
 
-      });
+        <div class="content-card-body">
 
-    });
+          <span class="content-type">
+            كتاب
+          </span>
 
-}
+          <h3>
+            ${Components.escape(book.title || "")}
+          </h3>
+
+          ${
+            book.description
+              ? `<p>${Components.escape(book.description)}</p>`
+              : ""
+          }
+
+        </div>
+
+      </article>
+    `;
+  },
 
 
-// ============================================================
-// NAVIGATION
-// ============================================================
+  // ==========================================================
+  // المراجعات
+  // ==========================================================
 
-function navigate(path) {
+  reviews() {
 
-  if (window.location.pathname === path) {
-    return;
+    return this.communityPage(
+      "مراجعات الكتب",
+      "آراء وتجارب القراء في الكتب.",
+      "reviews",
+
+      Components.emptyState(
+        "لا توجد مراجعات بعد",
+        ""
+      )
+    );
+  },
+
+
+  // ==========================================================
+  // الملف الشخصي
+  // ==========================================================
+
+  profile() {
+
+    const profile =
+      window.SiteData?.currentMember ||
+      {};
+
+    return this.profileMarkup(profile);
+  },
+
+
+  memberProfile(path) {
+
+    const username =
+      decodeURIComponent(
+        path.split("/")[2] || ""
+      ).replace(/^@/, "");
+
+
+    const members =
+      window.SiteData?.members ||
+      [];
+
+    const member =
+      members.find(item =>
+        item.username === username
+      );
+
+
+    if (!member) {
+      return this.notFound();
+    }
+
+
+    return this.profileMarkup(member);
+  },
+
+
+  profileMarkup(profile) {
+
+    const books =
+      Number(profile.books || 0);
+
+
+    return `
+      <section class="page profile-page">
+
+        <div class="container">
+
+          ${Components.backButton()}
+
+          <div class="profile-header">
+
+            <div class="profile-avatar">
+
+              ${
+                profile.avatar
+                  ? `
+                    <img
+                      src="${Components.escape(profile.avatar)}"
+                      alt="${Components.escape(profile.name || "")}">
+                  `
+                  : `
+                    <span>
+                      ${Components.initial(
+                        profile.name || profile.username
+                      )}
+                    </span>
+                  `
+              }
+
+            </div>
+
+
+            <div class="profile-info">
+
+              <h1>
+                ${Components.escape(
+                  profile.name || "عضوة دوحة المداد"
+                )}
+              </h1>
+
+              <span>
+                @${Components.escape(
+                  String(profile.username || "")
+                    .replace(/^@/, "")
+                )}
+              </span>
+
+              ${
+                profile.bio
+                  ? `<p>${Components.escape(profile.bio)}</p>`
+                  : ""
+              }
+
+            </div>
+
+
+            <a
+              href="/settings"
+              data-route
+              class="icon-button"
+              aria-label="الإعدادات">
+              ⚙
+            </a>
+
+          </div>
+
+
+          <div class="profile-stats">
+
+            ${this.profileStat(
+              "النقاط",
+              profile.points
+            )}
+
+            ${this.profileStat(
+              "الكلمات",
+              profile.words
+            )}
+
+            ${this.profileStat(
+              "الكتب المقروءة",
+              profile.reading
+            )}
+
+            ${
+              books > 0
+                ? this.profileStat(
+                    "الكتب المنشورة",
+                    books
+                  )
+                : ""
+            }
+
+          </div>
+
+
+          ${
+            profile.badges?.length
+              ? `
+                <section class="profile-section">
+
+                  ${this.sectionTitle(
+                    "الإنجازات",
+                    "أوسمتك"
+                  )}
+
+                  <div class="badges-row">
+
+                    ${profile.badges
+                      .map(badge =>
+                        Components.badgeCard(badge)
+                      )
+                      .join("")}
+
+                  </div>
+
+                </section>
+              `
+              : ""
+          }
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  profileStat(title, value) {
+
+    return `
+      <div class="profile-stat">
+
+        <span>
+          ${title}
+        </span>
+
+        <strong>
+          ${Number(value || 0)}
+        </strong>
+
+      </div>
+    `;
+  },
+
+
+  // ==========================================================
+  // الإعدادات
+  // ==========================================================
+
+  settings() {
+
+    return `
+      <section class="page settings-page">
+
+        <div class="container">
+
+          ${Components.backButton()}
+
+          <div class="page-heading">
+
+            <span>
+              الحساب
+            </span>
+
+            <h1>
+              الإعدادات
+            </h1>
+
+            <p>
+              إدارة الحساب والخصوصية والإشعارات والأمان.
+            </p>
+
+          </div>
+
+
+          <div class="settings-grid">
+
+            ${this.settingItem(
+              "الحساب",
+              "تعديل بيانات الملف الشخصي."
+            )}
+
+            ${this.settingItem(
+              "الخصوصية",
+              "التحكم في ظهور بياناتك ونشاطك."
+            )}
+
+            ${this.settingItem(
+              "الإشعارات",
+              "إدارة إشعارات التفاعل والفعاليات."
+            )}
+
+            ${this.settingItem(
+              "الأمان",
+              "إدارة أمان الحساب."
+            )}
+
+          </div>
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  settingItem(title, description) {
+
+    return `
+      <button
+        type="button"
+        class="setting-item">
+
+        <div>
+          <strong>
+            ${title}
+          </strong>
+
+          <span>
+            ${description}
+          </span>
+        </div>
+
+        <span aria-hidden="true">
+          ←
+        </span>
+
+      </button>
+    `;
+  },
+
+
+  // ==========================================================
+  // منشور
+  // ==========================================================
+
+  postDetails(path) {
+
+    const id =
+      decodeURIComponent(
+        path.split("/")[2] || ""
+      );
+
+    const posts =
+      window.SiteData?.posts ||
+      [];
+
+    const post =
+      posts.find(item =>
+        String(item.id) === String(id)
+      );
+
+
+    if (!post) {
+      return this.notFound();
+    }
+
+
+    return `
+      <section class="page post-details-page">
+
+        <div class="container">
+
+          ${Components.backButton(
+            "العودة إلى الكتابة"
+          )}
+
+          <article class="single-content">
+
+            ${
+              post.type
+                ? `
+                  <span class="content-type">
+                    ${Components.escape(post.type)}
+                  </span>
+                `
+                : ""
+            }
+
+            <h1>
+              ${Components.escape(post.title || "")}
+            </h1>
+
+            ${
+              post.author
+                ? `
+                  <a
+                    href="/profile/${encodeURIComponent(
+                      post.author.username || ""
+                    )}"
+                    data-route
+                    class="post-author">
+
+                    ${
+                      post.author.avatar
+                        ? `
+                          <img
+                            src="${Components.escape(
+                              post.author.avatar
+                            )}"
+                            alt="">
+                        `
+                        : ""
+                    }
+
+                    <span>
+                      ${Components.escape(
+                        post.author.name ||
+                        post.author.username ||
+                        "عضو"
+                      )}
+                    </span>
+
+                  </a>
+                `
+                : ""
+            }
+
+            ${
+              post.content
+                ? `
+                  <div class="post-content">
+                    ${Components.escape(post.content)}
+                  </div>
+                `
+                : ""
+            }
+
+          </article>
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  // ==========================================================
+  // مساعدات
+  // ==========================================================
+
+  communityPage(title, description, theme, content) {
+
+    return `
+      <section class="page community-page theme-${theme}">
+
+        <div class="container">
+
+          ${Components.backButton()}
+
+          <div class="page-heading">
+
+            <span>
+              دوحة المداد
+            </span>
+
+            <h1>
+              ${Components.escape(title)}
+            </h1>
+
+            <p>
+              ${Components.escape(description)}
+            </p>
+
+          </div>
+
+          ${content}
+
+        </div>
+
+      </section>
+    `;
+  },
+
+
+  sectionTitle(label, title, description = "") {
+
+    return `
+      <div class="section-title">
+
+        <span>
+          ${Components.escape(label)}
+        </span>
+
+        <h2>
+          ${Components.escape(title)}
+        </h2>
+
+        ${
+          description
+            ? `<p>${Components.escape(description)}</p>`
+            : ""
+        }
+
+      </div>
+    `;
+  },
+
+
+  notFound() {
+
+    return `
+      <section class="page">
+
+        <div class="container">
+
+          <div class="empty-state">
+
+            <h1>
+              الصفحة غير موجودة
+            </h1>
+
+            <p>
+              الصفحة التي تحاولين الوصول إليها غير موجودة.
+            </p>
+
+            <a
+              href="/"
+              data-route
+              class="primary-button">
+              العودة للرئيسية
+            </a>
+
+          </div>
+
+        </div>
+
+      </section>
+    `;
   }
 
-  history.pushState({}, "", path);
-
-  render();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-}
+};
 
 
 // ============================================================
-// BROWSER BACK
+// تشغيل التطبيق
 // ============================================================
 
-window.addEventListener("popstate", () => {
+window.App = App;
 
-  render();
-
-});
-
-
-// ============================================================
-// START
-// ============================================================
-
-render();
+App.init();
