@@ -1,33 +1,116 @@
+/* =========================================================
+   دوحة المداد — profilePage.js
+   7. صفحة البروفايل: حماسة الأدب، الأوسمة، وقاعدة إخفاء الصفر
+   ========================================================= */
 
-const ProfilePage = {
-    render() {
-        const data = Store.get();
-        return `
-            <section>
-                <div class="profile-header">
-                    <div class="profile-avatar">${data.user.avatar}</div>
-                    <div>
-                        <h2>${data.user.name}</h2>
-                        <p style="color: var(--text-muted);">@${data.user.username} • المستوى ${data.user.level}</p>
-                    </div>
-                </div>
+import { store } from "../db/store.js";
+import { streakService } from "../services/streakService.js";
+import { badgeService } from "../services/badgeService.js";
+import { renderBadgeCard, bindBadgeCards } from "../components/badgeCard.js";
+import { xpProgressWithinLevel } from "../services/rewardEngine.js";
 
-                <div class="streak-banner">
-                    🔥 سلسلة حماسة الأدب: ${data.user.streak} أيام متتالية من النشاط!
-                </div>
+let showAllBadges = false;
 
-                <h3>📊 الإحصائيات (قاعدة إخفاء الصفر)</h3>
-                <div class="grid" style="margin: 15px 0 30px 0;">
-                    ${data.user.stats.wordsWritten > 0 ? `<div class="card"><h4>الكلمات المكتوبة</h4><p style="font-size: 1.5rem; font-weight: bold;">${data.user.stats.wordsWritten}</p></div>` : ''}
-                    ${data.user.stats.booksRead > 0 ? `<div class="card"><h4>الكتب المقروءة</h4><p style="font-size: 1.5rem; font-weight: bold;">${data.user.stats.booksRead}</p></div>` : ''}
-                    ${data.user.stats.eventsJoined > 0 ? `<div class="card"><h4>المشاركات بالفعاليات</h4><p style="font-size: 1.5rem; font-weight: bold;">${data.user.stats.eventsJoined}</p></div>` : ''}
-                </div>
+function statBox(value, label){
+  // قاعدة إخفاء الصفر: أي إحصائية قيمتها 0 تُخفى تلقائياً ولا تُعرض إطلاقاً
+  if(!value) return "";
+  return `<div class="card stat-box"><b>${value.toLocaleString("ar")}</b><span>${label}</span></div>`;
+}
 
-                <h3>🏅 الأوسمة والإنجازات</h3>
-                <div class="grid" style="margin-top: 15px;">
-                    ${data.badges.map(b => BadgeCard.render(b)).join('')}
-                </div>
-            </section>
-        `;
-    }
-};
+function heatmapHtml(user){
+  const cells = streakService.buildHeatmapCells(user, 84);
+  return `<div class="ink-heatmap">${cells.map(c =>
+    `<div class="ink-heatmap__cell" data-level="${c.level}" title="${c.date} · ${c.count} نشاط"></div>`
+  ).join("")}</div>`;
+}
+
+export function renderProfilePage(root, userId){
+  const user = userId ? store.getUser(userId) : store.getCurrentUser();
+  if(!user){
+    root.innerHTML = `<div class="container section"><div class="empty-state">لم يُعثر على هذا العضو.</div></div>`;
+    return;
+  }
+
+  const stats = user.stats;
+  const statCards = [
+    statBox(stats.wordsWritten, "كلمة مكتوبة"),
+    statBox(stats.booksRead, "كتاب مقروء"),
+    statBox(stats.booksPublished, "عمل أدبي منشور"),
+    statBox(stats.articlesPublished, "مقال منشور"),
+    statBox(stats.challengesJoined, "تحدٍّ خِيض"),
+  ].filter(Boolean);
+
+  const describedBadges = badgeService.describeAllForUser(user);
+  const visibleBadges = showAllBadges ? describedBadges : describedBadges.slice(0, 4);
+  const userPosts = store.getPosts().filter(p => p.authorId === user.id).slice(0, 3);
+  const prog = xpProgressWithinLevel(user);
+
+  root.innerHTML = `
+    <section class="section">
+      <div class="container">
+
+        <div class="card profile-head">
+          <div class="avatar avatar--lg">${user.avatarEmoji}</div>
+          <div class="profile-head__id">
+            <div class="profile-head__name">
+              <h2 style="margin:0;">${user.displayName}</h2>
+              <span class="badge-pill badge-pill--gold">${user.literaryTitle}</span>
+            </div>
+            <div class="profile-head__handle">@${user.username} · انضم في ${new Date(user.joinedAt).toLocaleDateString("ar")}</div>
+            <div class="profile-head__level">
+              <span class="text-muted" style="font-size:.82rem;">المستوى ${user.level} · ${prog.into}/${prog.step} XP للمستوى التالي</span>
+              <div class="progress"><div class="progress__bar" style="width:${prog.ratio*100}%"></div></div>
+            </div>
+          </div>
+          <div class="text-center">
+            <div style="font-family:var(--font-display);font-size:1.6rem;color:var(--gold);">${user.xp}</div>
+            <div class="text-muted" style="font-size:.78rem;">إجمالي نقاط الخبرة</div>
+          </div>
+        </div>
+
+        ${statCards.length ? `<div class="grid grid-4 stats-grid">${statCards.join("")}</div>` : `<p class="zero-hint">لا إحصائيات لعرضها بعد — ابدأ أول نشاط أدبي لك.</p>`}
+
+        <div class="section-head"><h2>🔥 حماسة الأدب</h2></div>
+        <div class="card streak-panel" style="margin-bottom:34px;">
+          <div class="streak-panel__now">
+            <b>${user.streak || 0}</b>
+            <span class="text-muted">يوم متتالٍ نشِط</span>
+            <div class="text-muted" style="font-size:.76rem;margin-top:6px;">أطول سلسلة: ${user.longestStreak || 0} يوم</div>
+          </div>
+          <div class="streak-panel__map">
+            <div class="text-muted" style="font-size:.78rem;margin-bottom:8px;">آخر 84 يوماً من النشاط الأدبي</div>
+            ${heatmapHtml(user)}
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>الأوسمة</h2>
+          <button class="btn btn-ghost btn-sm" id="toggle-badges-btn">${showAllBadges ? "عرض أقل" : "عرض الكل"}</button>
+        </div>
+        <div class="grid grid-4 profile-badges-grid" id="badges-grid">
+          ${visibleBadges.map(renderBadgeCard).join("")}
+        </div>
+
+        ${userPosts.length ? `
+          <div class="section-head" style="margin-top:40px;"><h2>آخر منشورات ${user.displayName}</h2></div>
+          <div>
+            ${userPosts.map(p => `
+              <article class="card feed-item">
+                <h3>${p.title}</h3>
+                <p>${p.content.slice(0,160)}${p.content.length>160?"…":""}</p>
+              </article>
+            `).join("")}
+          </div>
+        ` : ""}
+
+      </div>
+    </section>
+  `;
+
+  bindBadgeCards(root.querySelector("#badges-grid"), describedBadges);
+
+  root.querySelector("#toggle-badges-btn").addEventListener("click", () => {
+    showAllBadges = !showAllBadges;
+    renderProfilePage(root, userId);
+  });
+}
