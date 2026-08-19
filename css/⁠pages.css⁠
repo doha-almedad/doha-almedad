@@ -1,7 +1,6 @@
-
 /* Profile Page */
 .profile-header {
-    background: white;
+    background: #ffffff;
     padding: 25px;
     border-radius: var(--radius);
     margin-bottom: 25px;
@@ -20,12 +19,12 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    color: white;
+    color: #ffffff;
 }
 
 .streak-banner {
     background: linear-gradient(135deg, #ff9f43, #ff5252);
-    color: white;
+    color: #ffffff;
     padding: 15px 20px;
     border-radius: var(--radius);
     margin-bottom: 25px;
@@ -47,5 +46,5 @@
 
 .admin-table th {
     background-color: var(--primary-color);
-    color: white;
+    color: #ffffff;
 }
