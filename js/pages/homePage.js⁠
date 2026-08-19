@@ -1,4 +1,3 @@
-
 const HomePage = {
     render() {
         const data = Store.get();
