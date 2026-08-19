@@ -1,0 +1,125 @@
+/* =========================================================
+   دوحة المداد — pages.css
+   تنسيقات مخصّصة لكل صفحة
+   ========================================================= */
+
+/* ---------- الصفحة الرئيسية ---------- */
+.hero{
+  position:relative;
+  padding:90px 0 70px;
+  overflow:hidden;
+  border-bottom:1px solid var(--ink-800);
+}
+.hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background:radial-gradient(600px 300px at 85% 0%, rgba(200,155,60,.12), transparent 60%);
+  pointer-events:none;
+}
+.hero__eyebrow{ color:var(--gold); font-size:.85rem; letter-spacing:.08em; margin-bottom:14px; }
+.hero__title{ max-width:820px; }
+.hero__lede{ max-width:620px; font-size:1.08rem; }
+.hero__cta{ display:flex; gap:14px; margin-top:26px; flex-wrap:wrap; }
+.hero__stats{ display:flex; gap:34px; margin-top:46px; flex-wrap:wrap; }
+.hero__stat b{ display:block; font-family:var(--font-display); font-size:1.7rem; color:var(--gold); }
+.hero__stat span{ font-size:.82rem; color:var(--paper-faint); }
+
+.highlight-card{ display:flex; flex-direction:column; height:100%; }
+.highlight-card__meta{ display:flex; gap:8px; margin-bottom:12px; }
+.highlight-card__title{ margin-bottom:8px; }
+.highlight-card__foot{
+  margin-top:auto; padding-top:14px; display:flex; align-items:center; justify-content:space-between;
+  font-size:.8rem; color:var(--paper-faint); border-top:1px solid var(--ink-700);
+}
+
+/* ---------- صفحة البروفايل ---------- */
+.profile-head{
+  display:flex; gap:22px; align-items:center; flex-wrap:wrap;
+  padding:28px; margin-bottom:30px;
+}
+.profile-head__id{ flex:1; min-width:220px; }
+.profile-head__name{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.profile-head__handle{ color:var(--paper-faint); font-size:.9rem; }
+.profile-head__level{ margin-top:8px; }
+.profile-head__level .progress{ width:220px; margin-top:6px; }
+
+.stats-grid{ margin-bottom:34px; }
+.stat-box{ text-align:center; padding:20px 12px; }
+.stat-box b{ display:block; font-family:var(--font-display); font-size:1.6rem; color:var(--paper); }
+.stat-box span{ font-size:.78rem; color:var(--paper-faint); }
+
+.streak-panel{ display:flex; gap:26px; flex-wrap:wrap; align-items:center; }
+.streak-panel__now{ text-align:center; min-width:130px; }
+.streak-panel__now b{ font-family:var(--font-display); font-size:2.4rem; color:var(--ember); display:block; }
+.streak-panel__map{ flex:1; min-width:260px; overflow-x:auto; }
+
+.profile-badges-grid{ margin-top:8px; }
+
+/* ---------- صفحة الفعاليات ---------- */
+.event-card{ display:flex; flex-direction:column; height:100%; }
+.event-card__progress{ margin-top:14px; }
+.event-card__meta{ display:flex; justify-content:space-between; font-size:.78rem; color:var(--paper-faint); margin-top:6px; }
+
+.event-detail-head{ padding:32px; margin-bottom:26px; }
+.event-detail-head__badges{ display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+.event-detail-grid{ display:grid; grid-template-columns:2fr 1fr; gap:26px; align-items:start; }
+@media (max-width:820px){ .event-detail-grid{ grid-template-columns:1fr; } }
+.verify-method{ display:flex; gap:10px; align-items:flex-start; padding:14px; border-radius:var(--radius-md); border:1px solid var(--ink-700); margin-bottom:10px; }
+.verify-method__icon{ font-size:1.2rem; }
+.participants-list{ display:flex; flex-wrap:wrap; gap:-6px; }
+.participants-list .avatar{ margin-inline-end:-10px; border:2px solid var(--ink-800); }
+
+/* ---------- لوحة المتصدرين ---------- */
+.leader-row{
+  display:grid; grid-template-columns:44px 1fr auto; gap:14px; align-items:center;
+  padding:14px 16px; border-radius:var(--radius-md);
+  border:1px solid transparent;
+}
+.leader-row:nth-child(odd){ background:var(--ink-800); }
+.leader-row--top1{ border-color:var(--gold-soft); }
+.leader-row__rank{ font-family:var(--font-display); font-size:1.2rem; color:var(--paper-faint); text-align:center; }
+.leader-row--top1 .leader-row__rank,
+.leader-row--top2 .leader-row__rank,
+.leader-row--top3 .leader-row__rank{ color:var(--gold); }
+.leader-row__user{ display:flex; align-items:center; gap:12px; }
+.leader-row__xp{ font-family:var(--font-display); color:var(--gold); }
+
+/* ---------- صفحة المقالات ---------- */
+.article-search{ display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+.article-search input{ flex:1; min-width:220px; }
+.article-card__tag{ margin-bottom:10px; }
+
+/* ---------- الكتابة والقراءة ---------- */
+.composer{ padding:26px; }
+.composer__meta{ display:flex; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
+.composer__meta .field{ flex:1; min-width:160px; margin-bottom:0; }
+.feed-item{ padding:20px; margin-bottom:16px; }
+.feed-item__head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.feed-item__name{ font-weight:700; }
+.feed-item__time{ font-size:.78rem; color:var(--paper-faint); }
+.feed-item__actions{ display:flex; gap:16px; margin-top:12px; font-size:.85rem; color:var(--paper-faint); }
+.feed-item__actions span{ cursor:pointer; }
+.feed-item__actions span:hover{ color:var(--gold); }
+.rating-stars{ color:var(--gold); letter-spacing:2px; }
+
+/* ---------- لوحة تحكم المالكين ---------- */
+.admin-shell{ display:grid; grid-template-columns:220px 1fr; gap:26px; }
+@media (max-width:820px){ .admin-shell{ grid-template-columns:1fr; } }
+.admin-nav{ display:flex; flex-direction:column; gap:4px; }
+.admin-nav button{
+  text-align:right; background:none; border:0; color:var(--paper-dim);
+  padding:11px 14px; border-radius:var(--radius-sm); cursor:pointer; font-size:.92rem;
+}
+.admin-nav button.is-active{ background:var(--ink-700); color:var(--gold); }
+.admin-table{ width:100%; border-collapse:collapse; }
+.admin-table th,.admin-table td{
+  text-align:right; padding:11px 12px; border-bottom:1px solid var(--ink-700); font-size:.9rem;
+}
+.admin-table th{ color:var(--paper-faint); font-weight:600; font-size:.8rem; }
+.status-pill{ padding:3px 10px; border-radius:999px; font-size:.74rem; }
+.status-pill--pending{ background:rgba(200,155,60,.15); color:var(--gold); }
+.status-pill--approved{ background:rgba(107,143,113,.18); color:var(--sage); }
+.status-pill--rejected{ background:rgba(140,47,57,.2); color:#e18b93; }
+
+/* ---------- شريط قاعدة إخفاء الصفر (تنويه بصري خفيف) ---------- */
+.zero-hint{ font-size:.74rem; color:var(--paper-faint); margin-top:-14px; margin-bottom:24px; }
