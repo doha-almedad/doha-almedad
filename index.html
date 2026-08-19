@@ -1,35 +1,44 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
-  <title>دوحة المداد</title>
-
-  <!-- الخطوط -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap"
-    rel="stylesheet"
-  />
-
-  <!-- الهوية البصرية -->
-  <link rel="stylesheet" href="css/styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دوحة المِداد - ملتقى القرّاء والكُتّاب</title>
+    <!-- استدعاء ملفات CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/pages.css">
 </head>
-
 <body>
+    <!-- الحاويات الرئيسية للموقع -->
+    <div id="header-root"></div>
+    <main id="app-root"></main>
+    <div id="footer-root"></div>
+    <div id="modal-root"></div>
 
-  <!-- التطبيق بالكامل سيُبنى هنا بواسطة JavaScript -->
-  <div id="app"></div>
-
-  <!-- ملفات الموقع -->
-  <script src="js/data.js"></script>
-  <script src="js/router.js"></script>
-  <script src="js/components.js"></script>
-  <script src="js/app.js"></script>
-
+    <!-- استدعاء ملفات الـ JavaScript بالتسلسل الصحيح -->
+    <script src="js/db/initialData.js"></script>
+    <script src="js/db/store.js"></script>
+    <script src="js/services/rewardEngine.js"></script>
+    <script src="js/services/streakService.js"></script>
+    <script src="js/services/badgeService.js"></script>
+    
+    <script src="js/components/badgeCard.js"></script>
+    <script src="js/components/modals.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    
+    <script src="js/pages/homePage.js"></script>
+    <script src="js/pages/eventsPage.js"></script>
+    <script src="js/pages/writingPage.js"></script>
+    <script src="js/pages/readingPage.js"></script>
+    <script src="js/pages/leaderboardPage.js"></script>
+    <script src="js/pages/articlesPage.js"></script>
+    <script src="js/pages/profilePage.js"></script>
+    <script src="js/pages/eventDetailsPage.js"></script>
+    <script src="js/pages/adminDashboardPage.js"></script>
+    
+    <script src="js/router.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
