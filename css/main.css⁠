@@ -1,4 +1,3 @@
-
 :root {
     --primary-color: #1b4332;
     --primary-hover: #2d6a4f;
@@ -49,7 +48,6 @@ button {
     outline: none;
 }
 
-/* Responsive Grid Helper */
 .grid {
     display: grid;
     gap: 20px;
