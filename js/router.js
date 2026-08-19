@@ -1,47 +1,35 @@
-// js/router.js
-
 const Router = {
-  routes: {},
+    routes: {
+        '#home': HomePage,
+        '#events': EventsPage,
+        '#writing': WritingPage,
+        '#reading': ReadingPage,
+        '#leaderboard': LeaderboardPage,
+        '#articles': ArticlesPage,
+        '#profile': ProfilePage,
+        '#event-details': EventDetailsPage,
+        '#admin': AdminDashboardPage
+    },
 
-  register(path, renderFunction) {
-    this.routes[path] = renderFunction;
-  },
+    init() {
+        window.addEventListener('hashchange', () => this.render());
+        if (!window.location.hash || !this.routes[window.location.hash]) {
+            window.location.hash = '#home';
+        } else {
+            this.render();
+        }
+    },
 
-  navigate(path) {
-    if (!path) return;
-
-    history.pushState({}, "", path);
-    this.render();
-  },
-
-  back() {
-    history.back();
-  },
-
-  getCurrentPath() {
-    return window.location.pathname;
-  },
-
-  render() {
-    const path = this.getCurrentPath();
-
-    const renderFunction =
-      this.routes[path] ||
-      this.routes["/404"] ||
-      this.routes["/"];
-
-    if (typeof renderFunction === "function") {
-      renderFunction();
+    render() {
+        const hash = window.location.hash;
+        const page = this.routes[hash] || HomePage;
+        
+        // إعادة رسم الهيدر وتحديث المحتوى
+        document.getElementById('header-root').innerHTML = Header.render();
+        document.getElementById('app-root').innerHTML = page.render();
+        document.getElementById('footer-root').innerHTML = Footer.render();
+        
+        // التمرير لأعلى الصفحة عند التنقل
+        window.scrollTo(0, 0);
     }
-  },
-
-  start() {
-    window.addEventListener("popstate", () => {
-      this.render();
-    });
-
-    this.render();
-  }
 };
-
-window.Router = Router;
