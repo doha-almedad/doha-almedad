@@ -1,21 +1,155 @@
+/* =========================================================
+   دوحة المداد — eventDetailsPage.js
+   8. تفاصيل الفعالية: الصفحة المستقلة للفعالية وآليات الإثبات الـ 4
+   ========================================================= */
 
-const EventDetailsPage = {
-    render() {
-        const data = Store.get();
-        const currentId = sessionStorage.getItem('current_event') || 'ev_101';
-        const event = data.events.find(e => e.id === currentId) || data.events[0];
+import { store } from "../db/store.js";
+import { processActivity } from "../services/rewardEngine.js";
+import { showToast } from "../components/modals.js";
 
-        return `
-            <section>
-                <h2>📌 ${event.title}</h2>
-                <div class="card" style="margin-top: 15px;">
-                    <p style="font-size: 1.1rem; margin-bottom: 15px;">${event.description}</p>
-                    <p><strong>حالة الفعالية:</strong> ${event.status === 'active' ? '🟢 جارية الان' : '🟡 قادمة'}</p>
-                    <p><strong>نوع الإثبات المطلوب:</strong> ${event.proofType}</p>
-                    <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-color);">
-                    <button onclick="RewardEngine.processEvent('JOIN_EVENT', {id: '${event.id}'}); alert('تم تقديم إثبات المشاركة!');" style="background: var(--primary-color); color: white; padding: 10px 20px; border-radius: 6px;">تقديم إثبات المشاركة</button>
-                </div>
-            </section>
-        `;
-    }
+const VERIFY_INFO = {
+  automatic: {
+    icon: "🤖", title: "التحقّق التلقائي",
+    desc: "يتحقّق النظام برمجياً وفورياً من بيانات نشاطك داخل المنصة، مثل عدد الكلمات المكتوبة، دون حاجة لأي إجراء إضافي منك."
+  },
+  select_existing_content: {
+    icon: "📚", title: "اختيار من أعمالك",
+    desc: "اختر من قائمة أعمالك الأدبية المنشورة سابقاً على المنصة العمل المناسب لهذه الفعالية."
+  },
+  manual_submission: {
+    icon: "🧾", title: "إثبات خارجي",
+    desc: "للأنشطة التي تمت خارج المنصة، أرفق وصفاً أو رابطاً يوثّق إتمامك للنشاط."
+  },
+  admin_verification: {
+    icon: "🛡️", title: "الاعتماد الإداري",
+    desc: "تخضع مشاركتك لمراجعة إدارة الفعالية، وتبقى حالة الإنجاز «بانتظار التحقق» حتى اعتمادها."
+  }
 };
+
+function submissionForm(ev, user){
+  const posts = store.getPosts().filter(p => p.authorId === user.id);
+
+  if(ev.verificationMethod === "automatic"){
+    return `<p class="text-muted">لا حاجة لأي إجراء — سيُحتسب تقدّمك تلقائياً كلما نشرت وكتبت ضمن المنصة.</p>`;
+  }
+
+  if(ev.verificationMethod === "select_existing_content"){
+    return `
+      <div class="field">
+        <label>اختر عملاً من أعمالك المنشورة</label>
+        <select id="select-content">
+          <option value="">— اختر —</option>
+          ${posts.map(p => `<option value="${p.id}">${p.title}</option>`).join("")}
+        </select>
+      </div>
+      <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال</button>
+    `;
+  }
+
+  if(ev.verificationMethod === "manual_submission"){
+    return `
+      <div class="field"><label>وصف أو رابط الإثبات</label><input type="text" id="manual-proof" placeholder="مثال: رابط تسجيل الأمسية أو وصف مختصر"></div>
+      <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال الإثبات</button>
+    `;
+  }
+
+  if(ev.verificationMethod === "admin_verification"){
+    const existing = store.getEventSubmissions().find(s => s.eventId === ev.id && s.userId === user.id);
+    if(existing){
+      const map = { pending: "status-pill--pending", approved: "status-pill--approved", rejected: "status-pill--rejected" };
+      const label = { pending: "بانتظار التحقق", approved: "معتمَد", rejected: "مرفوض" };
+      return `<span class="status-pill ${map[existing.status]}">${label[existing.status]}</span>`;
+    }
+    return `
+      <div class="field"><label>وصف مشاركتك</label><textarea id="admin-proof" placeholder="اشرح بإيجاز إنجازك ليتم اعتماده"></textarea></div>
+      <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال للمراجعة</button>
+    `;
+  }
+  return "";
+}
+
+export function renderEventDetailsPage(root, eventId){
+  const ev = store.getEvent(eventId);
+  const user = store.getCurrentUser();
+
+  if(!ev){
+    root.innerHTML = `<div class="container section"><div class="empty-state"><div class="empty-state__icon">🕊️</div><p>لم يُعثر على هذه الفعالية.</p></div></div>`;
+    return;
+  }
+
+  const info = VERIFY_INFO[ev.verificationMethod];
+  const joined = ev.participants.includes(user.id);
+  const participantsAvatars = ev.participants.slice(0, 8).map(id => {
+    const u = store.getUser(id);
+    return u ? `<div class="avatar avatar--sm" title="${u.displayName}">${u.avatarEmoji}</div>` : "";
+  }).join("");
+
+  root.innerHTML = `
+    <section class="section">
+      <div class="container">
+        <a href="#/events" class="text-muted" style="font-size:.85rem;">→ العودة إلى الفعاليات</a>
+
+        <div class="card event-detail-head" style="margin-top:16px;">
+          <div class="event-detail-head__badges">
+            <span class="badge-pill badge-pill--gold">${info.icon} ${info.title}</span>
+            <span class="badge-pill">👥 ${ev.participants.length} مشارك</span>
+          </div>
+          <h1>${ev.title}</h1>
+          <p>${ev.description}</p>
+          <div class="text-muted" style="font-size:.85rem;">من ${new Date(ev.startDate).toLocaleDateString("ar")} إلى ${new Date(ev.endDate).toLocaleDateString("ar")}</div>
+        </div>
+
+        <div class="event-detail-grid">
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <h3>آلية الإثبات</h3>
+              <div class="verify-method">
+                <span class="verify-method__icon">${info.icon}</span>
+                <div><b>${info.title}</b><p style="margin:4px 0 0;">${info.desc}</p></div>
+              </div>
+            </div>
+
+            <div class="card" id="proof-panel">
+              <h3>${joined ? "أثبت مشاركتك" : "انضمّ أولاً للمشاركة"}</h3>
+              ${joined ? submissionForm(ev, user) : `<button class="btn btn-primary" id="join-btn">انضمام إلى الفعالية</button>`}
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>المشاركون</h3>
+            <div class="participants-list" style="margin-top:12px;">${participantsAvatars || '<span class="text-muted">لا مشاركين بعد</span>'}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  root.querySelector("#join-btn")?.addEventListener("click", () => {
+    store.joinEvent(ev.id, user.id);
+    processActivity(user.id, "join_event", { eventId: ev.id });
+    showToast("انضممت إلى الفعالية");
+    renderEventDetailsPage(root, eventId);
+  });
+
+  root.querySelector("#submit-proof-btn")?.addEventListener("click", () => {
+    if(ev.verificationMethod === "select_existing_content"){
+      const val = root.querySelector("#select-content").value;
+      if(!val){ showToast("يرجى اختيار عمل أولاً"); return; }
+      processActivity(user.id, "submit_event_proof", { eventId: ev.id, postId: val });
+      showToast("أُرسل عملك واحتُسبت مشاركتك ✓");
+    }
+    if(ev.verificationMethod === "manual_submission"){
+      const val = root.querySelector("#manual-proof").value.trim();
+      if(!val){ showToast("يرجى إدخال وصف أو رابط الإثبات"); return; }
+      processActivity(user.id, "submit_event_proof", { eventId: ev.id, proof: val });
+      showToast("أُرسل إثباتك واحتُسبت مشاركتك ✓");
+    }
+    if(ev.verificationMethod === "admin_verification"){
+      const val = root.querySelector("#admin-proof").value.trim();
+      if(!val){ showToast("يرجى وصف مشاركتك أولاً"); return; }
+      store.submitEventProof(ev.id, user.id, { text: val });
+      showToast("أُرسلت مشاركتك — بانتظار اعتماد الإدارة 🛡️");
+    }
+    renderEventDetailsPage(root, eventId);
+  });
+}
