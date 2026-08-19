@@ -1,1 +1,30 @@
 
+const HomePage = {
+    render() {
+        const data = Store.get();
+        return `
+            <section>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: var(--primary-color);">أهلاً بك في دوحة المِداد</h1>
+                    <p style="color: var(--text-muted);">الملتقى الأبرز للكُتّاب والقرّاء لتنمية مهاراتهم وإبراز نصوصهم.</p>
+                </div>
+                
+                <div class="card" style="margin-bottom: 25px;">
+                    <h3>🔥 حماسة الأدب</h3>
+                    <p>أنت على سلسلة نشاط مستمرة لـ <strong>${data.user.streak}</strong> أيام! واصل مشاركاتك اليومية لتنمية رصيدك.</p>
+                </div>
+
+                <h3>📌 أبرز الفعاليات الجارية</h3>
+                <div class="grid" style="margin-top: 15px;">
+                    ${data.events.map(ev => `
+                        <div class="card">
+                            <h4>${ev.title}</h4>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 10px 0;">${ev.description}</p>
+                            <a href="#event-details" onclick="sessionStorage.setItem('current_event', '${ev.id}')" style="color: var(--primary-color); font-weight: bold;">عرض التفاصيل ←</a>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+        `;
+    }
+};
