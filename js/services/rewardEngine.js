@@ -70,8 +70,8 @@ export function processActivity(userId, activityType, meta = {}){
   // 6) Leaderboard Service — تُحسب عند الطلب مباشرة من بيانات المستخدمين (getLeaderboard)
 
   // 7) Notification Service
-  store.addNotification(userId, `+${config.xp} نقطة — ${config.label}`, "✨");
-  if(leveledUp) store.addNotification(userId, `ترقّيت إلى المستوى ${user.level}`, "🏛️");
+  store.addNotification(userId, `+${config.xp} نقطة — ${config.label}`, "star");
+  if(leveledUp) store.addNotification(userId, `ترقّيت إلى المستوى ${user.level}`, "shield");
   newBadges.forEach(b => store.addNotification(userId, `وسام جديد: ${b.name}`, b.icon));
 
   return { user, leveledUp, newBadges, xpGained: config.xp };
