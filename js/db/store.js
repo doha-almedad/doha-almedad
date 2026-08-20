@@ -14,6 +14,7 @@ function seedDB(){
     users: INITIAL_USERS,
     events: INITIAL_EVENTS,
     articles: INITIAL_ARTICLES,
+    articleSubmissions: [], // مقالات مُرسلة من الأعضاء بانتظار مراجعة الإدارة
     posts: [],          // القطع الأدبية المنشورة في قسم الكتابة
     reviews: [],         // مراجعات القراءة
     userEvents: [],       // سجلّ الأحداث الخام (user_events)
@@ -89,10 +90,43 @@ export const store = {
   getArticles(){ return [...db.articles].sort((a,b) => new Date(b.date) - new Date(a.date)); },
   getArticle(id){ return db.articles.find(a => a.id === id) || null; },
 
+  /** إرسال مقال من عضو لمراجعة الإدارة قبل نشره */
+  submitArticle({ authorId, title, category, content, image }){
+    const submission = {
+      id: "as_" + Date.now(),
+      authorId, title, category, content, image,
+      status: "pending", // pending | approved | rejected
+      submittedAt: new Date().toISOString()
+    };
+    db.articleSubmissions.push(submission);
+    persist();
+    return submission;
+  },
+  getArticleSubmissions(){ return db.articleSubmissions; },
+  approveArticleSubmission(id){
+    const sub = db.articleSubmissions.find(s => s.id === id);
+    if(!sub) return null;
+    sub.status = "approved";
+    db.articles.unshift({
+      id: "ar_" + Date.now(), title: sub.title, category: sub.category,
+      excerpt: sub.content.slice(0, 130), content: sub.content,
+      author: sub.authorId, image: sub.image, date: new Date().toISOString()
+    });
+    persist();
+    return sub;
+  },
+  rejectArticleSubmission(id){
+    const sub = db.articleSubmissions.find(s => s.id === id);
+    if(!sub) return null;
+    sub.status = "rejected";
+    persist();
+    return sub;
+  },
+
   // ---------- الكتابة (منشورات) ----------
   getPosts(){ return [...db.posts].sort((a,b) => new Date(b.date) - new Date(a.date)); },
   addPost(post){
-    const item = { id: "p_" + Date.now(), date: new Date().toISOString(), likes: 0, comments: [], ...post };
+    const item = { id: "p_" + Date.now(), date: new Date().toISOString(), likedBy: [], comments: [], ...post };
     db.posts.unshift(item);
     persist();
     return item;
@@ -101,11 +135,40 @@ export const store = {
   // ---------- القراءة (مراجعات) ----------
   getReviews(){ return [...db.reviews].sort((a,b) => new Date(b.date) - new Date(a.date)); },
   addReview(review){
-    const item = { id: "r_" + Date.now(), date: new Date().toISOString(), likes: 0, ...review };
+    const item = { id: "r_" + Date.now(), date: new Date().toISOString(), likedBy: [], comments: [], ...review };
     db.reviews.unshift(item);
     persist();
     return item;
   },
+
+  /** إعجاب واحد فقط لكل مستخدم — الضغط مجدداً يُلغيه (toggle) */
+  toggleLike(kind, itemId, userId){
+    const list = kind === "post" ? db.posts : db.reviews;
+    const item = list.find(i => i.id === itemId);
+    if(!item) return null;
+    item.likedBy = item.likedBy || [];
+    const idx = item.likedBy.indexOf(userId);
+    if(idx === -1) item.likedBy.push(userId);
+    else item.likedBy.splice(idx, 1);
+    persist();
+    return item;
+  },
+
+  /** إضافة تعليق (أو ردّ عبر تمرير parentId) على منشور أو مراجعة */
+  addComment(kind, itemId, { userId, text, parentId = null }){
+    const list = kind === "post" ? db.posts : db.reviews;
+    const item = list.find(i => i.id === itemId);
+    if(!item) return null;
+    item.comments = item.comments || [];
+    const comment = { id: "c_" + Date.now() + Math.random().toString(16).slice(2), userId, text, parentId, date: new Date().toISOString() };
+    item.comments.push(comment);
+    persist();
+    return comment;
+  },
+
+  deletePost(id){ db.posts = db.posts.filter(p => p.id !== id); persist(); },
+  deleteReview(id){ db.reviews = db.reviews.filter(r => r.id !== id); persist(); },
+  deleteEvent(id){ db.events = db.events.filter(e => e.id !== id); persist(); },
 
   // ---------- سجلّ الأحداث (user_events) ----------
   logUserEvent(userId, type, meta = {}){
@@ -139,7 +202,7 @@ export const store = {
   },
 
   // ---------- الإشعارات ----------
-  addNotification(userId, text, icon = "🔔"){
+  addNotification(userId, text, icon = "bell"){
     db.notifications.unshift({ id:"n_"+Date.now(), userId, text, icon, read:false, date:new Date().toISOString() });
     persist();
   },

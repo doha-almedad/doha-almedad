@@ -10,7 +10,6 @@ export const INITIAL_USERS = [
     username: "ghaith",
     displayName: "غيث",
     literaryTitle: "كاتب متقدم",
-    avatarEmoji: "🖋️",
     role: "owner",
     xp: 0,
     level: 1,
@@ -27,7 +26,6 @@ export const INITIAL_USERS = [
     username: "layla_k",
     displayName: "ليلى",
     literaryTitle: "قارئة نهمة",
-    avatarEmoji: "📖",
     role: "member",
     xp: 0,
     level: 1,
@@ -44,7 +42,6 @@ export const INITIAL_USERS = [
     username: "sami_r",
     displayName: "سامي",
     literaryTitle: "عضو جديد",
-    avatarEmoji: "✍️",
     role: "member",
     xp: 0,
     level: 1,
@@ -150,7 +147,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_first_word",
     name: "أول القلم",
-    icon: "🪶",
+    icon: "feather",
     conditionType: "wordsWritten",
     conditionValue: 1,
     levelRequired: 1,
@@ -159,7 +156,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_ten_books",
     name: "قارئ نهم",
-    icon: "📚",
+    icon: "book",
     conditionType: "booksRead",
     conditionValue: 10,
     levelRequired: 1,
@@ -168,7 +165,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_ten_thousand_words",
     name: "غزير المداد",
-    icon: "🖋️",
+    icon: "quill",
     conditionType: "wordsWritten",
     conditionValue: 10000,
     levelRequired: 1,
@@ -177,7 +174,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_five_challenges",
     name: "فارس التحديات",
-    icon: "🏹",
+    icon: "target",
     conditionType: "challengesJoined",
     conditionValue: 5,
     levelRequired: 1,
@@ -186,7 +183,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_three_pieces",
     name: "صاحب الأثر",
-    icon: "📜",
+    icon: "document",
     conditionType: "articlesOrWorksPublished",
     conditionValue: 3,
     levelRequired: 1,
@@ -195,7 +192,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_streak_7",
     name: "شعلة لا تنطفئ",
-    icon: "🔥",
+    icon: "flame",
     conditionType: "longestStreak",
     conditionValue: 7,
     levelRequired: 1,
@@ -204,7 +201,7 @@ export const BADGE_DEFINITIONS = [
   {
     id: "bd_level_5",
     name: "كاتب متقدم",
-    icon: "🏛️",
+    icon: "shield",
     conditionType: "level",
     conditionValue: 5,
     levelRequired: 5,
