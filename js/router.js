@@ -6,6 +6,7 @@
    ========================================================= */
 
 import { renderHeader } from "./components/header.js";
+import { icon } from "./components/icons.js";
 import { renderHomePage } from "./pages/homePage.js";
 import { renderEventsPage } from "./pages/eventsPage.js";
 import { renderEventDetailsPage } from "./pages/eventDetailsPage.js";
@@ -57,14 +58,16 @@ function notFoundPage(r){
   r.innerHTML = `
     <div class="container section text-center">
       <div class="empty-state">
-        <div class="empty-state__icon">🗺️</div>
-        <h2>الصفحة غير موجودة</h2>
+        <div class="empty-state__icon">${icon("search", { size: 34 })}</div>
+        <h2 style="justify-content:center;">الصفحة غير موجودة</h2>
         <p>لعل الرابط الذي اتّبعته قد تغيّر أو لم يعد قائماً.</p>
         <a href="#/" class="btn btn-primary">العودة للرئيسية</a>
       </div>
     </div>
   `;
 }
+
+let lastActivePath = "#/";
 
 function navigate(){
   const path = currentPath();
@@ -78,7 +81,8 @@ function navigate(){
   }
 
   const baseSegment = path.split("/").filter(Boolean)[0] || "";
-  renderHeader("#/" + baseSegment);
+  lastActivePath = "#/" + baseSegment;
+  renderHeader(lastActivePath);
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   appRoot.focus();
 }
@@ -86,6 +90,11 @@ function navigate(){
 export function initRouter(){
   window.addEventListener("hashchange", navigate);
   navigate();
+}
+
+/** يعيد رسم الشريط العلوي فقط دون إعادة تحميل الصفحة (يُستخدم عند تدوير الجهاز) */
+export function rerenderCurrentHeader(){
+  renderHeader(lastActivePath);
 }
 
 export function goTo(path){
