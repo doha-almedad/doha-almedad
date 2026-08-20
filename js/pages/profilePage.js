@@ -6,15 +6,16 @@
 import { store } from "../db/store.js";
 import { streakService } from "../services/streakService.js";
 import { badgeService } from "../services/badgeService.js";
-import { renderBadgeCard, bindBadgeCards } from "../components/badgeCard.js";
+import { renderBadgeCard, bindBadgeCards, sortBadgesUnlockedFirst } from "../components/badgeCard.js";
 import { xpProgressWithinLevel } from "../services/rewardEngine.js";
+import { icon, initial } from "../components/icons.js";
 
 let showAllBadges = false;
 
-function statBox(value, label){
+function statBox(value, label, iconName){
   // قاعدة إخفاء الصفر: أي إحصائية قيمتها 0 تُخفى تلقائياً ولا تُعرض إطلاقاً
   if(!value) return "";
-  return `<div class="card stat-box"><b>${value.toLocaleString("ar")}</b><span>${label}</span></div>`;
+  return `<div class="card stat-box"><span class="stat-box__icon">${icon(iconName, { size: 18 })}</span><b>${value.toLocaleString("ar")}</b><span>${label}</span></div>`;
 }
 
 function heatmapHtml(user){
@@ -33,14 +34,15 @@ export function renderProfilePage(root, userId){
 
   const stats = user.stats;
   const statCards = [
-    statBox(stats.wordsWritten, "كلمة مكتوبة"),
-    statBox(stats.booksRead, "كتاب مقروء"),
-    statBox(stats.booksPublished, "عمل أدبي منشور"),
-    statBox(stats.articlesPublished, "مقال منشور"),
-    statBox(stats.challengesJoined, "تحدٍّ خِيض"),
+    statBox(stats.wordsWritten, "كلمة مكتوبة", "quill"),
+    statBox(stats.booksRead, "كتاب مقروء", "book"),
+    statBox(stats.booksPublished, "عمل أدبي منشور", "feather"),
+    statBox(stats.articlesPublished, "مقال منشور", "document"),
+    statBox(stats.challengesJoined, "تحدٍّ خِيض", "target"),
+    statBox(Object.keys(user.badges || {}).length, "وسام مكتسب", "medal"),
   ].filter(Boolean);
 
-  const describedBadges = badgeService.describeAllForUser(user);
+  const describedBadges = sortBadgesUnlockedFirst(badgeService.describeAllForUser(user));
   const visibleBadges = showAllBadges ? describedBadges : describedBadges.slice(0, 4);
   const userPosts = store.getPosts().filter(p => p.authorId === user.id).slice(0, 3);
   const prog = xpProgressWithinLevel(user);
@@ -50,7 +52,7 @@ export function renderProfilePage(root, userId){
       <div class="container">
 
         <div class="card profile-head">
-          <div class="avatar avatar--lg">${user.avatarEmoji}</div>
+          <div class="avatar avatar--lg">${initial(user.displayName)}</div>
           <div class="profile-head__id">
             <div class="profile-head__name">
               <h2 style="margin:0;">${user.displayName}</h2>
@@ -70,7 +72,7 @@ export function renderProfilePage(root, userId){
 
         ${statCards.length ? `<div class="grid grid-4 stats-grid">${statCards.join("")}</div>` : `<p class="zero-hint">لا إحصائيات لعرضها بعد — ابدأ أول نشاط أدبي لك.</p>`}
 
-        <div class="section-head"><h2>🔥 حماسة الأدب</h2></div>
+        <div class="section-head"><h2>${icon("flame", { size: 20, cls: "heading-icon" })} حماسة الأدب</h2></div>
         <div class="card streak-panel" style="margin-bottom:34px;">
           <div class="streak-panel__now">
             <b>${user.streak || 0}</b>
@@ -84,7 +86,7 @@ export function renderProfilePage(root, userId){
         </div>
 
         <div class="section-head">
-          <h2>الأوسمة</h2>
+          <h2>${icon("medal", { size: 20, cls: "heading-icon" })} الأوسمة</h2>
           <button class="btn btn-ghost btn-sm" id="toggle-badges-btn">${showAllBadges ? "عرض أقل" : "عرض الكل"}</button>
         </div>
         <div class="grid grid-4 profile-badges-grid" id="badges-grid">
@@ -92,7 +94,7 @@ export function renderProfilePage(root, userId){
         </div>
 
         ${userPosts.length ? `
-          <div class="section-head" style="margin-top:40px;"><h2>آخر منشورات ${user.displayName}</h2></div>
+          <div class="section-head" style="margin-top:40px;"><h2>${icon("document", { size: 20, cls: "heading-icon" })} آخر منشورات ${user.displayName}</h2></div>
           <div>
             ${userPosts.map(p => `
               <article class="card feed-item">
