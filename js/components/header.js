@@ -87,7 +87,7 @@ export function renderHeader(activePath = "#/"){
   mount.innerHTML = `
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="#/" class="brand"><span class="brand__mark">🖋️</span> دوحة المداد</a>
+        <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المداد</a>
 
         <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">☰</button>
 
