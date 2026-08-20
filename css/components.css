@@ -8,7 +8,7 @@
   position:sticky; top:0; z-index:500;
   height:var(--header-h);
   display:flex; align-items:center;
-  background:rgba(27,20,15,.86);
+  background:rgba(251,243,228,.88);
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--ink-700);
 }
@@ -20,7 +20,7 @@
   display:flex; align-items:center; gap:10px;
   font-family:var(--font-display); font-size:1.35rem; color:var(--paper);
 }
-.brand__mark{ font-size:1.5rem; }
+.brand__mark{ width:34px; height:auto; display:block; }
 .brand:hover{ color:var(--gold); }
 
 .nav-toggle{
@@ -174,7 +174,7 @@
 /* ---------- النوافذ المنبثقة (Modals) ---------- */
 .modal-overlay{
   position:fixed; inset:0; z-index:1000;
-  background:rgba(10,7,5,.72);
+  background:rgba(74,53,36,.45);
   display:flex; align-items:center; justify-content:center;
   padding:20px;
   animation:fade-in .18s ease;
