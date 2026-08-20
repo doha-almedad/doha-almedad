@@ -14,7 +14,7 @@ export function renderFooter(){
       <div class="container">
         <div class="site-footer__grid">
           <div style="max-width:320px;">
-            <div class="brand" style="margin-bottom:10px;">🖋️ دوحة المداد</div>
+            <div class="brand" style="margin-bottom:10px;">دوحة المداد</div>
             <p style="font-size:.88rem;">مساحة للكتّاب والقرّاء يلتقون فيها بالكلمة، ويحتفلون بكل خطوة في رحلتهم الأدبية.</p>
           </div>
           <div class="site-footer__cols">

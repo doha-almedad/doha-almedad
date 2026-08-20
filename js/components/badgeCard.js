@@ -1,16 +1,26 @@
 /* =========================================================
    دوحة المداد — badgeCard.js
-   مكوّن بطاقة الوسام: عرض الحالة 🔓 مفتوح / 🔒 مقفل
+   مكوّن بطاقة الوسام: عرض الحالة — رمز وسام حقيقي عند الفتح،
+   ورمز قفل عند عدم الاستحقاق بعد. الأوسمة المفتوحة تُعرض أولاً.
    ========================================================= */
 
 import { openModal } from "./modals.js";
+import { icon } from "./icons.js";
+
+/** يرتّب قائمة أوسمة موصوفة بحيث تتصدّر المفتوحة، ثم الأقرب للاكتمال */
+export function sortBadgesUnlockedFirst(describedList){
+  return [...describedList].sort((a, b) => {
+    if(a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1;
+    if(a.unlocked) return new Date(b.unlockedAt) - new Date(a.unlockedAt);
+    return b.progressRatio - a.progressRatio;
+  });
+}
 
 /** يُعيد HTML لبطاقة وسام واحدة، مع data-badge-id لربط الحدث لاحقاً */
 export function renderBadgeCard(described){
   return `
-    <div class="card card--hover badge-card ${described.unlocked ? "" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0">
-      <span class="badge-card__state">${described.unlocked ? "🔓" : "🔒"}</span>
-      <div class="badge-card__icon">${described.icon}</div>
+    <div class="card card--hover badge-card ${described.unlocked ? "is-unlocked" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0">
+      <div class="badge-card__icon">${icon(described.unlocked ? "medal" : "lock", { size: described.unlocked ? 30 : 22 })}</div>
       <div class="badge-card__name">${described.name}</div>
       <div class="badge-card__desc">${described.text}</div>
     </div>
@@ -21,8 +31,8 @@ function openBadgeDetail(described){
   const pct = Math.round(described.progressRatio * 100);
   openModal(`
     <div class="modal-box__head">
-      <h3>${described.icon} ${described.name}</h3>
-      <button class="modal-close" data-close>✕</button>
+      <h3 style="display:flex;align-items:center;gap:8px;">${icon(described.unlocked ? "medal" : "lock", { size: 20 })} ${described.name}</h3>
+      <button class="modal-close" data-close>${icon("close", { size: 18 })}</button>
     </div>
     <p style="font-size:1.02rem;color:var(--paper);">${described.text}</p>
     ${!described.unlocked ? `

@@ -5,14 +5,15 @@
 
 import { store } from "../db/store.js";
 import { openModal } from "./modals.js";
+import { icon, initial } from "./icons.js";
 
 const NAV_LINKS = [
-  { path: "#/",            label: "الرئيسية" },
-  { path: "#/events",       label: "الفعاليات" },
-  { path: "#/writing",      label: "الكتابة" },
-  { path: "#/reading",      label: "القراءة" },
-  { path: "#/articles",     label: "المقالات" },
-  { path: "#/leaderboard",  label: "المتصدرون" },
+  { path: "#/",            label: "الرئيسية",  ic: "home" },
+  { path: "#/events",       label: "الفعاليات",  ic: "calendar" },
+  { path: "#/writing",      label: "الكتابة",   ic: "feather" },
+  { path: "#/reading",      label: "القراءة",   ic: "book" },
+  { path: "#/articles",     label: "المقالات",  ic: "document" },
+  { path: "#/leaderboard",  label: "الإحصائيات", ic: "chart" },
 ];
 
 function timeAgo(iso){
@@ -29,28 +30,28 @@ function notificationsPanel(){
   const items = store.getNotifications(user.id).slice(0, 10);
   const body = items.length
     ? `<ul>${items.map(n => `
-        <li style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-700);">
-          <span>${n.icon}</span>
+        <li style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-700);align-items:flex-start;">
+          <span style="color:var(--gold);">${icon(n.icon || "bell", { size: 17 })}</span>
           <span style="flex:1;">
             <div style="font-size:.88rem;">${n.text}</div>
             <div style="font-size:.72rem;color:var(--paper-faint);">${timeAgo(n.date)}</div>
           </span>
         </li>`).join("")}</ul>`
-    : `<div class="empty-state"><div class="empty-state__icon">🕊️</div><p>لا إشعارات جديدة الآن</p></div>`;
+    : `<div class="empty-state"><div class="empty-state__icon">${icon("bell", { size: 30 })}</div><p>لا إشعارات جديدة الآن</p></div>`;
 
   openModal(`
-    <div class="modal-box__head"><h3>الإشعارات</h3><button class="modal-close" data-close>✕</button></div>
+    <div class="modal-box__head"><h3>الإشعارات</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     ${body}
   `);
   store.markNotificationsRead(user.id);
   renderHeader(currentActivePath);
 }
 
-function profileMenu(user){
+function accountMenu(user){
   openModal(`
-    <div class="modal-box__head"><h3>حسابك</h3><button class="modal-close" data-close>✕</button></div>
+    <div class="modal-box__head"><h3>حسابك</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-      <div class="avatar avatar--lg">${user.avatarEmoji}</div>
+      <div class="avatar avatar--lg">${initial(user.displayName)}</div>
       <div>
         <div style="font-weight:700;">${user.displayName}</div>
         <div class="text-muted" style="font-size:.85rem;">${user.literaryTitle} · المستوى ${user.level}</div>
@@ -62,8 +63,7 @@ function profileMenu(user){
         ${store.getUsers().map(u => `<option value="${u.id}" ${u.id===user.id?"selected":""}>${u.displayName}</option>`).join("")}
       </select>
     </div>
-    <a class="btn btn-outline btn-block" href="#/profile">عرض الملف الشخصي</a>
-    ${user.role === "owner" ? `<a class="btn btn-ghost btn-block" href="#/admin" style="margin-top:8px;">لوحة تحكم المالكين</a>` : ""}
+    ${user.role === "owner" || user.role === "moderator" ? `<a class="btn btn-outline btn-block" href="#/admin">لوحة التحكم الإدارية</a>` : ""}
   `, {
     onMount(box){
       box.querySelector("#switch-user-select").addEventListener("change", (e) => {
@@ -87,20 +87,21 @@ export function renderHeader(activePath = "#/"){
   mount.innerHTML = `
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="#/" class="brand"><span class="brand__mark">🖋️</span> دوحة المداد</a>
+        <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المداد</a>
 
-        <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">☰</button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">${icon("plus", { size: 20 })}</button>
 
         <nav class="site-nav" id="site-nav">
-          ${NAV_LINKS.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${l.label}</a>`).join("")}
+          ${NAV_LINKS.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${l.label}</span></a>`).join("")}
+          <a href="#/profile" class="site-nav__profile-link ${activePath === "#/profile" ? "is-active" : ""}">${icon("user", { size: 16 })}<span>ملفي الشخصي</span></a>
         </nav>
 
         <div class="header-actions">
           <button class="icon-btn" id="btn-notifications" aria-label="الإشعارات">
-            🔔 ${unread ? '<span class="icon-btn__dot"></span>' : ""}
+            ${icon("bell", { size: 18 })} ${unread ? '<span class="icon-btn__dot"></span>' : ""}
           </button>
           <div class="header-profile" id="btn-profile">
-            <div class="avatar avatar--sm">${user.avatarEmoji}</div>
+            <div class="avatar avatar--sm">${initial(user.displayName)}</div>
           </div>
         </div>
       </div>
@@ -109,10 +110,12 @@ export function renderHeader(activePath = "#/"){
 
   mount.querySelector("#nav-toggle").addEventListener("click", () => {
     mount.querySelector("#site-nav").classList.toggle("is-open");
+    mount.querySelector("#nav-toggle").classList.toggle("is-open");
   });
   mount.querySelectorAll("#site-nav a").forEach(a => a.addEventListener("click", () => {
     mount.querySelector("#site-nav").classList.remove("is-open");
+    mount.querySelector("#nav-toggle").classList.remove("is-open");
   }));
   mount.querySelector("#btn-notifications").addEventListener("click", notificationsPanel);
-  mount.querySelector("#btn-profile").addEventListener("click", () => profileMenu(user));
+  mount.querySelector("#btn-profile").addEventListener("click", () => accountMenu(user));
 }
