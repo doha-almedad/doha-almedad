@@ -5,7 +5,7 @@
 
 import { store } from "../db/store.js";
 import { openModal } from "./modals.js";
-import { icon, initial } from "./icons.js";
+import { icon, initial, publicRoleLabel } from "./icons.js";
 
 const NAV_LINKS = [
   { path: "#/",            label: "الرئيسية",  ic: "home" },
@@ -54,7 +54,7 @@ function accountMenu(user){
       <div class="avatar avatar--lg">${initial(user.displayName)}</div>
       <div>
         <div style="font-weight:700;">${user.displayName}</div>
-        <div class="text-muted" style="font-size:.85rem;">${user.literaryTitle} · المستوى ${user.level}</div>
+        <div class="text-muted" style="font-size:.85rem;">${publicRoleLabel(user.role) ? `<span class="badge-pill badge-pill--sage" style="margin-inline-end:6px;">${publicRoleLabel(user.role)}</span>` : ""}المستوى ${user.level}</div>
       </div>
     </div>
     <div class="field">
@@ -63,7 +63,6 @@ function accountMenu(user){
         ${store.getUsers().map(u => `<option value="${u.id}" ${u.id===user.id?"selected":""}>${u.displayName}</option>`).join("")}
       </select>
     </div>
-    ${user.role === "owner" || user.role === "moderator" ? `<a class="btn btn-outline btn-block" href="#/admin">لوحة التحكم الإدارية</a>` : ""}
   `, {
     onMount(box){
       box.querySelector("#switch-user-select").addEventListener("change", (e) => {
@@ -94,6 +93,7 @@ export function renderHeader(activePath = "#/"){
         <nav class="site-nav" id="site-nav">
           ${NAV_LINKS.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${l.label}</span></a>`).join("")}
           <a href="#/profile" class="site-nav__profile-link ${activePath === "#/profile" ? "is-active" : ""}">${icon("user", { size: 16 })}<span>ملفي الشخصي</span></a>
+          ${(user.role === "owner" || user.role === "moderator") ? `<a href="#/admin" class="site-nav__profile-link ${activePath === "#/admin" ? "is-active" : ""}">${icon("shield", { size: 16 })}<span>الإدارة</span></a>` : ""}
         </nav>
 
         <div class="header-actions">

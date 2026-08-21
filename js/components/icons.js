@@ -51,3 +51,36 @@ export function icon(name, opts = {}){
 export function initial(displayName = "?"){
   return (displayName.trim().charAt(0) || "؟").toUpperCase();
 }
+
+/** التسمية العلنية للدور — المالك والمشرف يظهران للجميع باسم "مسؤول" فقط */
+export function publicRoleLabel(role){
+  return (role === "owner" || role === "moderator") ? "مسؤول" : null;
+}
+
+/** رسمة كتاب زخرفية بدرجات اللون الزيتي — للاستخدام في العبارة الترحيبية بالصفحة الرئيسية */
+export function heroBookIllustration({ size = 240 } = {}){
+  return `
+    <svg viewBox="0 0 240 240" width="${size}" height="${size}" aria-hidden="true">
+      <defs>
+        <linearGradient id="heroBookCover" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--olive-mid)"/>
+          <stop offset="1" stop-color="var(--olive-deep)"/>
+        </linearGradient>
+      </defs>
+      <g transform="translate(120 128) rotate(-8)">
+        <rect x="-78" y="-100" width="156" height="200" rx="10" fill="var(--olive-light)" opacity=".55"></rect>
+        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="url(#heroBookCover)"></rect>
+        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="none" stroke="var(--olive-deep)" stroke-width="2" opacity=".4"></rect>
+        <line x1="-70" y1="-92" x2="-70" y2="92" stroke="var(--olive-deep)" stroke-width="3" opacity=".55"></line>
+        <text x="0" y="10" text-anchor="middle" font-family="var(--font-brand)" font-size="26" fill="var(--paper)" opacity=".92">دوحة</text>
+        <line x1="-42" y1="58" x2="42" y2="58" stroke="var(--paper)" stroke-width="1.5" opacity=".5"></line>
+      </g>
+      <g transform="translate(184 62)" fill="var(--olive-deep)" opacity=".8">
+        <path d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z"></path>
+      </g>
+      <g transform="translate(48 190)" fill="var(--olive-mid)" opacity=".7">
+        <path d="M0 -8 L2.4 -2.4 L8 0 L2.4 2.4 L0 8 L-2.4 2.4 L-8 0 L-2.4 -2.4 Z"></path>
+      </g>
+    </svg>
+  `;
+}

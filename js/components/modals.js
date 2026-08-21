@@ -63,11 +63,12 @@ export function showToast(message){
    --------------------------------------------------------- */
 export async function openParticipantModal(userId){
   const { store } = await import("../db/store.js");
-  const { icon, initial } = await import("./icons.js");
+  const { icon, initial, publicRoleLabel } = await import("./icons.js");
   const user = store.getUser(userId);
   if(!user) return;
 
   const badgeCount = Object.keys(user.badges || {}).length;
+  const roleTag = publicRoleLabel(user.role);
 
   openModal(`
     <div class="modal-box__head"><h3>بطاقة العضو</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
@@ -75,9 +76,11 @@ export async function openParticipantModal(userId){
       <div class="avatar avatar--lg">${initial(user.displayName)}</div>
       <div>
         <div style="font-weight:700;font-size:1.05rem;">${user.displayName}</div>
-        <div class="text-muted" style="font-size:.85rem;">${user.literaryTitle} · المستوى ${user.level}</div>
+        <div class="text-muted" style="font-size:.85rem;">${roleTag ? `<span class="badge-pill badge-pill--sage" style="margin-inline-end:6px;">${roleTag}</span>` : ""}المستوى ${user.level}</div>
       </div>
     </div>
+    ${user.bio ? `<p style="margin-bottom:14px;">${user.bio}</p>` : ""}
+    ${user.socialHandle ? `<a href="https://twitter.com/${user.socialHandle.replace(/^@/,"")}" target="_blank" rel="noopener" class="badge-pill" style="margin-bottom:14px;display:inline-flex;">@${user.socialHandle.replace(/^@/,"")}</a>` : ""}
     <div class="grid grid-3" style="margin-bottom:16px;">
       <div class="card stat-box" style="padding:12px;"><b style="font-size:1.1rem;">${user.xp}</b><span>نقطة خبرة</span></div>
       <div class="card stat-box" style="padding:12px;"><b style="font-size:1.1rem;">${badgeCount}</b><span>وسام</span></div>
@@ -115,20 +118,27 @@ function timeAgoShort(iso){
 export async function openCommentsModal(kind, itemId, onChange){
   const { store } = await import("../db/store.js");
   const { icon, initial } = await import("./icons.js");
+  const currentUser = store.getCurrentUser();
 
   function itemOf(){
     return (kind === "post" ? store.getPosts() : store.getReviews()).find(i => i.id === itemId);
   }
 
-  function commentRow(c){
+  function commentRow(c, allComments){
     const author = store.getUser(c.userId);
+    const liked = (c.likedBy || []).includes(currentUser.id);
+    const replyToAuthor = c.replyToUserId ? store.getUser(c.replyToUserId) : null;
     return `
       <div class="comment-row" data-comment-id="${c.id}">
         <div class="avatar avatar--sm">${initial(author?.displayName)}</div>
         <div class="comment-row__body">
           <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}</span></div>
+          ${replyToAuthor ? `<div class="comment-row__replyto">${icon("chevronLeft", { size: 11 })} رداً على ${replyToAuthor.displayName}</div>` : ""}
           <p>${c.text}</p>
-          <button class="comment-row__reply" data-reply-to="${c.id}">رد</button>
+          <div class="comment-row__actions">
+            <button class="comment-row__reply ${liked ? "is-liked" : ""}" data-like-comment="${c.id}">${icon("heart", { size: 12 })} ${(c.likedBy||[]).length}</button>
+            <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.displayName || "عضو"}">رد</button>
+          </div>
         </div>
       </div>
     `;
@@ -143,9 +153,9 @@ export async function openCommentsModal(kind, itemId, onChange){
       return `<div class="empty-state"><div class="empty-state__icon">${icon("comment", { size: 26 })}</div><p>لا تعليقات بعد — كن أول من يعلّق.</p></div>`;
     }
     return roots.map(c => `
-      ${commentRow(c)}
+      ${commentRow(c, comments)}
       <div class="comment-row__replies">
-        ${comments.filter(r => r.parentId === c.id).map(commentRow).join("")}
+        ${comments.filter(r => r.parentId === c.id).map(r => commentRow(r, comments)).join("")}
       </div>
     `).join("");
   }
@@ -161,33 +171,57 @@ export async function openCommentsModal(kind, itemId, onChange){
   `, {
     size: "lg",
     onMount(box){
-      let replyTo = null;
+      let replyToRootId = null;   // للتجميع البصري (دائماً تعليق جذر)
+      let replyToCommentId = null; // للعرض "رداً على فلان"
       const list = box.querySelector("#comments-list");
       const ctxLabel = box.querySelector("#reply-context");
 
-      function bindReplyButtons(){
+      function clearReplyState(){
+        replyToRootId = null;
+        replyToCommentId = null;
+        ctxLabel.style.display = "none";
+      }
+
+      function bindRowButtons(){
         list.querySelectorAll("[data-reply-to]").forEach(btn => {
           btn.addEventListener("click", () => {
-            replyTo = btn.getAttribute("data-reply-to");
+            const clickedId = btn.getAttribute("data-reply-to");
+            const item = itemOf();
+            const clicked = item.comments.find(c => c.id === clickedId);
+            // التجميع دائماً تحت التعليق الجذر — لكن نعرض "رداً على" لصاحب التعليق الذي ضُغط عليه فعلياً
+            replyToRootId = clicked.parentId || clicked.id;
+            replyToCommentId = clickedId;
             ctxLabel.style.display = "block";
-            ctxLabel.textContent = "الرد على تعليق ↑";
+            ctxLabel.textContent = `الرد على ${btn.getAttribute("data-reply-author")}`;
             box.querySelector("#comment-input").focus();
           });
         });
+        list.querySelectorAll("[data-like-comment]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            store.toggleCommentLike(kind, itemId, btn.getAttribute("data-like-comment"), currentUser.id);
+            list.innerHTML = renderBody();
+            bindRowButtons();
+          });
+        });
       }
-      bindReplyButtons();
+      bindRowButtons();
 
       box.querySelector("#submit-comment-btn").addEventListener("click", async () => {
         const { store } = await import("../db/store.js");
         const text = box.querySelector("#comment-input").value.trim();
         if(!text) return;
         const current = store.getCurrentUser();
-        store.addComment(kind, itemId, { userId: current.id, text, parentId: replyTo });
-        replyTo = null;
-        ctxLabel.style.display = "none";
+        const replyToComment = replyToCommentId ? itemOf().comments.find(c => c.id === replyToCommentId) : null;
+        store.addComment(kind, itemId, {
+          userId: current.id,
+          text,
+          parentId: replyToRootId,
+          replyToUserId: replyToComment ? replyToComment.userId : null
+        });
+        clearReplyState();
         box.querySelector("#comment-input").value = "";
         list.innerHTML = renderBody();
-        bindReplyButtons();
+        bindRowButtons();
         if(typeof onChange === "function") onChange();
       });
     }
