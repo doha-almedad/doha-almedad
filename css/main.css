@@ -34,8 +34,8 @@
   --shadow-2:0 14px 34px rgba(74,53,36,.16);
 
   --font-display:"Amiri", serif;
-  --font-brand:"Aref Ruqaa", serif;
-  --font-accent:"Markazi Text", serif;
+  --font-brand:"El Messiri", serif;
+  --font-accent:"El Messiri", serif;
   --font-body:"Tajawal", sans-serif;
 
   --header-h:68px;
@@ -46,6 +46,9 @@
   --accent-tan:#D3AA88;
   --accent-rust:#C68D7E;
   --accent-slate:#A9B7B7;
+  --olive-light:#DCE0C6;
+  --olive-mid:#B7B98F;
+  --olive-deep:#7D8258;
 
   color-scheme: light;
 }
@@ -81,7 +84,7 @@ h2{ font-size:clamp(1.5rem, 2.4vw, 2.1rem); }
 h3{ font-size:1.25rem; }
 h3{ display:block; }
 .heading-icon{ color:var(--gold); flex-shrink:0; }
-p{ margin:0 0 1em; color:var(--paper-dim); }
+p{ margin:0 0 1em; color:var(--paper-dim); line-height:1.95; }
 
 a{ color:var(--gold); text-decoration:none; }
 a:hover{ color:var(--paper); }
@@ -176,7 +179,7 @@ button{ font-family:inherit; }
   direction:ltr;
 }
 .ink-heatmap__cell{
-  width:13px; height:13px; border-radius:50%;
+  width:13px; height:13px; border-radius:3px;
   background:var(--ink-600);
   transition:transform .15s ease;
 }

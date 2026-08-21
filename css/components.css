@@ -94,23 +94,16 @@
 
 
 /* ---------- التذييل ---------- */
-.site-footer{
+.site-footer--slim{
   border-top:1px solid var(--ink-700);
-  padding:40px 0 26px;
+  padding:16px 0;
   color:var(--paper-faint);
 }
-.site-footer__grid{
-  display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
-  margin-bottom:20px;
+.site-footer__row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  font-size:.8rem;
 }
-.site-footer a{ color:var(--paper-dim); font-size:.92rem; }
-.site-footer__cols{ display:flex; gap:48px; flex-wrap:wrap; }
-.site-footer__col h4{ font-size:.85rem; color:var(--paper); margin-bottom:10px; }
-.site-footer__col li{ margin-bottom:8px; }
-.site-footer__bottom{
-  display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-  font-size:.82rem; padding-top:18px; border-top:1px solid var(--ink-800);
-}
+.brand--sm{ font-size:1rem; font-weight:700; }
 
 /* ---------- الأزرار ---------- */
 .btn{
@@ -178,6 +171,19 @@
   border-color:#E9BE68;
   color:#5B3E0F;
   box-shadow:0 4px 14px rgba(201,138,46,.35), inset 0 1px 0 rgba(255,255,255,.6);
+  position:relative;
+}
+.badge-card.is-unlocked .badge-card__icon::before{
+  content:"";
+  position:absolute; inset:-6px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(233,190,104,.45), transparent 70%);
+  animation:badge-sparkle 2.6s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes badge-sparkle{
+  0%,100%{ opacity:.5; transform:scale(1); }
+  50%{ opacity:1; transform:scale(1.12); }
 }
 .badge-card.is-locked .badge-card__icon{ color:var(--paper-faint); border-color:var(--ink-600); background:var(--ink-700); }
 .badge-card.is-locked{ opacity:.68; }
