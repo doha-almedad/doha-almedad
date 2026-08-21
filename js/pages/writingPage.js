@@ -5,8 +5,10 @@
 
 import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
-import { showToast, bindParticipantLinks, openCommentsModal } from "../components/modals.js";
+import { showToast, bindParticipantLinks, openCommentsModal, openModal, closeModal } from "../components/modals.js";
 import { icon, initial } from "../components/icons.js";
+import { resizeImageFile } from "../services/mediaService.js";
+import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
 const TEXT_TYPES = [
   { value: "piece",   label: "قطعة أدبية" },
@@ -44,6 +46,7 @@ function renderFeed(){
     const author = store.getUser(p.authorId);
     const liked = (p.likedBy || []).includes(currentUser.id);
     const commentCount = (p.comments || []).length;
+    const images = p.images || (p.image ? [p.image] : []);
     return `
       <article class="card feed-item">
         <div class="feed-item__head">
@@ -54,7 +57,7 @@ function renderFeed(){
           </div>
           <span class="badge-pill badge-pill--gold" style="margin-inline-start:auto;">${typeLabel(p.type)}</span>
         </div>
-        ${p.image ? `<img src="${p.image}" alt="" class="feed-item__image">` : ""}
+        ${renderCarousel(images)}
         <h3>${p.title}</h3>
         <p>${p.content}</p>
         <div class="feed-item__actions">
@@ -73,10 +76,91 @@ function renderFeed(){
   return cards + more;
 }
 
+function openComposerModal(root, user, paint){
+  let pendingImages = [];
+
+  function previewStrip(){
+    return pendingImages.length
+      ? `<div class="multi-image-strip">${pendingImages.map((src, i) => `
+          <div class="multi-image-strip__item"><img src="${src}" alt=""><button type="button" class="multi-image-strip__remove" data-remove-img="${i}">${icon("close", { size: 9 })}</button></div>
+        `).join("")}</div>`
+      : "";
+  }
+
+  openModal(`
+    <div class="modal-box__head"><h3>انشر قطعة جديدة</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="composer__meta">
+      <div class="field">
+        <label>عنوان النص</label>
+        <input type="text" id="post-title" placeholder="عنوان قطعتك الأدبية">
+      </div>
+      <div class="field" style="max-width:180px;">
+        <label>نوع النص</label>
+        <select id="post-type">
+          ${TEXT_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>النص</label>
+      <textarea id="post-content" placeholder="اكتب هنا... كل كلمة تُحتسب ضمن مسيرتك الأدبية."></textarea>
+    </div>
+    <div class="field">
+      <label>صور مرافقة (اختياري — يمكن اختيار أكثر من صورة)</label>
+      <label class="image-upload" id="image-upload-label">
+        <span>${icon("image", { size: 22 })}<span>أضف صورة أو أكثر تصاحب النص</span></span>
+        <input type="file" id="post-image" accept="image/*" multiple hidden>
+      </label>
+      <div id="image-preview-strip">${previewStrip()}</div>
+    </div>
+    <button class="btn btn-primary btn-block" id="publish-post-btn">${icon("send", { size: 16 })}<span>نشر</span></button>
+  `, {
+    size: "lg",
+    onMount(box){
+      function refreshStrip(){
+        box.querySelector("#image-preview-strip").innerHTML = previewStrip();
+        box.querySelectorAll("[data-remove-img]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            pendingImages.splice(Number(btn.getAttribute("data-remove-img")), 1);
+            refreshStrip();
+          });
+        });
+      }
+      refreshStrip();
+
+      box.querySelector("#post-image").addEventListener("change", async (e) => {
+        const files = Array.from(e.target.files || []);
+        if(!files.length) return;
+        const resized = await Promise.all(files.map(f => resizeImageFile(f)));
+        pendingImages.push(...resized);
+        refreshStrip();
+      });
+
+      box.querySelector("#publish-post-btn").addEventListener("click", () => {
+        const title = box.querySelector("#post-title").value.trim();
+        const content = box.querySelector("#post-content").value.trim();
+        const type = box.querySelector("#post-type").value;
+        if(!title || !content){
+          showToast("يرجى إدخال عنوان ونص قبل النشر");
+          return;
+        }
+        store.addPost({ authorId: user.id, title, content, type, images: pendingImages });
+        processActivity(user.id, "publish_post", {
+          wordCount: wordCount(content),
+          isFullWork: type === "chapter"
+        });
+        closeModal();
+        showToast("نُشر نصّك — أضيئت شعلة حماستك اليوم");
+        visibleCount = PAGE_SIZE;
+        paint();
+      });
+    }
+  });
+}
+
 export function renderWritingPage(root){
   const user = store.getCurrentUser();
   visibleCount = PAGE_SIZE;
-  let pendingImage = null;
 
   function paint(){
     root.querySelector("#writing-feed").innerHTML = renderFeed();
@@ -86,6 +170,7 @@ export function renderWritingPage(root){
   function bindFeedEvents(){
     const feed = root.querySelector("#writing-feed");
     bindParticipantLinks(feed);
+    bindCarousels(feed);
     feed.querySelectorAll("[data-like]").forEach(el => {
       el.addEventListener("click", () => {
         store.toggleLike("post", el.getAttribute("data-like"), user.id);
@@ -107,73 +192,13 @@ export function renderWritingPage(root){
         <div class="section-head">
           <div><span class="eyebrow">مساحتك الأدبية</span><h1>${icon("feather", { size: 26, cls: "heading-icon" })} الكتابة</h1></div>
         </div>
-
-        <div class="card composer" style="margin-bottom:34px;">
-          <h3 style="margin-bottom:14px;">انشر قطعة جديدة</h3>
-          <div class="composer__meta">
-            <div class="field">
-              <label>عنوان النص</label>
-              <input type="text" id="post-title" placeholder="عنوان قطعتك الأدبية">
-            </div>
-            <div class="field" style="max-width:200px;">
-              <label>نوع النص</label>
-              <select id="post-type">
-                ${TEXT_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join("")}
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>النص</label>
-            <textarea id="post-content" placeholder="اكتب هنا... كل كلمة تُحتسب ضمن مسيرتك الأدبية."></textarea>
-          </div>
-          <div class="field">
-            <label>صورة مرافقة (اختياري)</label>
-            <label class="image-upload" id="image-upload-label">
-              <span id="image-upload-preview">${icon("image", { size: 22 })}<span>أضف صورة تصاحب النص</span></span>
-              <input type="file" id="post-image" accept="image/*" hidden>
-            </label>
-          </div>
-          <button class="btn btn-primary" id="publish-post-btn">${icon("send", { size: 16 })}<span>نشر</span></button>
-        </div>
-
         <div class="section-head"><h2>آخر المنشورات</h2></div>
         <div id="writing-feed">${renderFeed()}</div>
       </div>
     </section>
+    <button class="fab-btn" id="writing-fab" aria-label="نشر قطعة جديدة">${icon("plus", { size: 24 })}</button>
   `;
 
   bindFeedEvents();
-
-  root.querySelector("#post-image").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingImage = reader.result;
-      root.querySelector("#image-upload-preview").innerHTML = `<img src="${pendingImage}" alt="" class="image-upload__thumb"><span>تم اختيار الصورة — انقر للتغيير</span>`;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  root.querySelector("#publish-post-btn").addEventListener("click", () => {
-    const title = root.querySelector("#post-title").value.trim();
-    const content = root.querySelector("#post-content").value.trim();
-    const type = root.querySelector("#post-type").value;
-    if(!title || !content){
-      showToast("يرجى إدخال عنوان ونص قبل النشر");
-      return;
-    }
-    store.addPost({ authorId: user.id, title, content, type, image: pendingImage });
-    processActivity(user.id, "publish_post", {
-      wordCount: wordCount(content),
-      isFullWork: type === "chapter"
-    });
-    showToast("نُشر نصّك — أضيئت شعلة حماستك اليوم");
-    visibleCount = PAGE_SIZE;
-    root.querySelector("#post-title").value = "";
-    root.querySelector("#post-content").value = "";
-    pendingImage = null;
-    root.querySelector("#image-upload-preview").innerHTML = `${icon("image", { size: 22 })}<span>أضف صورة تصاحب النص</span>`;
-    paint();
-  });
+  root.querySelector("#writing-fab").addEventListener("click", () => openComposerModal(root, user, paint));
 }

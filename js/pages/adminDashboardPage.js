@@ -30,9 +30,10 @@ function roleClass(role){
 
 function membersTab(current){
   const users = store.getUsers();
+  const canManage = current.role === "owner";
   return `
     <table class="admin-table">
-      <thead><tr><th>العضو</th><th>الدور</th><th>المستوى</th><th>الخبرة</th><th>إجراء</th></tr></thead>
+      <thead><tr><th>العضو</th><th>الدور</th><th>المستوى</th><th>الخبرة</th>${canManage ? "<th>إجراء</th>" : ""}</tr></thead>
       <tbody>
         ${users.map(u => `
           <tr>
@@ -43,16 +44,17 @@ function membersTab(current){
             <td><span class="badge-pill ${roleClass(u.role)}">${roleLabel(u.role)}</span></td>
             <td>${u.level}</td>
             <td>${u.xp} XP</td>
-            <td>
+            ${canManage ? `<td>
               ${u.role === "owner" ? `<span class="text-muted" style="font-size:.8rem;">—</span>` :
                 u.role === "moderator"
                 ? `<button class="btn btn-ghost btn-sm" data-demote="${u.id}">إزالة الإشراف</button>`
                 : `<button class="btn btn-outline btn-sm" data-promote="${u.id}">تعيين مشرفاً</button>`}
-            </td>
+            </td>` : ""}
           </tr>
         `).join("")}
       </tbody>
     </table>
+    ${!canManage ? `<p class="text-muted" style="font-size:.8rem;margin-top:12px;">تعيين المشرفين وإزالتهم من صلاحيات المالك فقط.</p>` : ""}
   `;
 }
 

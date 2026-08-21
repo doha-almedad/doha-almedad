@@ -4,21 +4,35 @@
    ========================================================= */
 
 import { store } from "../db/store.js";
-import { openModal, showToast } from "../components/modals.js";
+import { openModal, closeModal, showToast } from "../components/modals.js";
 import { icon } from "../components/icons.js";
+import { resizeImageFile } from "../services/mediaService.js";
+import { renderCarousel, bindCarousels } from "../components/carousel.js";
+
+function timeAgo(iso){
+  const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if(diffMin < 60) return `منذ ${Math.max(1,diffMin)} د`;
+  const h = Math.round(diffMin/60);
+  if(h < 24) return `منذ ${h} س`;
+  return `منذ ${Math.round(h/24)} يوم`;
+}
 
 function openArticleModal(a){
   const author = store.getUser(a.author);
+  const images = a.images || (a.image ? [a.image] : []);
   openModal(`
     <div class="modal-box__head"><h3>${a.title}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div class="highlight-card__meta" style="margin-bottom:12px;">
       <span class="badge-pill badge-pill--ember">${a.category}</span>
       <span class="badge-pill">${author?.displayName || "كاتب"}</span>
-      <span class="badge-pill">${new Date(a.date).toLocaleDateString("ar")}</span>
+      <span class="badge-pill">${timeAgo(a.date)}</span>
     </div>
-    ${a.image ? `<img src="${a.image}" alt="" class="feed-item__image">` : ""}
+    <div id="article-modal-media">${renderCarousel(images)}</div>
     <p style="white-space:pre-line;">${a.content}</p>
-  `, { size: "lg" });
+  `, {
+    size: "lg",
+    onMount(box){ bindCarousels(box); }
+  });
 }
 
 function articleCard(a){
@@ -30,7 +44,7 @@ function articleCard(a){
       <p>${a.excerpt}</p>
       <div class="highlight-card__foot">
         <span>${author?.displayName || "كاتب"}</span>
-        <span>${new Date(a.date).toLocaleDateString("ar")}</span>
+        <span>${timeAgo(a.date)}</span>
       </div>
     </div>
   `;
@@ -56,43 +70,90 @@ function bindArticleClicks(container){
   });
 }
 
+function openComposerModal(user, refreshList){
+  let pendingImages = [];
+
+  function previewStrip(){
+    return pendingImages.length
+      ? `<div class="multi-image-strip">${pendingImages.map((src, i) => `
+          <div class="multi-image-strip__item"><img src="${src}" alt=""><button type="button" class="multi-image-strip__remove" data-remove-img="${i}">${icon("close", { size: 9 })}</button></div>
+        `).join("")}</div>`
+      : "";
+  }
+
+  openModal(`
+    <div class="modal-box__head"><h3>اكتب مقالاً جديداً</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <p class="text-muted" style="font-size:.82rem;margin-bottom:14px;">سيراجع فريق الإشراف مقالك قبل نشره في هذه الصفحة.</p>
+    <div class="composer__meta">
+      <div class="field">
+        <label>عنوان المقال</label>
+        <input type="text" id="article-title" placeholder="عنوان المقال">
+      </div>
+      <div class="field" style="max-width:200px;">
+        <label>التصنيف</label>
+        <input type="text" id="article-category" placeholder="مثال: تقنيات الكتابة">
+      </div>
+    </div>
+    <div class="field">
+      <label>محتوى المقال</label>
+      <textarea id="article-content" placeholder="اكتب مقالك هنا..."></textarea>
+    </div>
+    <div class="field">
+      <label>صور توضيحية (اختياري)</label>
+      <label class="image-upload" id="image-upload-label">
+        <span>${icon("image", { size: 22 })}<span>أضف صورة أو أكثر للمقال</span></span>
+        <input type="file" id="article-image" accept="image/*" multiple hidden>
+      </label>
+      <div id="image-preview-strip">${previewStrip()}</div>
+    </div>
+    <button class="btn btn-primary btn-block" id="submit-article-btn">${icon("send", { size: 16 })}<span>إرسال للمراجعة</span></button>
+  `, {
+    size: "lg",
+    onMount(box){
+      function refreshStrip(){
+        box.querySelector("#image-preview-strip").innerHTML = previewStrip();
+        box.querySelectorAll("[data-remove-img]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            pendingImages.splice(Number(btn.getAttribute("data-remove-img")), 1);
+            refreshStrip();
+          });
+        });
+      }
+      refreshStrip();
+
+      box.querySelector("#article-image").addEventListener("change", async (e) => {
+        const files = Array.from(e.target.files || []);
+        if(!files.length) return;
+        const resized = await Promise.all(files.map(f => resizeImageFile(f)));
+        pendingImages.push(...resized);
+        refreshStrip();
+      });
+
+      box.querySelector("#submit-article-btn").addEventListener("click", () => {
+        const title = box.querySelector("#article-title").value.trim();
+        const category = box.querySelector("#article-category").value.trim() || "عام";
+        const content = box.querySelector("#article-content").value.trim();
+        if(!title || !content){
+          showToast("يرجى إدخال عنوان ومحتوى المقال قبل الإرسال");
+          return;
+        }
+        store.submitArticle({ authorId: user.id, title, category, content, images: pendingImages });
+        closeModal();
+        showToast("أُرسل مقالك — بانتظار مراجعة فريق الإشراف");
+      });
+    }
+  });
+}
+
 export function renderArticlesPage(root){
   const user = store.getCurrentUser();
   const categories = ["الكل", ...new Set(store.getArticles().map(a => a.category))];
-  let pendingImage = null;
 
   root.innerHTML = `
     <section class="section">
       <div class="container">
         <div class="section-head">
           <div><span class="eyebrow">تعلّم وتطوّر</span><h1>${icon("document", { size: 26, cls: "heading-icon" })} المقالات والدروس</h1></div>
-        </div>
-
-        <div class="card composer" style="margin-bottom:30px;">
-          <h3 style="margin-bottom:6px;">اكتب مقالاً جديداً</h3>
-          <p class="text-muted" style="font-size:.82rem;margin-bottom:14px;">سيراجع فريق الإشراف مقالك قبل نشره في هذه الصفحة.</p>
-          <div class="composer__meta">
-            <div class="field">
-              <label>عنوان المقال</label>
-              <input type="text" id="article-title" placeholder="عنوان المقال">
-            </div>
-            <div class="field" style="max-width:200px;">
-              <label>التصنيف</label>
-              <input type="text" id="article-category" placeholder="مثال: تقنيات الكتابة">
-            </div>
-          </div>
-          <div class="field">
-            <label>محتوى المقال</label>
-            <textarea id="article-content" placeholder="اكتب مقالك هنا..."></textarea>
-          </div>
-          <div class="field">
-            <label>صورة توضيحية (اختياري)</label>
-            <label class="image-upload" id="image-upload-label">
-              <span id="image-upload-preview">${icon("image", { size: 22 })}<span>أضف صورة توضيحية للمقال</span></span>
-              <input type="file" id="article-image" accept="image/*" hidden>
-            </label>
-          </div>
-          <button class="btn btn-primary" id="submit-article-btn">${icon("send", { size: 16 })}<span>إرسال للمراجعة</span></button>
         </div>
 
         <div class="article-search">
@@ -108,6 +169,7 @@ export function renderArticlesPage(root){
         <div id="articles-empty"></div>
       </div>
     </section>
+    <button class="fab-btn" id="article-fab" aria-label="اكتب مقالاً جديداً">${icon("plus", { size: 24 })}</button>
   `;
 
   const grid = root.querySelector("#articles-grid");
@@ -126,31 +188,5 @@ export function renderArticlesPage(root){
   input.addEventListener("input", update);
   select.addEventListener("change", update);
 
-  root.querySelector("#article-image").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingImage = reader.result;
-      root.querySelector("#image-upload-preview").innerHTML = `<img src="${pendingImage}" alt="" class="image-upload__thumb"><span>تم اختيار الصورة — انقر للتغيير</span>`;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  root.querySelector("#submit-article-btn").addEventListener("click", () => {
-    const title = root.querySelector("#article-title").value.trim();
-    const category = root.querySelector("#article-category").value.trim() || "عام";
-    const content = root.querySelector("#article-content").value.trim();
-    if(!title || !content){
-      showToast("يرجى إدخال عنوان ومحتوى المقال قبل الإرسال");
-      return;
-    }
-    store.submitArticle({ authorId: user.id, title, category, content, image: pendingImage });
-    showToast("أُرسل مقالك — بانتظار مراجعة فريق الإشراف");
-    root.querySelector("#article-title").value = "";
-    root.querySelector("#article-category").value = "";
-    root.querySelector("#article-content").value = "";
-    pendingImage = null;
-    root.querySelector("#image-upload-preview").innerHTML = `${icon("image", { size: 22 })}<span>أضف صورة توضيحية للمقال</span>`;
-  });
+  root.querySelector("#article-fab").addEventListener("click", () => openComposerModal(user, update));
 }
