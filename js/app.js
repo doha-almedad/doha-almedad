@@ -4,9 +4,11 @@
    ========================================================= */
 
 import "./db/store.js";
+import { renderFooter } from "./components/footer.js";
 import { initRouter, rerenderCurrentHeader } from "./router.js";
 
 function boot(){
+  renderFooter();
   initRouter();
 
   document.addEventListener("user:changed", () => {
