@@ -10,6 +10,7 @@ const DB_KEY = "dawha_almidad_db_v1";
 const listeners = new Set();
 
 function seedDB(){
+  const currentYear = new Date().getFullYear();
   return {
     users: INITIAL_USERS,
     events: INITIAL_EVENTS,
@@ -20,6 +21,7 @@ function seedDB(){
     userEvents: [],       // سجلّ الأحداث الخام (user_events)
     eventSubmissions: [], // طلبات إثبات المشاركة بالفعاليات (خصوصاً admin_verification)
     notifications: [],
+    annualGoals: { [currentYear]: { words: 50000, events: 20, booksPublished: 10, booksRead: 60 } },
     currentUserId: CURRENT_USER_ID,
     meta: { createdAt: new Date().toISOString() }
   };
@@ -91,10 +93,10 @@ export const store = {
   getArticle(id){ return db.articles.find(a => a.id === id) || null; },
 
   /** إرسال مقال من عضو لمراجعة الإدارة قبل نشره */
-  submitArticle({ authorId, title, category, content, image }){
+  submitArticle({ authorId, title, category, content, images = [] }){
     const submission = {
       id: "as_" + Date.now(),
-      authorId, title, category, content, image,
+      authorId, title, category, content, images,
       status: "pending", // pending | approved | rejected
       submittedAt: new Date().toISOString()
     };
@@ -110,7 +112,7 @@ export const store = {
     db.articles.unshift({
       id: "ar_" + Date.now(), title: sub.title, category: sub.category,
       excerpt: sub.content.slice(0, 130), content: sub.content,
-      author: sub.authorId, image: sub.image, date: new Date().toISOString()
+      author: sub.authorId, images: sub.images || [], date: new Date().toISOString()
     });
     persist();
     return sub;
@@ -166,6 +168,20 @@ export const store = {
     return comment;
   },
 
+  /** إعجاب واحد فقط لكل مستخدم على أي تعليق — الضغط مجدداً يُلغيه */
+  toggleCommentLike(kind, itemId, commentId, userId){
+    const list = kind === "post" ? db.posts : db.reviews;
+    const item = list.find(i => i.id === itemId);
+    const comment = item?.comments?.find(c => c.id === commentId);
+    if(!comment) return null;
+    comment.likedBy = comment.likedBy || [];
+    const idx = comment.likedBy.indexOf(userId);
+    if(idx === -1) comment.likedBy.push(userId);
+    else comment.likedBy.splice(idx, 1);
+    persist();
+    return comment;
+  },
+
   deletePost(id){ db.posts = db.posts.filter(p => p.id !== id); persist(); },
   deleteReview(id){ db.reviews = db.reviews.filter(r => r.id !== id); persist(); },
   deleteEvent(id){ db.events = db.events.filter(e => e.id !== id); persist(); },
@@ -178,6 +194,24 @@ export const store = {
     return event;
   },
   getUserEvents(userId){ return db.userEvents.filter(e => e.userId === userId); },
+
+  // ---------- الأهداف السنوية (يضعها المالك أو المشرفون) ----------
+  getAnnualGoal(year){ return db.annualGoals[year] || null; },
+  setAnnualGoal(year, targets){
+    db.annualGoals[year] = { ...(db.annualGoals[year] || {}), ...targets };
+    persist();
+    return db.annualGoals[year];
+  },
+  /** يحسب الإنجاز الفعلي لسنة معيّنة من سجلّ الأحداث الخام */
+  computeYearActuals(year){
+    const items = db.userEvents.filter(e => new Date(e.timestamp).getFullYear() === year);
+    return {
+      words: items.filter(e => e.type === "publish_post").reduce((s, e) => s + (e.meta.wordCount || 0), 0),
+      events: items.filter(e => e.type === "join_event").length,
+      booksPublished: items.filter(e => e.type === "publish_post" && e.meta.isFullWork).length,
+      booksRead: items.filter(e => e.type === "publish_review").length,
+    };
+  },
 
   // ---------- طلبات اعتماد الفعاليات (admin_verification) ----------
   submitEventProof(eventId, userId, payload){

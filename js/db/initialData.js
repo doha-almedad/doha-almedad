@@ -9,7 +9,8 @@ export const INITIAL_USERS = [
     id: "u_ghaith",
     username: "ghaith",
     displayName: "غيث",
-    literaryTitle: "كاتب متقدم",
+    bio: "",
+    socialHandle: "",
     role: "owner",
     xp: 0,
     level: 1,
@@ -25,8 +26,9 @@ export const INITIAL_USERS = [
     id: "u_layla",
     username: "layla_k",
     displayName: "ليلى",
-    literaryTitle: "قارئة نهمة",
-    role: "member",
+    bio: "",
+    socialHandle: "",
+    role: "moderator",
     xp: 0,
     level: 1,
     streak: 0,
@@ -41,7 +43,8 @@ export const INITIAL_USERS = [
     id: "u_sami",
     username: "sami_r",
     displayName: "سامي",
-    literaryTitle: "عضو جديد",
+    bio: "",
+    socialHandle: "",
     role: "member",
     xp: 0,
     level: 1,
@@ -61,6 +64,7 @@ export const CURRENT_USER_ID = "u_ghaith";
 export const INITIAL_EVENTS = [
   {
     id: "ev_ramadan_chapters",
+    organizerId: "u_ghaith",
     title: "تحدي فصول الليل",
     description: "اكتب فصلاً أدبياً واحداً كل ثلاثة أيام حتى نهاية الشهر، وشارك زملاءك رحلة السرد.",
     goal: "reach_word_count",
@@ -73,6 +77,7 @@ export const INITIAL_EVENTS = [
   },
   {
     id: "ev_book_circle",
+    organizerId: "u_layla",
     title: "مجلس القراءة الشهري",
     description: "أنهِ قراءة كتاب واحد على الأقل هذا الشهر واكتب مراجعة موجزة له.",
     goal: "finish_book",
@@ -85,6 +90,7 @@ export const INITIAL_EVENTS = [
   },
   {
     id: "ev_poetry_night",
+    organizerId: "u_layla",
     title: "أمسية القوافي المفتوحة",
     description: "شارك قصيدة أو نصاً شعرياً قصيراً أمام المجتمع، تُقبل المشاركات المكتوبة خارج المنصة أيضاً.",
     goal: "submit_poem",
@@ -97,6 +103,7 @@ export const INITIAL_EVENTS = [
   },
   {
     id: "ev_critique_circle",
+    organizerId: "u_ghaith",
     title: "حلقة النقد الأدبي",
     description: "قدّم نقداً بنّاءً لعمل زميل، تُراجَع المشاركات من إدارة الفعالية قبل اعتمادها.",
     goal: "submit_critique",
