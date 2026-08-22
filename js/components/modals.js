@@ -63,7 +63,7 @@ export function showToast(message){
    --------------------------------------------------------- */
 export async function openParticipantModal(userId){
   const { store } = await import("../db/store.js");
-  const { icon, initial, publicRoleLabel } = await import("./icons.js");
+  const { icon, initial, publicRoleLabel, parseSocialLink } = await import("./icons.js");
   const user = store.getUser(userId);
   if(!user) return;
 
@@ -80,7 +80,10 @@ export async function openParticipantModal(userId){
       </div>
     </div>
     ${user.bio ? `<p style="margin-bottom:14px;">${user.bio}</p>` : ""}
-    ${user.socialHandle ? `<a href="https://twitter.com/${user.socialHandle.replace(/^@/,"")}" target="_blank" rel="noopener" class="badge-pill" style="margin-bottom:14px;display:inline-flex;">@${user.socialHandle.replace(/^@/,"")}</a>` : ""}
+    ${user.socialUrl ? (() => {
+      const s = parseSocialLink(user.socialUrl);
+      return s ? `<a href="${s.url}" target="_blank" rel="noopener" class="badge-pill" style="margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;">${icon(s.platform, { size: 12 })}@${s.handle}</a>` : "";
+    })() : ""}
     <div class="grid grid-3" style="margin-bottom:16px;">
       <div class="card stat-box" style="padding:12px;"><b style="font-size:1.1rem;">${user.xp}</b><span>نقطة خبرة</span></div>
       <div class="card stat-box" style="padding:12px;"><b style="font-size:1.1rem;">${badgeCount}</b><span>وسام</span></div>

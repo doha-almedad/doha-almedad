@@ -39,6 +39,12 @@ const PATHS = {
   eye: `<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>`,
   send: `<path d="m3 11 18-8-8 18-2.5-7.5L3 11Z"/>`,
   quill: `<path d="M20 4c-6 1-11 6-13 12l-2 4 4-2c6-2 11-7 12-13Z"/><path d="M9.5 14.5 4 20"/>`,
+  link: `<path d="M9 15a5 5 0 0 1 0-7l3-3a5 5 0 0 1 7 7l-1.5 1.5"/><path d="M15 9a5 5 0 0 1 0 7l-3 3a5 5 0 0 1-7-7l1.5-1.5"/>`,
+  instagram: `<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/>`,
+  tiktok: `<path d="M14 3v10.8a3.6 3.6 0 1 1-3-3.55"/><path d="M14 7a4 4 0 0 0 4 4"/>`,
+  twitter: `<path d="M5 5l14 14M19 5L5 19"/>`,
+  snapchat: `<path d="M12 3.3c2.8 0 4.2 2 4.2 4.8 0 1 .2 1.9.7 2.4.5.6 1.3.9 1.3 1.4 0 .6-1.1.8-1.1 1.3 0 .3.3.6.3.9-.5.3-1.2.2-1.6.5-.3.3 0 .9-.4 1.2-.6.4-1.7 0-2.3.4-.5.3-.7 1.2-1.1 1.2s-.6-.9-1.1-1.2c-.6-.4-1.7 0-2.3-.4-.4-.3-.1-.9-.4-1.2-.4-.3-1.1-.2-1.6-.5 0-.3.3-.6.3-.9 0-.5-1.1-.7-1.1-1.3 0-.5.8-.8 1.3-1.4.5-.5.7-1.4.7-2.4 0-2.8 1.4-4.8 4.2-4.8Z"/>`,
+  youtube: `<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M11 9.6v4.8l4-2.4Z" fill="currentColor" stroke="none"/>`,
 };
 
 export function icon(name, opts = {}){
@@ -55,6 +61,27 @@ export function initial(displayName = "?"){
 /** التسمية العلنية للدور — المالك والمشرف يظهران للجميع باسم "مسؤول" فقط */
 export function publicRoleLabel(role){
   return (role === "owner" || role === "moderator") ? "مسؤول" : null;
+}
+
+/** يحلّل رابط حساب تواصل اجتماعي إلى {platform, handle, url} لعرضه كـ user@ + أيقونة المنصة */
+export function parseSocialLink(raw){
+  if(!raw) return null;
+  let url = raw.trim();
+  if(!/^https?:\/\//i.test(url)) url = "https://" + url.replace(/^@/, "");
+  try{
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    const handle = (u.pathname.replace(/^\//, "").split("/")[0] || "").replace(/^@/, "") || host;
+    let platform = "link";
+    if(host.includes("instagram")) platform = "instagram";
+    else if(host.includes("tiktok")) platform = "tiktok";
+    else if(host.includes("twitter") || host.includes("x.com")) platform = "twitter";
+    else if(host.includes("snapchat")) platform = "snapchat";
+    else if(host.includes("youtube") || host.includes("youtu.be")) platform = "youtube";
+    return { platform, handle, url: u.href };
+  }catch(e){
+    return { platform: "link", handle: raw.replace(/^@/, ""), url };
+  }
 }
 
 /** رسمة كتاب زخرفية بدرجات اللون الزيتي — للاستخدام في العبارة الترحيبية بالصفحة الرئيسية */

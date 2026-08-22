@@ -1,7 +1,7 @@
 /* =========================================================
    دوحة المداد — badgeCard.js
-   مكوّن بطاقة الوسام: عرض الحالة — رمز وسام حقيقي عند الفتح،
-   ورمز قفل عند عدم الاستحقاق بعد. الأوسمة المفتوحة تُعرض أولاً.
+   مكوّن بطاقة الوسام بشكل سداسي (Hexagon) — رمز حقيقي بريّاق
+   عند الفتح، والأوسمة المفتوحة تُعرض أولاً
    ========================================================= */
 
 import { openModal } from "./modals.js";
@@ -16,13 +16,12 @@ export function sortBadgesUnlockedFirst(describedList){
   });
 }
 
-/** يُعيد HTML لبطاقة وسام واحدة، مع data-badge-id لربط الحدث لاحقاً */
+/** يُعيد HTML لوسام سداسي واحد، مع data-badge-id لربط الحدث لاحقاً */
 export function renderBadgeCard(described){
   return `
-    <div class="card card--hover badge-card ${described.unlocked ? "is-unlocked" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0">
-      <div class="badge-card__icon">${icon(described.unlocked ? "medal" : "lock", { size: described.unlocked ? 30 : 22 })}</div>
-      <div class="badge-card__name">${described.name}</div>
-      <div class="badge-card__desc">${described.text}</div>
+    <div class="badge-hex ${described.unlocked ? "is-unlocked" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0">
+      <div class="badge-hex__shape">${icon(described.unlocked ? "medal" : "lock", { size: described.unlocked ? 26 : 20 })}</div>
+      <div class="badge-hex__name">${described.name}</div>
     </div>
   `;
 }
