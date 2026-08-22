@@ -45,17 +45,7 @@
   font-size:.8rem; color:var(--paper-faint); border-top:1px solid var(--ink-700);
 }
 
-/* ---------- صفحة البروفايل ---------- */
-.profile-head{
-  display:flex; gap:22px; align-items:center; flex-wrap:wrap;
-  padding:28px; margin-bottom:30px;
-}
-.profile-head__id{ flex:1; min-width:220px; }
-.profile-head__name{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-.profile-head__handle{ color:var(--paper-faint); font-size:.9rem; }
-.profile-head__level{ margin-top:8px; }
-.profile-head__level .progress{ width:220px; margin-top:6px; }
-
+/* ---------- بطاقات إحصائية عامة (مُستخدمة في الرئيسية، الإحصائيات، بطاقة العضو) ---------- */
 .stats-grid{ margin-bottom:34px; }
 .stat-box{ text-align:center; padding:20px 12px; border-inline-start:3px solid var(--gold-soft); }
 .stat-box__icon{ display:inline-flex; color:var(--gold); margin-bottom:6px; }
@@ -81,18 +71,98 @@
 .stat-box--olive b,.stat-box--olive span{ color:var(--olive-deep); }
 .stat-box--olive .stat-box__icon{ color:var(--olive-deep); }
 
-.streak-panel{ display:flex; gap:30px; flex-wrap:wrap; align-items:center; }
-.streak-panel__stats{ display:flex; gap:26px; flex-wrap:wrap; }
-.streak-panel__stat{ text-align:center; min-width:80px; }
-.streak-panel__stat b{ font-family:var(--font-display); font-size:1.9rem; color:var(--ember); display:block; }
-.streak-panel__stat span{ font-size:.76rem; color:var(--paper-faint); }
-.streak-panel__map{ flex:1; min-width:260px; overflow-x:auto; }
+/* ---------- صفحة البروفايل ---------- */
+.container--narrow{ max-width:820px; }
 
-.profile-badges-grid{ margin-top:8px; }
+/* -- البطاقة العلوية: كل شيء متمركز -- */
+.profile-head-v2{
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:36px 24px; margin-bottom:22px;
+}
+.avatar--xl{ width:104px; height:104px; font-size:2rem; margin-bottom:14px; }
+.profile-head-v2__name{ margin:0 0 2px; }
+.profile-head-v2__handle{ color:var(--paper-faint); font-size:.92rem; }
+.profile-head-v2__role{
+  display:inline-flex; align-items:center; gap:5px; margin-top:6px;
+  color:var(--gold-soft); font-size:.82rem;
+}
+.profile-head-v2__progress{ width:100%; max-width:280px; margin-top:20px; }
+.profile-head-v2__progress-label{ font-size:.85rem; color:var(--paper-dim); margin-bottom:6px; }
+.progress--wide{ height:9px; }
+.profile-head-v2__meta{
+  display:flex; align-items:center; gap:16px; margin-top:16px;
+  font-size:.92rem; color:var(--paper-dim);
+}
+.profile-head-v2__meta span{ display:inline-flex; align-items:center; gap:6px; }
+.profile-head-v2__divider{ width:1px; height:16px; background:var(--ink-600); }
+.profile-head-v2__name ~ .btn, .profile-head-v2 > .btn{ margin-top:22px; }
 
-.profile-head__bio{ margin:8px 0; }
-.profile-head__bio p{ margin:0 0 6px; font-size:.9rem; }
-.profile-head__social{ display:inline-flex; align-items:center; gap:5px; color:var(--gold); }
+/* -- بطاقة النبذة: نص + خط فاصل + إحصائيات مصغّرة -- */
+.profile-bio-card{ margin-bottom:30px; }
+.profile-bio-card__head{ display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-weight:700; margin-bottom:16px; }
+.profile-bio-card__body{ display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+.profile-bio-card__text{ flex:1.2; min-width:180px; }
+.profile-bio-card__text p{ margin:0 0 10px; font-size:.92rem; }
+.profile-bio-card__divider{ width:1px; align-self:stretch; background:var(--ink-700); }
+.profile-bio-card__stats{ flex:1; min-width:220px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.mini-stat{ display:flex; align-items:center; gap:8px; }
+.mini-stat__icon{ color:var(--gold); flex-shrink:0; }
+.mini-stat b{ display:block; font-family:var(--font-display); font-size:1.05rem; color:var(--paper); }
+.mini-stat span{ font-size:.74rem; color:var(--paper-faint); }
+.profile-social-pill{ display:inline-flex; align-items:center; gap:6px; color:var(--gold); }
+
+@media (max-width:620px){
+  .profile-bio-card__divider{ display:none; }
+  .profile-bio-card__stats{ grid-template-columns:1fr 1fr; }
+}
+
+/* -- الأوسمة: صف سداسي الشكل -- */
+.badge-hex-row{ display:flex; gap:18px; flex-wrap:wrap; margin-bottom:34px; }
+.badge-hex{ width:82px; text-align:center; cursor:pointer; }
+.badge-hex__shape{
+  width:66px; height:66px; margin:0 auto 8px;
+  clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0% 50%);
+  display:flex; align-items:center; justify-content:center;
+  background:var(--ink-700); color:var(--paper-faint);
+  position:relative;
+}
+.badge-hex.is-unlocked .badge-hex__shape{
+  background:linear-gradient(150deg, #FCEAC0, #E9BE68 55%, #C98A2E);
+  color:#5B3E0F;
+}
+.badge-hex.is-unlocked .badge-hex__shape::before{
+  content:""; position:absolute; inset:-6px;
+  clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0% 50%);
+  background:radial-gradient(circle, rgba(233,190,104,.5), transparent 72%);
+  animation:badge-sparkle 2.6s ease-in-out infinite;
+}
+.badge-hex.is-locked{ opacity:.62; }
+.badge-hex__name{ font-size:.78rem; color:var(--paper-dim); }
+
+/* -- بطاقة حماسة الكتابة -- */
+.profile-streak-card{ margin-bottom:26px; }
+.profile-streak-card__head{ display:flex; align-items:center; gap:28px; margin-bottom:20px; flex-wrap:wrap; }
+.profile-streak-card__stat{ text-align:center; }
+.profile-streak-card__stat b{ display:block; font-family:var(--font-display); font-size:1.7rem; color:var(--ember); }
+.profile-streak-card__stat span{ font-size:.76rem; color:var(--paper-faint); }
+.profile-streak-card__total{ margin-inline-start:auto; text-align:left; }
+.profile-streak-card__total b{ font-family:var(--font-display); font-size:1.9rem; color:var(--gold); display:block; }
+.profile-streak-card__total span{ display:inline-flex; align-items:center; gap:5px; font-size:.78rem; color:var(--paper-faint); }
+
+/* -- خريطة النشاط (أسابيع × أيام) -- */
+.ink-heatmap2{ direction:ltr; overflow-x:auto; }
+.ink-heatmap2__months{ display:flex; margin-bottom:4px; }
+.ink-heatmap2__months-track{ display:flex; flex:1; }
+.ink-heatmap2__month{ flex:0 0 15px; font-size:.68rem; color:var(--paper-faint); white-space:nowrap; }
+.ink-heatmap2__row{ display:flex; align-items:center; gap:0; margin-bottom:2px; }
+.ink-heatmap2__label{ flex:0 0 46px; font-size:.66rem; color:var(--paper-faint); text-align:left; }
+.ink-heatmap2__cells{ display:flex; gap:3px; }
+.ink-heatmap2__cell{ width:12px; height:12px; border-radius:3px; background:var(--ink-600); flex:0 0 12px; }
+.ink-heatmap2__cell--empty{ background:transparent; }
+.ink-heatmap2__cell[data-level="1"]{ background:rgba(200,155,60,.28); }
+.ink-heatmap2__cell[data-level="2"]{ background:rgba(200,155,60,.52); }
+.ink-heatmap2__cell[data-level="3"]{ background:rgba(200,155,60,.76); }
+.ink-heatmap2__cell[data-level="4"]{ background:var(--gold); box-shadow:0 0 5px rgba(200,155,60,.6); }
 /* ---------- صفحة الفعاليات ---------- */
 .event-card{ display:flex; flex-direction:column; height:100%; border-inline-start:3px solid var(--accent-tan); }
 .event-card:nth-of-type(10n+1){ border-inline-start-color:#8FA6B5; background:#E9EFF2; }
