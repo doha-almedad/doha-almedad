@@ -61,9 +61,68 @@ export function showToast(message){
    نافذة معلومات المشارك — تُفتح عند الضغط على أيقونة/اسم أي
    عضو شارك في فعالية أو نشر في الكتابة/القراءة
    --------------------------------------------------------- */
+/* ---------------------------------------------------------
+   نافذة عرض منشور أو مراجعة كاملة (تُستخدم من الصفحة الرئيسية)
+   --------------------------------------------------------- */
+export async function openPostViewModal(postId){
+  const { store } = await import("../db/store.js");
+  const { icon, initial } = await import("./icons.js");
+  const { renderCarousel, bindCarousels } = await import("./carousel.js");
+  const p = store.getPosts().find(x => x.id === postId);
+  if(!p) return;
+  const author = store.getUser(p.authorId);
+  const images = p.images || (p.image ? [p.image] : []);
+  openModal(`
+    <div class="modal-box__head"><h3>${p.title}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="highlight-card__meta" style="margin-bottom:12px;">
+      <span class="badge-pill">${author?.displayName || "عضو"}</span>
+    </div>
+    ${renderCarousel(images)}
+    <p style="white-space:pre-line;">${p.content}</p>
+  `, { size: "lg", onMount(box){ bindCarousels(box); } });
+}
+
+export async function openReviewViewModal(reviewId){
+  const { store } = await import("../db/store.js");
+  const { icon } = await import("./icons.js");
+  const { renderCarousel, bindCarousels } = await import("./carousel.js");
+  const r = store.getReviews().find(x => x.id === reviewId);
+  if(!r) return;
+  const author = store.getUser(r.authorId);
+  const images = r.images || (r.image ? [r.image] : []);
+  openModal(`
+    <div class="modal-box__head"><h3>${r.bookTitle}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="highlight-card__meta" style="margin-bottom:12px;">
+      <span class="badge-pill">${author?.displayName || "عضو"}</span>
+      <span class="rating-stars">${Array.from({length:5},(_, i) => icon("star", { size: 13, cls: i < r.rating ? "star-filled" : "star-empty" })).join("")}</span>
+    </div>
+    ${renderCarousel(images)}
+    <p style="white-space:pre-line;">${r.content}</p>
+  `, { size: "lg", onMount(box){ bindCarousels(box); } });
+}
+
+export async function openArticleViewModal(articleId){
+  const { store } = await import("../db/store.js");
+  const { icon } = await import("./icons.js");
+  const { renderCarousel, bindCarousels } = await import("./carousel.js");
+  const a = store.getArticles().find(x => x.id === articleId);
+  if(!a) return;
+  const author = store.getUser(a.author);
+  const images = a.images || (a.image ? [a.image] : []);
+  openModal(`
+    <div class="modal-box__head"><h3>${a.title}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="highlight-card__meta" style="margin-bottom:12px;">
+      <span class="badge-pill badge-pill--ember">${a.category}</span>
+      <span class="badge-pill">${author?.displayName || "كاتب"}</span>
+    </div>
+    ${renderCarousel(images)}
+    <p style="white-space:pre-line;">${a.content}</p>
+  `, { size: "lg", onMount(box){ bindCarousels(box); } });
+}
+
 export async function openParticipantModal(userId){
   const { store } = await import("../db/store.js");
-  const { icon, initial, publicRoleLabel, parseSocialLink } = await import("./icons.js");
+  const { icon, initial, publicRoleLabel, parseSocialLink, avatarHtml } = await import("./icons.js");
   const user = store.getUser(userId);
   if(!user) return;
 
@@ -73,7 +132,7 @@ export async function openParticipantModal(userId){
   openModal(`
     <div class="modal-box__head"><h3>بطاقة العضو</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-      <div class="avatar avatar--lg">${initial(user.displayName)}</div>
+      <div class="avatar avatar--lg">${avatarHtml(user)}</div>
       <div>
         <div style="font-weight:700;font-size:1.05rem;">${user.displayName}</div>
         <div class="text-muted" style="font-size:.85rem;">${roleTag ? `<span class="badge-pill badge-pill--sage" style="margin-inline-end:6px;">${roleTag}</span>` : ""}المستوى ${user.level}</div>
@@ -136,8 +195,7 @@ export async function openCommentsModal(kind, itemId, onChange){
         <div class="avatar avatar--sm">${initial(author?.displayName)}</div>
         <div class="comment-row__body">
           <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}</span></div>
-          ${replyToAuthor ? `<div class="comment-row__replyto">${icon("chevronLeft", { size: 11 })} رداً على ${replyToAuthor.displayName}</div>` : ""}
-          <p>${c.text}</p>
+          <p>${replyToAuthor ? `<span class="comment-mention">@${replyToAuthor.displayName}</span> ` : ""}${c.text}</p>
           <div class="comment-row__actions">
             <button class="comment-row__reply ${liked ? "is-liked" : ""}" data-like-comment="${c.id}">${icon("heart", { size: 12 })} ${(c.likedBy||[]).length}</button>
             <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.displayName || "عضو"}">رد</button>

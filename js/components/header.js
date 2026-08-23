@@ -5,7 +5,7 @@
 
 import { store } from "../db/store.js";
 import { openModal } from "./modals.js";
-import { icon, initial, publicRoleLabel } from "./icons.js";
+import { icon, initial, publicRoleLabel, avatarHtml } from "./icons.js";
 
 const NAV_LINKS = [
   { path: "#/",            label: "الرئيسية",  ic: "home" },
@@ -51,7 +51,7 @@ function accountMenu(user){
   openModal(`
     <div class="modal-box__head"><h3>حسابك</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-      <div class="avatar avatar--lg">${initial(user.displayName)}</div>
+      <div class="avatar avatar--lg">${avatarHtml(user)}</div>
       <div>
         <div style="font-weight:700;">${user.displayName}</div>
         <div class="text-muted" style="font-size:.85rem;">${publicRoleLabel(user.role) ? `<span class="badge-pill badge-pill--sage" style="margin-inline-end:6px;">${publicRoleLabel(user.role)}</span>` : ""}المستوى ${user.level}</div>
@@ -101,7 +101,7 @@ export function renderHeader(activePath = "#/"){
             ${icon("bell", { size: 18 })} ${unread ? '<span class="icon-btn__dot"></span>' : ""}
           </button>
           <div class="header-profile" id="btn-profile">
-            <div class="avatar avatar--sm">${initial(user.displayName)}</div>
+            <div class="avatar avatar--sm">${avatarHtml(user)}</div>
           </div>
         </div>
       </div>
