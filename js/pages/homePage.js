@@ -5,7 +5,8 @@
 
 import { store } from "../db/store.js";
 import { getLeaderboard } from "../services/rewardEngine.js";
-import { icon, initial, heroBookIllustration } from "../components/icons.js";
+import { icon, initial, heroBookIllustration, arNum } from "../components/icons.js";
+import { openPostViewModal, openReviewViewModal } from "../components/modals.js";
 
 function excerpt(text, len = 110){
   return text.length > len ? text.slice(0, len).trim() + "…" : text;
@@ -13,10 +14,10 @@ function excerpt(text, len = 110){
 
 function timeAgo(iso){
   const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if(diffMin < 60) return `منذ ${Math.max(1,diffMin)} د`;
+  if(diffMin < 60) return `منذ ${arNum(Math.max(1,diffMin))} د`;
   const h = Math.round(diffMin/60);
-  if(h < 24) return `منذ ${h} س`;
-  return `منذ ${Math.round(h/24)} يوم`;
+  if(h < 24) return `منذ ${arNum(h)} س`;
+  return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
 function annualGoalsCard(){
@@ -35,12 +36,12 @@ function annualGoalsCard(){
 
   return `
     <div class="card annual-goals-card">
-      <h3 style="margin-bottom:16px;">${icon("target", { size: 18, cls: "heading-icon" })} أهداف السنة الحالية — ${year}</h3>
+      <h3 style="margin-bottom:16px;">${icon("target", { size: 18, cls: "heading-icon" })} أهداف السنة الحالية — ${arNum(year)}</h3>
       ${rows.map(r => {
         const pct = Math.min(100, Math.round((r.cur / r.target) * 100));
         return `
           <div class="goal-row">
-            <div class="goal-row__labels"><span>${r.label}</span><span>${r.cur.toLocaleString("ar")} / ${r.target.toLocaleString("ar")}</span></div>
+            <div class="goal-row__labels"><span>${r.label}</span><span>${arNum(r.cur)} / ${arNum(r.target)}</span></div>
             <div class="progress"><div class="progress__bar" style="width:${pct}%"></div></div>
           </div>
         `;
@@ -68,21 +69,21 @@ export function renderHomePage(root){
         <div class="hero__copy">
           <span class="hero__eyebrow">أهلاً بك مجدداً، ${user.displayName}</span>
           <h1 class="hero__title">دوحة تظلّلها الكلمة، ويجتمع تحتها الكتّاب والقرّاء</h1>
-          <p class="hero__lede">شارك نصوصك، سجّل قراءاتك، وخض التحديات الأدبية جنباً إلى جنب مع مجتمعك.<br>مجتمعٌ يحتفي بكل خطوة تخطوها في رحلتك مع المداد.</p>
+          <p class="hero__lede">شارك نصوصك، سجّل قراءاتك، وخض التحديات الأدبية جنباً إلى جنب مع مجتمعك.</p>
           <div class="hero__cta">
             <a href="#/writing" class="btn btn-outline">${icon("feather", { size: 17 })}<span>ابدأ الكتابة</span></a>
             <a href="#/reading" class="btn btn-outline">${icon("book", { size: 17 })}<span>ابدأ القراءة</span></a>
             <a href="#/events" class="btn btn-outline">${icon("calendar", { size: 17 })}<span>تصفّح الفعاليات</span></a>
           </div>
         </div>
-        <div class="hero__art" aria-hidden="true">${heroBookIllustration({ size: 230 })}</div>
+        <div class="hero__art" aria-hidden="true">${heroBookIllustration({ size: 190 })}</div>
       </div>
       <div class="container">
         <div class="grid grid-4 hero__stats-grid">
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${store.getUsers().length}</b><span>عضو في الدوحة</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("chart", { size: 18 })}</span><b>${productionRatio}%</b><span>نسبة الإنتاج التراكمي</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${store.getEvents().length}</b><span>فعالية أدبية</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${store.getPosts().length + store.getReviews().length}</b><span>مساهمة منشورة</span></div>
+          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
+          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("chart", { size: 18 })}</span><b>${arNum(productionRatio)}%</b><span>نسبة الإنتاج التراكمي</span></div>
+          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
+          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
         </div>
         ${annualGoalsCard()}
       </div>
@@ -97,7 +98,7 @@ export function renderHomePage(root){
         <div class="grid grid-3">
           ${events.map(ev => `
             <a href="#/events/${ev.id}" class="card card--hover highlight-card">
-              <div class="highlight-card__meta"><span class="badge-pill badge-pill--gold">${ev.participants.length} مشارك</span></div>
+              <div class="highlight-card__meta"><span class="badge-pill badge-pill--gold">${arNum(ev.participants.length)} مشارك</span></div>
               <h3 class="highlight-card__title">${ev.title}</h3>
               <p>${excerpt(ev.description)}</p>
               <div class="highlight-card__foot"><span>حتى ${new Date(ev.endDate).toLocaleDateString("ar")}</span><span>التفاصيل ${icon("chevronLeft", { size: 13 })}</span></div>
@@ -113,9 +114,9 @@ export function renderHomePage(root){
           <div><span class="eyebrow">حديثاً</span><h2>أحدث ما كُتب</h2></div>
           <a href="#/writing" class="btn btn-ghost">قسم الكتابة ${icon("chevronLeft", { size: 15 })}</a>
         </div>
-        <div class="grid grid-3">
+        <div class="grid grid-3" id="recent-posts-grid">
           ${posts.length ? posts.map(p => `
-            <div class="card highlight-card">
+            <div class="card card--hover highlight-card" data-post-id="${p.id}" role="button" tabindex="0">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(p.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${p.title}</h3>
               <p>${excerpt(p.content)}</p>
@@ -132,9 +133,9 @@ export function renderHomePage(root){
           <div><span class="eyebrow">حديثاً</span><h2>أحدث المراجعات</h2></div>
           <a href="#/reading" class="btn btn-ghost">قسم القراءة ${icon("chevronLeft", { size: 15 })}</a>
         </div>
-        <div class="grid grid-3">
+        <div class="grid grid-3" id="recent-reviews-grid">
           ${reviews.length ? reviews.map(r => `
-            <div class="card highlight-card">
+            <div class="card card--hover highlight-card" data-review-id="${r.id}" role="button" tabindex="0">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(r.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${r.bookTitle}</h3>
               <p>${excerpt(r.content)}</p>
@@ -155,9 +156,9 @@ export function renderHomePage(root){
             </div>
             ${top3.map((u, i) => `
               <div class="leader-row ${u.id === user.id ? "leader-row--me" : ""}">
-                <div class="leader-row__rank">${i+1}</div>
+                <div class="leader-row__rank">${arNum(i+1)}</div>
                 <div class="leader-row__user"><div class="avatar avatar--sm">${initial(u.displayName)}</div>${u.displayName}</div>
-                <div class="leader-row__xp">${u.xp} XP</div>
+                <div class="leader-row__xp">${arNum(u.xp)} XP</div>
               </div>
             `).join("")}
           </div>
@@ -172,4 +173,15 @@ export function renderHomePage(root){
       </div>
     </section>
   `;
+
+  root.querySelectorAll("[data-post-id]").forEach(card => {
+    const open = () => openPostViewModal(card.getAttribute("data-post-id"));
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
+  });
+  root.querySelectorAll("[data-review-id]").forEach(card => {
+    const open = () => openReviewViewModal(card.getAttribute("data-review-id"));
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
+  });
 }

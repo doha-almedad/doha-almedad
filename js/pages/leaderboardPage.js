@@ -6,11 +6,11 @@
 import { store } from "../db/store.js";
 import { badgeService } from "../services/badgeService.js";
 import { getLeaderboard } from "../services/rewardEngine.js";
-import { icon, initial } from "../components/icons.js";
+import { icon, initial, avatarHtml, arNum } from "../components/icons.js";
 
 const MONTH_NAMES = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
-function barChart(labels, values, { width = 560, height = 200, color = "var(--gold)" } = {}){
+function barChart(labels, values, { width = 560, height = 200, color = "#AD7556" } = {}){
   const max = Math.max(1, ...values);
   const barW = width / values.length;
   const bars = values.map((v, i) => {
@@ -56,7 +56,7 @@ function monthlyProductionThisYear(){
 }
 
 function statCard(iconName, value, label){
-  return `<div class="card stat-box stat-box--stats"><span class="stat-box__icon">${icon(iconName, { size: 17 })}</span><b>${value.toLocaleString("ar")}</b><span>${label}</span></div>`;
+  return `<div class="card stat-box stat-box--stats"><span class="stat-box__icon">${icon(iconName, { size: 17 })}</span><b>${arNum(value)}</b><span>${label}</span></div>`;
 }
 
 export function renderLeaderboardPage(root){
@@ -105,12 +105,12 @@ export function renderLeaderboardPage(root){
             <h3 style="margin-bottom:14px;">توزيع المساهمات</h3>
             ${hasActivity ? `
               ${donutChart([
-                { label: "كتابة", value: postsCount, color: "var(--gold)" },
-                { label: "قراءة", value: reviewsCount, color: "var(--sage)" },
+                { label: "كتابة", value: postsCount, color: "#AD7556" },
+                { label: "قراءة", value: reviewsCount, color: "#7A9CB3" },
               ])}
               <div style="display:flex;gap:16px;margin-top:12px;font-size:.82rem;">
-                <span><span class="legend-dot" style="background:var(--gold);"></span> كتابة (${postsCount})</span>
-                <span><span class="legend-dot" style="background:var(--sage);"></span> قراءة (${reviewsCount})</span>
+                <span><span class="legend-dot" style="background:#AD7556;"></span> كتابة (${postsCount})</span>
+                <span><span class="legend-dot" style="background:#7A9CB3;"></span> قراءة (${reviewsCount})</span>
               </div>
             ` : `<p class="text-muted">لا مساهمات بعد لعرض التوزيع.</p>`}
           </div>
@@ -120,15 +120,15 @@ export function renderLeaderboardPage(root){
         <div class="card">
           ${ranked.map((u, i) => `
             <div class="leader-row ${u.id === currentUser.id ? "leader-row--me" : ""}">
-              <div class="leader-row__rank">${i+1}</div>
+              <div class="leader-row__rank">${arNum(i+1)}</div>
               <div class="leader-row__user">
-                <div class="avatar avatar--sm">${initial(u.displayName)}</div>
+                <div class="avatar avatar--sm">${avatarHtml(u)}</div>
                 <div>
                   <div>${u.displayName}${u.id === currentUser.id ? ' <span class="text-muted" style="font-size:.75rem;">(أنت)</span>' : ""}</div>
-                  <div class="text-muted" style="font-size:.78rem;">المستوى ${u.level}</div>
+                  <div class="text-muted" style="font-size:.78rem;">المستوى ${arNum(u.level)}</div>
                 </div>
               </div>
-              <div class="leader-row__xp">${u.xp} XP</div>
+              <div class="leader-row__xp">${arNum(u.xp)} XP</div>
             </div>
           `).join("")}
         </div>

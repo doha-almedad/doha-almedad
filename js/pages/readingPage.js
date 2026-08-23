@@ -6,7 +6,7 @@
 import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks, openCommentsModal, openModal, closeModal } from "../components/modals.js";
-import { icon, initial } from "../components/icons.js";
+import { icon, initial, avatarHtml, arNum } from "../components/icons.js";
 import { resizeImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
@@ -19,10 +19,10 @@ function stars(n){
 
 function timeAgo(iso){
   const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if(diffMin < 60) return `منذ ${Math.max(1,diffMin)} د`;
+  if(diffMin < 60) return `منذ ${arNum(Math.max(1,diffMin))} د`;
   const h = Math.round(diffMin/60);
-  if(h < 24) return `منذ ${h} س`;
-  return `منذ ${Math.round(h/24)} يوم`;
+  if(h < 24) return `منذ ${arNum(h)} س`;
+  return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
 function renderFeed(){
@@ -42,7 +42,7 @@ function renderFeed(){
     return `
       <article class="card feed-item">
         <div class="feed-item__head">
-          <div class="avatar avatar--sm participant-link" data-user-id="${r.authorId}">${initial(author?.displayName)}</div>
+          <div class="avatar avatar--sm participant-link" data-user-id="${r.authorId}">${avatarHtml(author)}</div>
           <div>
             <div class="feed-item__name participant-link" data-user-id="${r.authorId}">${author?.displayName || "عضو"}</div>
             <div class="feed-item__time">${r.bookTitle} · ${timeAgo(r.date)}</div>
@@ -52,8 +52,8 @@ function renderFeed(){
         ${renderCarousel(images)}
         <p>${r.content}</p>
         <div class="feed-item__actions">
-          <span data-like="${r.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${(r.likedBy||[]).length})</span>
-          <span data-comment="${r.id}">${icon("comment", { size: 15 })} تعليق (${commentCount})</span>
+          <span data-like="${r.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${arNum((r.likedBy||[]).length)})</span>
+          <span data-comment="${r.id}">${icon("comment", { size: 15 })} تعليق (${arNum(commentCount)})</span>
         </div>
       </article>
     `;

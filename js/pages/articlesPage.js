@@ -5,16 +5,16 @@
 
 import { store } from "../db/store.js";
 import { openModal, closeModal, showToast } from "../components/modals.js";
-import { icon } from "../components/icons.js";
+import { icon, arNum } from "../components/icons.js";
 import { resizeImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
 function timeAgo(iso){
   const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if(diffMin < 60) return `منذ ${Math.max(1,diffMin)} د`;
+  if(diffMin < 60) return `منذ ${arNum(Math.max(1,diffMin))} د`;
   const h = Math.round(diffMin/60);
-  if(h < 24) return `منذ ${h} س`;
-  return `منذ ${Math.round(h/24)} يوم`;
+  if(h < 24) return `منذ ${arNum(h)} س`;
+  return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
 function openArticleModal(a){
@@ -147,7 +147,6 @@ function openComposerModal(user, refreshList){
 
 export function renderArticlesPage(root){
   const user = store.getCurrentUser();
-  const categories = ["الكل", ...new Set(store.getArticles().map(a => a.category))];
 
   root.innerHTML = `
     <section class="section">
@@ -157,10 +156,8 @@ export function renderArticlesPage(root){
         </div>
 
         <div class="article-search">
+          ${icon("search", { size: 16, cls: "article-search__icon" })}
           <input type="text" id="article-search-input" placeholder="ابحث عن مقال، تقنية، أو موضوع...">
-          <select id="article-category-select">
-            ${categories.map(c => `<option value="${c}">${c}</option>`).join("")}
-          </select>
         </div>
 
         <div class="grid grid-3" id="articles-grid">
@@ -175,10 +172,9 @@ export function renderArticlesPage(root){
   const grid = root.querySelector("#articles-grid");
   const emptyBox = root.querySelector("#articles-empty");
   const input = root.querySelector("#article-search-input");
-  const select = root.querySelector("#article-category-select");
 
   function update(){
-    const results = filterArticles(input.value, select.value);
+    const results = filterArticles(input.value, "الكل");
     grid.innerHTML = results.map(articleCard).join("");
     emptyBox.innerHTML = results.length ? "" : `<div class="empty-state"><div class="empty-state__icon">${icon("search", { size: 26 })}</div><p>لا نتائج مطابقة لبحثك.</p></div>`;
     bindArticleClicks(grid);
@@ -186,7 +182,6 @@ export function renderArticlesPage(root){
 
   bindArticleClicks(grid);
   input.addEventListener("input", update);
-  select.addEventListener("change", update);
 
   root.querySelector("#article-fab").addEventListener("click", () => openComposerModal(user, update));
 }

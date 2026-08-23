@@ -9,14 +9,15 @@ import { badgeService } from "../services/badgeService.js";
 import { renderBadgeCard, bindBadgeCards, sortBadgesUnlockedFirst } from "../components/badgeCard.js";
 import { xpProgressWithinLevel } from "../services/rewardEngine.js";
 import { getLeaderboard } from "../services/rewardEngine.js";
-import { icon, initial, publicRoleLabel, parseSocialLink } from "../components/icons.js";
+import { icon, initial, publicRoleLabel, parseSocialLink, arNum, avatarHtml } from "../components/icons.js";
 import { openModal, closeModal, showToast } from "../components/modals.js";
+import { resizeImageFile } from "../services/mediaService.js";
 
 let showAllBadges = false;
 
 function miniStat(value, label, iconName){
   if(!value) return "";
-  return `<div class="mini-stat"><span class="mini-stat__icon">${icon(iconName, { size: 16 })}</span><b>${value.toLocaleString("ar")}</b><span>${label}</span></div>`;
+  return `<div class="mini-stat"><span class="mini-stat__icon">${icon(iconName, { size: 16 })}</span><b>${arNum(value)}</b><span>${label}</span></div>`;
 }
 
 function activeDaysCount(user){
@@ -34,7 +35,7 @@ function heatmapGridHtml(user){
     const cells = weeks.map(week => {
       const c = week[row];
       if(!c) return `<div class="ink-heatmap2__cell ink-heatmap2__cell--empty"></div>`;
-      return `<div class="ink-heatmap2__cell" data-level="${c.level}" title="${c.date} · ${c.count} نشاط"></div>`;
+      return `<div class="ink-heatmap2__cell ${c.isToday ? "is-today" : ""}" data-level="${c.level}" title="${c.date} · ${c.count} نشاط"></div>`;
     }).join("");
     return `<div class="ink-heatmap2__row"><span class="ink-heatmap2__label">${label}</span><div class="ink-heatmap2__cells">${cells}</div></div>`;
   }).join("");
@@ -54,8 +55,16 @@ function socialLinkPill(rawUrl){
 }
 
 function openEditProfileModal(user, root, userId){
+  let pendingAvatar = null;
   openModal(`
     <div class="modal-box__head"><h3>تعديل الملف الشخصي</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="field" style="text-align:center;">
+      <label class="avatar-edit-upload">
+        <div class="avatar avatar--lg" id="avatar-edit-preview" style="margin:0 auto;">${avatarHtml(user)}</div>
+        <span class="avatar-edit-upload__badge">${icon("image", { size: 13 })}</span>
+        <input type="file" id="edit-avatar-input" accept="image/*" hidden>
+      </label>
+    </div>
     <div class="field"><label>الاسم</label><input type="text" id="edit-name" value="${user.displayName}"></div>
     <div class="field"><label>نبذة عنك</label><textarea id="edit-bio" placeholder="اكتب نبذة قصيرة...">${user.bio || ""}</textarea></div>
     <div class="field">
@@ -66,12 +75,20 @@ function openEditProfileModal(user, root, userId){
     <button class="btn btn-primary btn-block" id="save-profile-btn">حفظ التغييرات</button>
   `, {
     onMount(box){
+      box.querySelector("#edit-avatar-input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        pendingAvatar = await resizeImageFile(file, 400);
+        box.querySelector("#avatar-edit-preview").innerHTML = `<img src="${pendingAvatar}" alt="">`;
+      });
       box.querySelector("#save-profile-btn").addEventListener("click", () => {
         const displayName = box.querySelector("#edit-name").value.trim();
         const bio = box.querySelector("#edit-bio").value.trim();
         const socialUrl = box.querySelector("#edit-social").value.trim();
         if(!displayName) return;
-        store.updateUser(user.id, { displayName, bio, socialUrl });
+        const patch = { displayName, bio, socialUrl };
+        if(pendingAvatar) patch.avatarImage = pendingAvatar;
+        store.updateUser(user.id, patch);
         closeModal();
         showToast("تم تحديث ملفك الشخصي");
         renderProfilePage(root, userId);
@@ -100,7 +117,15 @@ export function renderProfilePage(root, userId){
 
   const describedBadges = sortBadgesUnlockedFirst(badgeService.describeAllForUser(user));
   const visibleBadges = showAllBadges ? describedBadges : describedBadges.slice(0, 7);
-  const userPosts = store.getPosts().filter(p => p.authorId === user.id).slice(0, 3);
+  const recentActivity = [
+    ...store.getPosts().filter(p => p.authorId === user.id).map(p => ({ kind: "post", id: p.id, title: p.title, tag: "كتابة", ic: "feather", date: p.date })),
+    ...store.getReviews().filter(r => r.authorId === user.id).map(r => ({ kind: "review", id: r.id, title: r.bookTitle, tag: "قراءة", ic: "book", date: r.date })),
+    ...store.getArticles().filter(a => a.author === user.id).map(a => ({ kind: "article", id: a.id, title: a.title, tag: "مقال", ic: "document", date: a.date })),
+    ...store.getUserEvents(user.id).filter(e => e.type === "join_event").map(e => {
+      const ev = store.getEvent(e.meta.eventId);
+      return ev ? { kind: "event", id: ev.id, title: ev.title, tag: "فعالية", ic: "calendar", date: e.timestamp } : null;
+    }).filter(Boolean),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
   const prog = xpProgressWithinLevel(user);
 
   root.innerHTML = `
@@ -108,20 +133,20 @@ export function renderProfilePage(root, userId){
       <div class="container container--narrow">
 
         <div class="card profile-head-v2">
-          <div class="avatar avatar--xl">${initial(user.displayName)}</div>
+          <div class="avatar avatar--xl">${avatarHtml(user)}</div>
           <h2 class="profile-head-v2__name">${user.displayName}</h2>
           <div class="profile-head-v2__handle">@${user.username}</div>
           ${roleTag ? `<div class="profile-head-v2__role">${icon("shield", { size: 13 })}<span>${roleTag}</span></div>` : ""}
 
           <div class="profile-head-v2__progress">
-            <div class="profile-head-v2__progress-label">${prog.into.toLocaleString("ar")} / ${prog.step.toLocaleString("ar")}</div>
+            <div class="profile-head-v2__progress-label">${arNum(prog.into)} / ${arNum(prog.step)}</div>
             <div class="progress progress--wide"><div class="progress__bar" style="width:${prog.ratio*100}%"></div></div>
           </div>
 
           <div class="profile-head-v2__meta">
-            <span>${icon("star", { size: 16 })} ${user.xp.toLocaleString("ar")} نقطة</span>
+            <span>${icon("star", { size: 16 })} ${arNum(user.xp)} نقطة</span>
             <span class="profile-head-v2__divider"></span>
-            <span>${icon("chart", { size: 16 })} #${rank} المركز</span>
+            <span>${icon("chart", { size: 16 })} #${arNum(rank)} المركز</span>
           </div>
 
           ${isOwnProfile ? `<button class="btn btn-primary btn-sm" id="edit-profile-btn">${icon("feather", { size: 14 })}<span>تعديل الملف الشخصي</span></button>` : ""}
@@ -151,24 +176,21 @@ export function renderProfilePage(root, userId){
 
         <div class="card profile-streak-card">
           <div class="profile-streak-card__head">
-            <div class="profile-streak-card__stat"><b>${user.longestStreak || 0}</b><span>أطول سلسلة</span></div>
-            <div class="profile-streak-card__stat"><b>${user.streak || 0}</b><span>السلسلة الحالية</span></div>
-            <div class="profile-streak-card__total">
-              <b>${activeDaysCount(user).toLocaleString("ar")}</b>
-              <span>${icon("flame", { size: 16 })} يوماً نشطاً</span>
-            </div>
+            <div class="profile-streak-card__stat"><b>${arNum(activeDaysCount(user))}</b><span>${icon("flame", { size: 13 })} يوماً نشطاً</span></div>
+            <div class="profile-streak-card__stat"><b>${arNum(user.longestStreak || 0)}</b><span>أطول سلسلة</span></div>
+            <div class="profile-streak-card__stat"><b>${arNum(user.streak || 0)}</b><span>السلسلة الحالية</span></div>
           </div>
           ${heatmapGridHtml(user)}
         </div>
 
-        ${userPosts.length ? `
-          <div class="section-head" style="margin-top:34px;"><h2>${icon("document", { size: 20, cls: "heading-icon" })} آخر منشورات ${user.displayName}</h2></div>
-          <div>
-            ${userPosts.map(p => `
-              <article class="card feed-item">
-                <h3>${p.title}</h3>
-                <p>${p.content.slice(0,160)}${p.content.length>160?"…":""}</p>
-              </article>
+        ${recentActivity.length ? `
+          <div class="section-head" style="margin-top:34px;"><h2>${icon("document", { size: 20, cls: "heading-icon" })} آخر ما نشره ${user.displayName}</h2></div>
+          <div class="grid grid-3" id="recent-activity-grid">
+            ${recentActivity.map(item => `
+              <div class="card card--hover feed-item" data-activity="${item.kind}" data-activity-id="${item.id}" role="button" tabindex="0">
+                <span class="badge-pill badge-pill--gold" style="margin-bottom:8px;">${icon(item.ic, { size: 12 })}<span>${item.tag}</span></span>
+                <h3 style="font-size:1rem;">${item.title}</h3>
+              </div>
             `).join("")}
           </div>
         ` : ""}
@@ -176,6 +198,20 @@ export function renderProfilePage(root, userId){
       </div>
     </section>
   `;
+
+  root.querySelectorAll("[data-activity]").forEach(card => {
+    const kind = card.getAttribute("data-activity");
+    const id = card.getAttribute("data-activity-id");
+    const open = async () => {
+      const { openPostViewModal, openReviewViewModal, openArticleViewModal } = await import("../components/modals.js");
+      if(kind === "post") openPostViewModal(id);
+      else if(kind === "review") openReviewViewModal(id);
+      else if(kind === "article") openArticleViewModal(id);
+      else if(kind === "event") window.location.hash = `#/events/${id}`;
+    };
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
+  });
 
   bindBadgeCards(root.querySelector("#badges-grid"), describedBadges);
 

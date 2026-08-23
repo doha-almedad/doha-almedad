@@ -6,7 +6,7 @@
 import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks } from "../components/modals.js";
-import { icon, initial } from "../components/icons.js";
+import { icon, initial, publicRoleLabel, arNum } from "../components/icons.js";
 
 const VERIFY_INFO = {
   automatic: {
@@ -80,10 +80,7 @@ export function renderEventDetailsPage(root, eventId){
 
   const info = VERIFY_INFO[ev.verificationMethod];
   const joined = ev.participants.includes(user.id);
-  const participantsAvatars = ev.participants.slice(0, 8).map(id => {
-    const u = store.getUser(id);
-    return u ? `<div class="avatar avatar--sm participant-link" data-user-id="${u.id}" title="${u.displayName}">${initial(u.displayName)}</div>` : "";
-  }).join("");
+  const organizer = ev.organizerId ? store.getUser(ev.organizerId) : null;
 
   root.innerHTML = `
     <section class="section">
@@ -93,7 +90,7 @@ export function renderEventDetailsPage(root, eventId){
         <div class="card event-detail-head" style="margin-top:16px;">
           <div class="event-detail-head__badges">
             <span class="badge-pill badge-pill--gold">${icon(info.ic, { size: 14 })} ${info.title}</span>
-            <span class="badge-pill">${icon("users", { size: 14 })} ${ev.participants.length} مشارك</span>
+            <span class="badge-pill">${icon("users", { size: 14 })} ${arNum(ev.participants.length)} مشارك</span>
           </div>
           <h1>${ev.title}</h1>
           <p>${ev.description}</p>
@@ -117,8 +114,20 @@ export function renderEventDetailsPage(root, eventId){
           </div>
 
           <div class="card">
-            <h3>المشاركون</h3>
-            <div class="participants-list" style="margin-top:12px;">${participantsAvatars || '<span class="text-muted">لا مشاركين بعد</span>'}</div>
+            <h3>${icon("users", { size: 16, cls: "heading-icon" })} عدد المشاركين</h3>
+            <div class="text-center" style="padding:10px 0;">
+              <div style="font-family:var(--font-display);font-size:2.2rem;color:var(--gold);">${arNum(ev.participants.length)}</div>
+              <div class="text-muted" style="font-size:.82rem;">عضو مشارك</div>
+            </div>
+            ${organizer ? `
+              <div class="divider"></div>
+              <div class="text-muted" style="font-size:.82rem;margin-bottom:8px;">المسؤول عن الفعالية</div>
+              <div style="display:flex;align-items:center;gap:10px;" class="participant-link" data-user-id="${organizer.id}">
+                <div class="avatar avatar--sm">${initial(organizer.displayName)}</div>
+                <span>${organizer.displayName}</span>
+                ${publicRoleLabel(organizer.role) ? `<span class="badge-pill badge-pill--sage">${publicRoleLabel(organizer.role)}</span>` : ""}
+              </div>
+            ` : ""}
           </div>
         </div>
       </div>
