@@ -4,7 +4,8 @@
    وبثّ التغييرات لبقية أجزاء التطبيق (Pub/Sub بسيط)
    ========================================================= */
 
-import { INITIAL_USERS, INITIAL_EVENTS, INITIAL_ARTICLES, CURRENT_USER_ID } from "./initialData.js";
+import { INITIAL_USERS, INITIAL_EVENTS, INITIAL_ARTICLES, CURRENT_USER_ID, LEVEL_XP_STEP } from "./initialData.js";
+import { dayKey } from "../services/streakService.js";
 
 const DB_KEY = "dawha_almidad_db_v1";
 const listeners = new Set();
@@ -79,6 +80,17 @@ export const store = {
 
   // ---------- الفعاليات ----------
   getEvents(){ return [...db.events].sort((a,b) => a.order - b.order); },
+  createEvent(data){
+    const item = {
+      id: "ev_" + Date.now(),
+      participants: [],
+      order: db.events.length + 1,
+      ...data
+    };
+    db.events.push(item);
+    persist();
+    return item;
+  },
   getEvent(id){ return db.events.find(e => e.id === id) || null; },
   joinEvent(eventId, userId){
     const ev = this.getEvent(eventId);
@@ -105,6 +117,7 @@ export const store = {
     return submission;
   },
   getArticleSubmissions(){ return db.articleSubmissions; },
+  deleteArticle(id){ db.articles = db.articles.filter(a => a.id !== id); persist(); },
   approveArticleSubmission(id){
     const sub = db.articleSubmissions.find(s => s.id === id);
     if(!sub) return null;
@@ -182,9 +195,81 @@ export const store = {
     return comment;
   },
 
-  deletePost(id){ db.posts = db.posts.filter(p => p.id !== id); persist(); },
-  deleteReview(id){ db.reviews = db.reviews.filter(r => r.id !== id); persist(); },
-  deleteEvent(id){ db.events = db.events.filter(e => e.id !== id); persist(); },
+  deletePost(id){
+    const post = db.posts.find(p => p.id === id);
+    if(post) this.reverseActivity(post.authorId, {
+      xp: 50, statField: "wordsWritten", statDelta: post.wordCount || 0,
+      dateIso: post.date, extra: post.type === "chapter" ? { field: "booksPublished", delta: 1 } : null
+    });
+    db.posts = db.posts.filter(p => p.id !== id);
+    persist();
+  },
+  deleteReview(id){
+    const review = db.reviews.find(r => r.id === id);
+    if(review) this.reverseActivity(review.authorId, { xp: 30, statField: "booksRead", statDelta: 1, dateIso: review.date });
+    db.reviews = db.reviews.filter(r => r.id !== id);
+    persist();
+  },
+  deleteEvent(id){
+    const ev = db.events.find(e => e.id === id);
+    if(ev){
+      ev.participants.forEach(uid => {
+        this.reverseActivity(uid, { xp: 15, statField: "challengesJoined", statDelta: 1, dateIso: new Date().toISOString() });
+      });
+      db.eventSubmissions.filter(s => s.eventId === id && s.status === "approved").forEach(s => {
+        this.reverseActivity(s.userId, { xp: 40, statField: null, statDelta: 0, dateIso: s.submittedAt });
+      });
+      db.eventSubmissions = db.eventSubmissions.filter(s => s.eventId !== id);
+    }
+    db.events = db.events.filter(e => e.id !== id);
+    persist();
+  },
+
+  /**
+   * يعكس نشاطاً مؤهلاً محذوفاً: يسحب النقاط ويعيد حساب المستوى،
+   * ينقص الإحصائية المرتبطة، وإن كان هذا آخر نشاط في يومه يُطفئ
+   * شعلة ذلك اليوم ويُعاد حساب السلسلة الحالية/الأطول من جديد.
+   */
+  reverseActivity(userId, { xp = 0, statField = null, statDelta = 0, dateIso, extra = null }){
+    const user = this.getUser(userId);
+    if(!user) return;
+    user.xp = Math.max(0, (user.xp || 0) - xp);
+    user.level = Math.max(1, Math.floor(user.xp / LEVEL_XP_STEP) + 1);
+    if(statField && user.stats[statField] != null){
+      user.stats[statField] = Math.max(0, user.stats[statField] - statDelta);
+    }
+    if(extra && user.stats[extra.field] != null){
+      user.stats[extra.field] = Math.max(0, user.stats[extra.field] - extra.delta);
+    }
+    const key = dayKey(dateIso);
+    if(user.activityLog && user.activityLog[key]){
+      user.activityLog[key] = Math.max(0, user.activityLog[key] - 1);
+      if(user.activityLog[key] === 0) delete user.activityLog[key];
+    }
+    this.recomputeStreak(user);
+  },
+
+  /** يعيد حساب السلسلة الحالية/الأطول ومن آخر يوم نشِط من سجلّ النشاط بالكامل */
+  recomputeStreak(user){
+    const days = Object.keys(user.activityLog || {}).filter(k => user.activityLog[k] > 0).sort();
+    if(!days.length){ user.streak = 0; user.lastActiveDate = null; return; }
+    let longest = 1, run = 1;
+    for(let i = 1; i < days.length; i++){
+      const diff = Math.round((new Date(days[i]) - new Date(days[i-1])) / 86400000);
+      run = diff === 1 ? run + 1 : 1;
+      longest = Math.max(longest, run);
+    }
+    let current = 1;
+    for(let i = days.length - 1; i > 0; i--){
+      const diff = Math.round((new Date(days[i]) - new Date(days[i-1])) / 86400000);
+      if(diff === 1) current++; else break;
+    }
+    const lastDay = days[days.length - 1];
+    const gapFromToday = Math.round((new Date(dayKey(new Date())) - new Date(lastDay)) / 86400000);
+    user.streak = gapFromToday <= 1 ? current : 0;
+    user.longestStreak = Math.max(user.longestStreak || 0, longest);
+    user.lastActiveDate = lastDay;
+  },
 
   // ---------- سجلّ الأحداث (user_events) ----------
   logUserEvent(userId, type, meta = {}){
