@@ -7,6 +7,7 @@
 function dayKey(date){
   return new Date(date).toISOString().slice(0, 10); // YYYY-MM-DD
 }
+export { dayKey };
 
 function daysBetween(a, b){
   const A = new Date(dayKey(a));
@@ -88,16 +89,16 @@ export const streakService = {
     for(let w = 0; w < weeksCount; w++){
       const weekCells = [];
       for(let row = 0; row < 7; row++){
-        const jsDay = Object.keys(ROW_FOR_JSDAY).find(k => ROW_FOR_JSDAY[k] === row);
         const d = new Date(gridStart);
         d.setDate(gridStart.getDate() + w * 7 + row);
         if(d > now){ weekCells.push(null); continue; }
         const key = dayKey(d);
         const count = (user.activityLog && user.activityLog[key]) || 0;
         const level = count === 0 ? 0 : Math.min(4, count);
-        weekCells.push({ date: key, count, level, row });
+        const isToday = key === dayKey(now);
+        weekCells.push({ date: key, count, level, row, isToday });
         if(row === 0){
-          const monthLabel = d.toLocaleDateString("ar", { month: "long" });
+          const monthLabel = d.toLocaleDateString("ar", { month: "short" });
           if(monthLabel !== lastMonth){
             monthMarkers.push({ week: w, label: monthLabel });
             lastMonth = monthLabel;
