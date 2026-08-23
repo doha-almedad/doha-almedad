@@ -73,6 +73,13 @@
 .avatar--lg{ width:76px; height:76px; font-size:1.6rem; }
 .avatar--sm{ width:26px; height:26px; font-size:.72rem; }
 
+.avatar-edit-upload{ position:relative; display:inline-block; cursor:pointer; }
+.avatar-edit-upload__badge{
+  position:absolute; bottom:0; left:0; width:26px; height:26px; border-radius:50%;
+  background:var(--gold); color:#fff; display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--ink-800);
+}
+
 .icon{ display:inline-block; vertical-align:middle; }
 
 @media (max-width:900px){
