@@ -88,8 +88,6 @@ export function renderHeader(activePath = "#/"){
       <div class="site-header__inner">
         <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المداد</a>
 
-        <button class="nav-toggle" id="nav-toggle" aria-label="فتح القائمة">${icon("plus", { size: 20 })}</button>
-
         <nav class="site-nav" id="site-nav">
           ${NAV_LINKS.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${l.label}</span></a>`).join("")}
           <a href="#/profile" class="site-nav__profile-link ${activePath === "#/profile" ? "is-active" : ""}">${icon("user", { size: 16 })}<span>ملفي الشخصي</span></a>
@@ -108,14 +106,6 @@ export function renderHeader(activePath = "#/"){
     </header>
   `;
 
-  mount.querySelector("#nav-toggle").addEventListener("click", () => {
-    mount.querySelector("#site-nav").classList.toggle("is-open");
-    mount.querySelector("#nav-toggle").classList.toggle("is-open");
-  });
-  mount.querySelectorAll("#site-nav a").forEach(a => a.addEventListener("click", () => {
-    mount.querySelector("#site-nav").classList.remove("is-open");
-    mount.querySelector("#nav-toggle").classList.remove("is-open");
-  }));
   mount.querySelector("#btn-notifications").addEventListener("click", notificationsPanel);
   mount.querySelector("#btn-profile").addEventListener("click", () => accountMenu(user));
 }
