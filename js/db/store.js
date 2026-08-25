@@ -299,11 +299,12 @@ export const store = {
   },
 
   // ---------- طلبات اعتماد الفعاليات (admin_verification) ----------
-  submitEventProof(eventId, userId, payload){
+  submitEventProof(eventId, userId, payload, { status = "pending", isPublic = false } = {}){
     const submission = {
       id: "sub_" + Date.now(),
       eventId, userId, payload,
-      status: "pending", // pending | approved | rejected
+      status, // pending | approved | rejected
+      public: isPublic,
       submittedAt: new Date().toISOString()
     };
     db.eventSubmissions.push(submission);
