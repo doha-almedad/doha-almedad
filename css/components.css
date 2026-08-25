@@ -23,12 +23,6 @@
 .brand__mark{ width:34px; height:auto; display:block; }
 .brand:hover{ color:var(--gold); }
 
-.nav-toggle{
-  display:none;
-  background:none; border:1px solid var(--ink-600); color:var(--paper);
-  border-radius:var(--radius-sm); padding:8px 10px; cursor:pointer;
-}
-
 .site-nav{ display:flex; align-items:center; gap:2px; }
 .site-nav a{
   display:flex; align-items:center; gap:7px;
@@ -82,21 +76,16 @@
 
 .icon{ display:inline-block; vertical-align:middle; }
 
-@media (max-width:900px){
-  .nav-toggle{ display:inline-flex; }
-  .nav-toggle .icon{ transition:transform .2s ease; }
-  .nav-toggle.is-open .icon{ transform:rotate(45deg); }
-  .site-nav{
-    position:fixed; inset:var(--header-h) 0 0 0;
-    background:var(--ink-900);
-    flex-direction:column; align-items:stretch; padding:14px;
-    transform:translateX(100%);
-    transition:transform .25s ease;
-    overflow-y:auto;
-  }
-  .site-nav.is-open{ transform:translateX(0); }
-  .site-nav a{ padding:14px 12px; font-size:1.05rem; border-bottom:1px solid var(--ink-800); }
-  .site-nav a.site-nav__profile-link{ margin-inline-start:0; padding-inline-start:12px; border-inline-start:0; border-top:2px solid var(--gold-soft); margin-top:6px; }
+/* -- عند الشاشات الأضيق: صف أيقونات مباشرة بلا نص وبلا زر تبديل -- */
+@media (max-width:960px){
+  .site-header__inner{ gap:8px; }
+  .site-nav{ gap:0; }
+  .site-nav a{ padding:9px; }
+  .site-nav a span{ display:none; }
+  .site-nav a.site-nav__profile-link{ margin-inline-start:4px; padding-inline-start:9px; }
+}
+@media (max-width:560px){
+  .site-nav{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
 }
 
 

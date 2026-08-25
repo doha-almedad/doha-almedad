@@ -33,9 +33,9 @@
   --shadow-1:0 2px 10px rgba(74,53,36,.10);
   --shadow-2:0 14px 34px rgba(74,53,36,.16);
 
-  --font-display:"Rakkas", serif;
-  --font-brand:"Rakkas", serif;
-  --font-accent:"Rakkas", serif;
+  --font-display:"Noto Naskh Arabic", serif;
+  --font-brand:"Noto Naskh Arabic", serif;
+  --font-accent:"Noto Naskh Arabic", serif;
   --font-body:"Tajawal", sans-serif;
 
   --header-h:68px;
@@ -47,8 +47,8 @@
   --accent-rust:#C68D7E;
   --accent-slate:#A9B7B7;
   --olive-light:#DCE0C6;
-  --olive-mid:#B7B98F;
-  --olive-deep:#7D8258;
+  --olive-mid:#C9C2A3;
+  --olive-deep:#8A8368;
 
   color-scheme: light;
 }
