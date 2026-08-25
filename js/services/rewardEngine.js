@@ -7,7 +7,7 @@
    ========================================================= */
 
 import { store } from "../db/store.js";
-import { streakService } from "./streakService.js";
+import { streakService, dayKey } from "./streakService.js";
 import { badgeService } from "./badgeService.js";
 import { LEVEL_XP_STEP } from "../db/initialData.js";
 
@@ -17,6 +17,7 @@ export const ACTIVITY_CONFIG = {
   publish_review:     { xp: 30, label: "تسجيل قراءة فعلية", statField: "booksRead", statIncrement: 1 },
   join_event:        { xp: 15, label: "المشاركة في تحدٍّ",  statField: "challengesJoined", statIncrement: 1 },
   submit_event_proof:{ xp: 40, label: "إرسال إثبات مشاركة لفعالية", statField: "challengesJoined", statIncrement: 0 },
+  publish_article:    { xp: 45, label: "نشر مقال", statField: "articlesPublished", statIncrement: 1 },
   literary_comment:   { xp: 10, label: "التعليق الأدبي النافع", statField: null }
 };
 
@@ -53,7 +54,10 @@ export function processActivity(userId, activityType, meta = {}){
   }
 
   // 3) Streak Service — تحديث شعلة الحماسة وخريطة النشاط
+  const todayKey = dayKey(new Date());
+  const wasActiveToday = (user.activityLog && user.activityLog[todayKey]) > 0;
   streakService.registerActivity(user, new Date());
+  const streakJustIgnitedToday = !wasActiveToday;
 
   // 4) Reputation Service — تحديث النقاط والمستوى
   user.xp = (user.xp || 0) + config.xp;
@@ -71,6 +75,7 @@ export function processActivity(userId, activityType, meta = {}){
 
   // 7) Notification Service
   store.addNotification(userId, `+${config.xp} نقطة — ${config.label}`, "star");
+  if(streakJustIgnitedToday) store.addNotification(userId, "أُشعلت شعلة حماستك اليوم", "flame");
   if(leveledUp) store.addNotification(userId, `ترقّيت إلى المستوى ${user.level}`, "shield");
   newBadges.forEach(b => store.addNotification(userId, `وسام جديد: ${b.name}`, b.icon));
 
