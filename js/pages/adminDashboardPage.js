@@ -87,7 +87,7 @@ function submissionsTab(){
     ${subs.length ? `
     <h3 style="margin-bottom:12px;">طلبات اعتماد الفعاليات</h3>
     <table class="admin-table">
-      <thead><tr><th>العضو</th><th>الفعالية</th><th>الوصف</th><th>إجراء</th></tr></thead>
+      <thead><tr><th>العضو</th><th>الفعالية</th><th>إجراء</th></tr></thead>
       <tbody>
         ${subs.map(s => {
           const user = store.getUser(s.userId);
@@ -96,8 +96,8 @@ function submissionsTab(){
             <tr>
               <td>${user?.displayName || "—"}</td>
               <td>${ev?.title || "—"}</td>
-              <td style="max-width:260px;">${s.payload?.text || ""}</td>
               <td style="display:flex;gap:6px;">
+                <button class="btn btn-outline btn-sm" data-preview-submission="${s.id}">قراءة</button>
                 <button class="btn btn-primary btn-sm" data-approve="${s.id}">اعتماد</button>
                 <button class="btn btn-danger btn-sm" data-reject="${s.id}">رفض</button>
               </td>
@@ -249,6 +249,16 @@ function previewPublishedArticle(article){
   `, { size: "lg" });
 }
 
+function previewEventSubmission(sub){
+  const user = store.getUser(sub.userId);
+  const ev = store.getEvent(sub.eventId);
+  openModal(`
+    <div class="modal-box__head"><h3>مشاركة ${user?.displayName || "عضو"}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="badge-pill badge-pill--gold" style="margin-bottom:12px;display:inline-flex;">${ev?.title || ""}</div>
+    <p style="white-space:pre-line;">${sub.payload?.text || ""}</p>
+  `, { size: "lg" });
+}
+
 export function renderAdminDashboardPage(root){
   const user = store.getCurrentUser();
 
@@ -349,7 +359,10 @@ export function renderAdminDashboardPage(root){
   }));
 
   root.querySelectorAll("[data-approve-article]").forEach(btn => btn.addEventListener("click", () => {
-    store.approveArticleSubmission(btn.getAttribute("data-approve-article"));
+    const subId = btn.getAttribute("data-approve-article");
+    const sub = store.getArticleSubmissions().find(s => s.id === subId);
+    store.approveArticleSubmission(subId);
+    if(sub) processActivity(sub.authorId, "publish_article", {});
     showToast("اعتُمد المقال ونُشر");
     refresh();
   }));
@@ -368,6 +381,10 @@ export function renderAdminDashboardPage(root){
     e.preventDefault();
     const article = store.getArticles().find(a => a.id === el.getAttribute("data-preview-published-article"));
     if(article) previewPublishedArticle(article);
+  }));
+  root.querySelectorAll("[data-preview-submission]").forEach(btn => btn.addEventListener("click", () => {
+    const sub = store.getEventSubmissions().find(s => s.id === btn.getAttribute("data-preview-submission"));
+    if(sub) previewEventSubmission(sub);
   }));
 
   root.querySelector("#new-event-btn")?.addEventListener("click", () => openNewEventModal(refresh));

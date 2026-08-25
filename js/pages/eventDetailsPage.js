@@ -27,11 +27,25 @@ const VERIFY_INFO = {
   }
 };
 
+const VISIBILITY_FIELD = `
+  <div class="field" style="display:flex;align-items:center;gap:8px;">
+    <input type="checkbox" id="submission-public" style="width:auto;">
+    <label for="submission-public" style="margin:0;font-size:.85rem;">اجعل مشاركتي مرئية للجميع في نافذة "الاطلاع على المشاركات"</label>
+  </div>
+`;
+
 function submissionForm(ev, user){
   const posts = store.getPosts().filter(p => p.authorId === user.id);
 
   if(ev.verificationMethod === "automatic"){
     return `<p class="text-muted">لا حاجة لأي إجراء — سيُحتسب تقدّمك تلقائياً كلما نشرت وكتبت ضمن المنصة.</p>`;
+  }
+
+  const existing = store.getEventSubmissions().find(s => s.eventId === ev.id && s.userId === user.id);
+  if(existing){
+    const map = { pending: "status-pill--pending", approved: "status-pill--approved", rejected: "status-pill--rejected" };
+    const label = { pending: "بانتظار التحقق", approved: "معتمَد", rejected: "مرفوض" };
+    return `<span class="status-pill ${map[existing.status]}">${label[existing.status]}</span>`;
   }
 
   if(ev.verificationMethod === "select_existing_content"){
@@ -43,6 +57,7 @@ function submissionForm(ev, user){
           ${posts.map(p => `<option value="${p.id}">${p.title}</option>`).join("")}
         </select>
       </div>
+      ${VISIBILITY_FIELD}
       <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال</button>
     `;
   }
@@ -50,19 +65,15 @@ function submissionForm(ev, user){
   if(ev.verificationMethod === "manual_submission"){
     return `
       <div class="field"><label>وصف أو رابط الإثبات</label><input type="text" id="manual-proof" placeholder="مثال: رابط تسجيل الأمسية أو وصف مختصر"></div>
+      ${VISIBILITY_FIELD}
       <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال الإثبات</button>
     `;
   }
 
   if(ev.verificationMethod === "admin_verification"){
-    const existing = store.getEventSubmissions().find(s => s.eventId === ev.id && s.userId === user.id);
-    if(existing){
-      const map = { pending: "status-pill--pending", approved: "status-pill--approved", rejected: "status-pill--rejected" };
-      const label = { pending: "بانتظار التحقق", approved: "معتمَد", rejected: "مرفوض" };
-      return `<span class="status-pill ${map[existing.status]}">${label[existing.status]}</span>`;
-    }
     return `
       <div class="field"><label>وصف مشاركتك</label><textarea id="admin-proof" placeholder="اشرح بإيجاز إنجازك ليتم اعتماده"></textarea></div>
+      ${VISIBILITY_FIELD}
       <button class="btn btn-primary btn-sm" id="submit-proof-btn">إرسال للمراجعة</button>
     `;
   }
@@ -144,22 +155,27 @@ export function renderEventDetailsPage(root, eventId){
   });
 
   root.querySelector("#submit-proof-btn")?.addEventListener("click", () => {
+    const isPublic = root.querySelector("#submission-public")?.checked || false;
+
     if(ev.verificationMethod === "select_existing_content"){
       const val = root.querySelector("#select-content").value;
       if(!val){ showToast("يرجى اختيار عمل أولاً"); return; }
+      const post = store.getPosts().find(p => p.id === val);
       processActivity(user.id, "submit_event_proof", { eventId: ev.id, postId: val });
+      store.submitEventProof(ev.id, user.id, { text: post?.title || "", postId: val }, { status: "approved", isPublic });
       showToast("أُرسل عملك واحتُسبت مشاركتك");
     }
     if(ev.verificationMethod === "manual_submission"){
       const val = root.querySelector("#manual-proof").value.trim();
       if(!val){ showToast("يرجى إدخال وصف أو رابط الإثبات"); return; }
       processActivity(user.id, "submit_event_proof", { eventId: ev.id, proof: val });
+      store.submitEventProof(ev.id, user.id, { text: val }, { status: "approved", isPublic });
       showToast("أُرسل إثباتك واحتُسبت مشاركتك");
     }
     if(ev.verificationMethod === "admin_verification"){
       const val = root.querySelector("#admin-proof").value.trim();
       if(!val){ showToast("يرجى وصف مشاركتك أولاً"); return; }
-      store.submitEventProof(ev.id, user.id, { text: val });
+      store.submitEventProof(ev.id, user.id, { text: val }, { status: "pending", isPublic });
       showToast("أُرسلت مشاركتك — بانتظار اعتماد الإدارة");
     }
     renderEventDetailsPage(root, eventId);

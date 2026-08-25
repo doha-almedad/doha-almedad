@@ -66,20 +66,27 @@ export function renderEventsPage(root){
       const ev = store.getEvent(el.getAttribute("data-open-participants"));
       const { openModal } = await import("../components/modals.js");
       const { avatarHtml } = await import("../components/icons.js");
+      const publicSubs = store.getEventSubmissions().filter(s => s.eventId === ev.id && s.public && s.status !== "rejected");
       openModal(`
-        <div class="modal-box__head"><h3>المشاركون في «${ev.title}»</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
-        ${ev.participants.length ? `
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            ${ev.participants.map(id => {
-              const p = store.getUser(id);
-              return p ? `<div style="display:flex;align-items:center;gap:10px;" class="participant-link" data-user-id="${p.id}">
-                <div class="avatar avatar--sm">${avatarHtml(p)}</div>
-                <span>${p.displayName}</span>
-              </div>` : "";
+        <div class="modal-box__head"><h3>المشاركات في «${ev.title}»</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+        ${publicSubs.length ? `
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            ${publicSubs.map(s => {
+              const p = store.getUser(s.userId);
+              return `
+                <div class="card" style="padding:14px;">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;" class="participant-link" data-user-id="${s.userId}">
+                    <div class="avatar avatar--sm">${avatarHtml(p)}</div>
+                    <span style="font-weight:700;">${p?.displayName || "عضو"}</span>
+                  </div>
+                  <p style="margin:0;">${s.payload?.text || ""}</p>
+                </div>
+              `;
             }).join("")}
           </div>
-        ` : `<p class="text-muted">لا مشاركين بعد.</p>`}
+        ` : `<div class="empty-state"><div class="empty-state__icon">${icon("users", { size: 26 })}</div><p>لا مشاركات علنية بعد لهذه الفعالية.</p></div>`}
       `, {
+        size: "lg",
         onMount(box){ bindParticipantLinks(box); }
       });
     });
