@@ -169,13 +169,36 @@ export const store = {
     return item;
   },
 
-  /** إضافة تعليق (أو ردّ عبر تمرير parentId) على منشور أو مراجعة */
-  addComment(kind, itemId, { userId, text, parentId = null }){
+  /**
+   * إضافة تعليق أو ردّ على منشور/مراجعة. يحفظ العلاقة الحقيقية في
+   * قاعدة البيانات: parentCommentId (الأب المباشر)، rootCommentId
+   * (التعليق الأصلي لسلسلة الردود)، وdepth (للمنطق فقط، لا يُستخدم
+   * لإجبار الواجهة على تداخل بصري لا نهائي).
+   */
+  addComment(kind, itemId, { userId, text, parentCommentId = null }){
     const list = kind === "post" ? db.posts : db.reviews;
     const item = list.find(i => i.id === itemId);
     if(!item) return null;
     item.comments = item.comments || [];
-    const comment = { id: "c_" + Date.now() + Math.random().toString(16).slice(2), userId, text, parentId, date: new Date().toISOString() };
+
+    let rootCommentId, depth;
+    if(parentCommentId){
+      const parent = item.comments.find(c => c.id === parentCommentId);
+      if(!parent) return null; // لا نسمح بربط رد بتعليق غير موجود
+      rootCommentId = parent.rootCommentId; // الجذر موروث دائماً من الأب
+      depth = parent.depth + 1;
+    }
+
+    const comment = {
+      id: "c_" + Date.now() + Math.random().toString(16).slice(2),
+      userId, text,
+      parentCommentId: parentCommentId || null,
+      likedBy: [],
+      date: new Date().toISOString()
+    };
+    comment.rootCommentId = parentCommentId ? rootCommentId : comment.id; // تعليق جذري يشير لنفسه
+    comment.depth = parentCommentId ? depth : 0;
+
     item.comments.push(comment);
     persist();
     return comment;
