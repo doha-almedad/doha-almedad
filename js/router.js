@@ -8,11 +8,11 @@
 import { renderHeader } from "./components/header.js";
 import { icon } from "./components/icons.js";
 import { renderHomePage } from "./pages/homePage.js";
-import { renderEventsPage } from "./pages/eventsPage.js";
+import { renderEventsPage, renderEventParticipantsPage } from "./pages/eventsPage.js";
 import { renderEventDetailsPage } from "./pages/eventDetailsPage.js";
-import { renderWritingPage } from "./pages/writingPage.js";
-import { renderReadingPage } from "./pages/readingPage.js";
-import { renderArticlesPage } from "./pages/articlesPage.js";
+import { renderWritingPage, renderPostViewPage } from "./pages/writingPage.js";
+import { renderReadingPage, renderReviewViewPage } from "./pages/readingPage.js";
+import { renderArticlesPage, renderArticleViewPage } from "./pages/articlesPage.js";
 import { renderLeaderboardPage } from "./pages/leaderboardPage.js";
 import { renderProfilePage } from "./pages/profilePage.js";
 import { renderAdminDashboardPage } from "./pages/adminDashboardPage.js";
@@ -24,9 +24,13 @@ const ROUTES = [
   { pattern: "/",                render: (r) => renderHomePage(r) },
   { pattern: "/events",           render: (r) => renderEventsPage(r) },
   { pattern: "/events/:id",        render: (r, p) => renderEventDetailsPage(r, p.id) },
+  { pattern: "/events/:id/participants", render: (r, p) => renderEventParticipantsPage(r, p.id) },
   { pattern: "/writing",          render: (r) => renderWritingPage(r) },
+  { pattern: "/writing/:id",       render: (r, p) => renderPostViewPage(r, p.id) },
   { pattern: "/reading",          render: (r) => renderReadingPage(r) },
+  { pattern: "/reading/:id",       render: (r, p) => renderReviewViewPage(r, p.id) },
   { pattern: "/articles",         render: (r) => renderArticlesPage(r) },
+  { pattern: "/articles/:id",      render: (r, p) => renderArticleViewPage(r, p.id) },
   { pattern: "/leaderboard",       render: (r) => renderLeaderboardPage(r) },
   { pattern: "/profile",          render: (r) => renderProfilePage(r) },
   { pattern: "/profile/:id",       render: (r, p) => renderProfilePage(r, p.id) },
