@@ -74,28 +74,19 @@
 /* ---------- صفحة البروفايل ---------- */
 .container--narrow{ max-width:820px; }
 
-/* -- البطاقة العلوية: كل شيء متمركز -- */
+/* -- الترويسة العلوية: بلا بطاقة خلفية، كل شيء متمركز -- */
 .profile-head-v2{
   display:flex; flex-direction:column; align-items:center; text-align:center;
-  padding:36px 24px; margin-bottom:22px;
+  padding:20px 24px 30px; margin-bottom:10px;
 }
 .avatar--xl{ width:104px; height:104px; font-size:2rem; margin-bottom:14px; }
-.profile-head-v2__name{ margin:0 0 2px; }
-.profile-head-v2__handle{ color:var(--paper-faint); font-size:.92rem; }
-.profile-head-v2__role{
-  display:inline-flex; align-items:center; gap:5px; margin-top:6px;
-  color:var(--gold-soft); font-size:.82rem;
-}
+.profile-head-v2__name-row{ display:flex; align-items:center; gap:9px; }
+.profile-head-v2__name{ margin:0; }
+.profile-head-v2__handle{ color:var(--paper-faint); font-size:.92rem; margin-top:4px; }
 .profile-head-v2__progress{ width:100%; max-width:280px; margin-top:20px; }
 .profile-head-v2__progress-label{ font-size:.85rem; color:var(--paper-dim); margin-bottom:6px; }
 .progress--wide{ height:9px; }
-.profile-head-v2__meta{
-  display:flex; align-items:center; gap:16px; margin-top:16px;
-  font-size:.92rem; color:var(--paper-dim);
-}
-.profile-head-v2__meta span{ display:inline-flex; align-items:center; gap:6px; }
-.profile-head-v2__divider{ width:1px; height:16px; background:var(--ink-600); }
-.profile-head-v2__name ~ .btn, .profile-head-v2 > .btn{ margin-top:22px; }
+.profile-head-v2 > .btn{ margin-top:20px; }
 
 /* -- بطاقة النبذة: نص + خط فاصل + إحصائيات مصغّرة -- */
 .profile-bio-card{ margin-bottom:30px; }
@@ -154,7 +145,7 @@
 .badge-hex__name{ font-size:.78rem; color:var(--paper-dim); }
 /* -- بطاقة حماسة الكتابة -- */
 .profile-streak-card{ margin-bottom:26px; }
-.profile-streak-card__head{ display:inline-flex; align-items:center; gap:22px; margin-bottom:20px; }
+.profile-streak-card__head{ display:flex; align-items:center; justify-content:center; gap:22px; margin-bottom:20px; width:100%; }
 .profile-streak-card__stat{ text-align:center; }
 .profile-streak-card__stat b{ display:block; font-family:var(--font-display); font-size:1.5rem; color:var(--ember); }
 .profile-streak-card__stat span{ display:inline-flex; align-items:center; gap:4px; font-size:.74rem; color:var(--paper-faint); }
@@ -176,13 +167,13 @@
 .ink-heatmap2__cell.is-today{ outline:2px solid var(--ember); outline-offset:1px; }
 /* ---------- صفحة الفعاليات ---------- */
 .event-card{ display:flex; flex-direction:column; height:100%; border-inline-start:3px solid var(--accent-tan); }
-.event-card:nth-of-type(7n+1){ border-inline-start-color:#7C97A8; background:#EEF2F4; }
-.event-card:nth-of-type(7n+2){ border-inline-start-color:#D9AE55; background:#FCF6E8; }
-.event-card:nth-of-type(7n+3){ border-inline-start-color:#B97A52; background:#F8EEE7; }
-.event-card:nth-of-type(7n+4){ border-inline-start-color:#7C8F6E; background:#F1F4EE; }
-.event-card:nth-of-type(7n+5){ border-inline-start-color:#C79A72; background:#FAF3EB; }
-.event-card:nth-of-type(7n+6){ border-inline-start-color:#8FA07E; background:#F3F6F0; }
-.event-card:nth-of-type(7n+7){ border-inline-start-color:#A2586B; background:#F8EEF0; }
+.event-card:nth-of-type(7n+1){ border-inline-start-color:#A9A0BD; background:#EDEBF2; }
+.event-card:nth-of-type(7n+2){ border-inline-start-color:#C9A15B; background:#F3E5CE; }
+.event-card:nth-of-type(7n+3){ border-inline-start-color:#B98055; background:#E9C8B6; }
+.event-card:nth-of-type(7n+4){ border-inline-start-color:#B06E56; background:#DFAF9F; }
+.event-card:nth-of-type(7n+5){ border-inline-start-color:#A8776E; background:#E7D6D1; }
+.event-card:nth-of-type(7n+6){ border-inline-start-color:#D9A15C; background:#F6D7B4; }
+.event-card:nth-of-type(7n+7){ border-inline-start-color:#C79E90; background:#F2E7E2; }
 .event-card h3, .event-card p, .event-card .event-card__meta{ color:#3F362C; }
 .event-card__progress{ margin-top:14px; }
 .event-card__meta{ display:flex; justify-content:space-between; font-size:.78rem; color:var(--paper-faint); margin-top:6px; }
@@ -274,6 +265,11 @@
 
 /* ---------- شريط قاعدة إخفاء الصفر (تنويه بصري خفيف) ---------- */
 .zero-hint{ font-size:.74rem; color:var(--paper-faint); margin-top:-14px; margin-bottom:24px; }
+.recent-activity-card{ position:relative; overflow:hidden; }
+.recent-activity-card__thumb{
+  width:calc(100% + 44px); margin:-22px -22px 14px; max-height:140px; object-fit:cover;
+  display:block;
+}
 
 /* ---------- التعليقات ---------- */
 .comments-list{ max-height:44vh; overflow-y:auto; padding-inline-end:4px; }
