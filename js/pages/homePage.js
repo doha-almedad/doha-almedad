@@ -6,7 +6,6 @@
 import { store } from "../db/store.js";
 import { getLeaderboard } from "../services/rewardEngine.js";
 import { icon, initial, heroBookIllustration, arNum } from "../components/icons.js";
-import { openPostViewModal, openReviewViewModal } from "../components/modals.js";
 
 function excerpt(text, len = 110){
   return text.length > len ? text.slice(0, len).trim() + "…" : text;
@@ -116,12 +115,12 @@ export function renderHomePage(root){
         </div>
         <div class="grid grid-3" id="recent-posts-grid">
           ${posts.length ? posts.map(p => `
-            <div class="card card--hover highlight-card" data-post-id="${p.id}" role="button" tabindex="0">
+            <a href="#/writing/${p.id}" class="card card--hover highlight-card">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(p.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${p.title}</h3>
               <p>${excerpt(p.content)}</p>
               <div class="highlight-card__foot"><span>${timeAgo(p.date)}</span></div>
-            </div>
+            </a>
           `).join("") : `<div class="empty-state"><div class="empty-state__icon">${icon("feather", { size: 30 })}</div><p>لم يُنشر شيء بعد، كن أول من يكتب.</p></div>`}
         </div>
       </div>
@@ -135,12 +134,12 @@ export function renderHomePage(root){
         </div>
         <div class="grid grid-3" id="recent-reviews-grid">
           ${reviews.length ? reviews.map(r => `
-            <div class="card card--hover highlight-card" data-review-id="${r.id}" role="button" tabindex="0">
+            <a href="#/reading/${r.id}" class="card card--hover highlight-card">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(r.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${r.bookTitle}</h3>
               <p>${excerpt(r.content)}</p>
               <div class="highlight-card__foot"><span>${timeAgo(r.date)}</span></div>
-            </div>
+            </a>
           `).join("") : `<div class="empty-state"><div class="empty-state__icon">${icon("book", { size: 30 })}</div><p>لا مراجعات بعد.</p></div>`}
         </div>
       </div>
@@ -174,14 +173,4 @@ export function renderHomePage(root){
     </section>
   `;
 
-  root.querySelectorAll("[data-post-id]").forEach(card => {
-    const open = () => openPostViewModal(card.getAttribute("data-post-id"));
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
-  });
-  root.querySelectorAll("[data-review-id]").forEach(card => {
-    const open = () => openReviewViewModal(card.getAttribute("data-review-id"));
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
-  });
 }

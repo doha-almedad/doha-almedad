@@ -149,6 +149,50 @@ function openComposerModal(root, user, paint){
   });
 }
 
+/** صفحة كاملة مستقلة لعرض مراجعة واحدة — وليست نافذة منبثقة */
+export function renderReviewViewPage(root, reviewId){
+  const r = store.getReviews().find(x => x.id === reviewId);
+  if(!r){
+    root.innerHTML = `<div class="container section"><div class="empty-state"><div class="empty-state__icon">${icon("search", { size: 26 })}</div><p>لم يُعثر على هذه المراجعة.</p></div></div>`;
+    return;
+  }
+  const author = store.getUser(r.authorId);
+  const images = r.images || (r.image ? [r.image] : []);
+  const currentUser = store.getCurrentUser();
+  const liked = (r.likedBy || []).includes(currentUser.id);
+  const commentCount = (r.comments || []).length;
+
+  root.innerHTML = `
+    <section class="section">
+      <div class="container container--narrow">
+        <a href="#/reading" class="text-muted" style="font-size:.85rem;display:inline-flex;align-items:center;gap:6px;">${icon("chevronRight", { size: 14 })}<span>العودة إلى القراءة</span></a>
+
+        <div class="card article-view" style="margin-top:16px;">
+          <div class="highlight-card__meta" style="margin-bottom:14px;">
+            <span class="badge-pill">${author?.displayName || "عضو"}</span>
+            <span class="rating-stars">${stars(r.rating)}</span>
+            <span class="badge-pill">${timeAgo(r.date)}</span>
+          </div>
+          <h1>${r.bookTitle}</h1>
+          ${renderCarousel(images)}
+          <p style="white-space:pre-line;">${r.content}</p>
+          <div class="feed-item__actions">
+            <span data-like="${r.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${arNum((r.likedBy||[]).length)})</span>
+            <span data-comment="${r.id}">${icon("comment", { size: 15 })} تعليق (${arNum(commentCount)})</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  bindCarousels(root);
+  root.querySelector("[data-like]").addEventListener("click", () => {
+    store.toggleLike("review", r.id, currentUser.id);
+    renderReviewViewPage(root, reviewId);
+  });
+  root.querySelector("[data-comment]").addEventListener("click", () => openCommentsModal("review", r.id, () => renderReviewViewPage(root, reviewId)));
+}
+
 export function renderReadingPage(root){
   const user = store.getCurrentUser();
   visibleCount = PAGE_SIZE;

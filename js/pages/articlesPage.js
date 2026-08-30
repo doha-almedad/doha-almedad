@@ -22,24 +22,6 @@ function timeAgo(iso){
   return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
-function openArticleModal(a){
-  const author = store.getUser(a.author);
-  const images = a.images || (a.image ? [a.image] : []);
-  openModal(`
-    <div class="modal-box__head"><h3>${a.title}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
-    <div class="highlight-card__meta" style="margin-bottom:12px;">
-      <span class="badge-pill badge-pill--ember">${a.category}</span>
-      <span class="badge-pill">${author?.displayName || "كاتب"}</span>
-      <span class="badge-pill">${timeAgo(a.date)}</span>
-    </div>
-    <div id="article-modal-media">${renderCarousel(images)}</div>
-    <p style="white-space:pre-line;">${a.content}</p>
-  `, {
-    size: "lg",
-    onMount(box){ bindCarousels(box); }
-  });
-}
-
 function articleCard(a){
   const author = store.getUser(a.author);
   return `
@@ -51,7 +33,7 @@ function articleCard(a){
         <span>${author?.displayName || "كاتب"}</span>
         <span>${timeAgo(a.date)}</span>
       </div>
-      <button class="btn btn-outline btn-sm btn-block" style="margin-top:12px;" data-article-id="${a.id}">${icon("document", { size: 14 })}<span>اقرأ الآن</span></button>
+      <a class="btn btn-outline btn-sm btn-block" style="margin-top:12px;" href="#/articles/${a.id}">${icon("document", { size: 14 })}<span>اقرأ الآن</span></a>
     </div>
   `;
 }
@@ -67,13 +49,16 @@ function filterArticles(query, category){
 
 function bindArticleClicks(container){
   container.querySelectorAll("[data-article-id]").forEach(card => {
-    const open = (e) => {
-      e?.stopPropagation();
-      const article = store.getArticles().find(a => a.id === card.getAttribute("data-article-id"));
-      if(article) openArticleModal(article);
-    };
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(e); } });
+    card.addEventListener("click", (e) => {
+      if(e.target.closest("a")) return; // زر "اقرأ الآن" يتولّى التنقل بنفسه
+      window.location.hash = `#/articles/${card.getAttribute("data-article-id")}`;
+    });
+    card.addEventListener("keydown", (e) => {
+      if((e.key === "Enter" || e.key === " ") && !e.target.closest("a")){
+        e.preventDefault();
+        window.location.hash = `#/articles/${card.getAttribute("data-article-id")}`;
+      }
+    });
   });
 }
 
@@ -205,4 +190,36 @@ export function renderArticlesPage(root){
   clearBtn.addEventListener("click", () => { input.value = ""; input.focus(); update(); });
 
   root.querySelector("#article-fab").addEventListener("click", () => openComposerModal(user, update));
+}
+
+/** صفحة كاملة مستقلة لقراءة مقال أو ملخص — وليست نافذة منبثقة */
+export function renderArticleViewPage(root, articleId){
+  const a = store.getArticles().find(x => x.id === articleId);
+  if(!a){
+    root.innerHTML = `<div class="container section"><div class="empty-state"><div class="empty-state__icon">${icon("search", { size: 26 })}</div><p>لم يُعثر على هذا المقال.</p></div></div>`;
+    return;
+  }
+  const author = store.getUser(a.author);
+  const images = a.images || (a.image ? [a.image] : []);
+
+  root.innerHTML = `
+    <section class="section">
+      <div class="container container--narrow">
+        <a href="#/articles" class="text-muted" style="font-size:.85rem;display:inline-flex;align-items:center;gap:6px;">${icon("chevronRight", { size: 14 })}<span>العودة إلى المقالات والملخصات</span></a>
+
+        <div class="card article-view" style="margin-top:16px;">
+          <div class="highlight-card__meta" style="margin-bottom:14px;">
+            <span class="badge-pill badge-pill--ember">${a.category}</span>
+            <span class="badge-pill">${author?.displayName || "كاتب"}</span>
+            <span class="badge-pill">${timeAgo(a.date)}</span>
+          </div>
+          <h1>${a.title}</h1>
+          ${renderCarousel(images)}
+          <p style="white-space:pre-line;">${a.content}</p>
+        </div>
+      </div>
+    </section>
+  `;
+
+  bindCarousels(root);
 }

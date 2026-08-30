@@ -8,7 +8,6 @@ import { streakService } from "../services/streakService.js";
 import { badgeService } from "../services/badgeService.js";
 import { renderBadgeCard, bindBadgeCards, sortBadgesUnlockedFirst } from "../components/badgeCard.js";
 import { xpProgressWithinLevel } from "../services/rewardEngine.js";
-import { getLeaderboard } from "../services/rewardEngine.js";
 import { icon, initial, publicRoleLabel, parseSocialLink, arNum, avatarHtml } from "../components/icons.js";
 import { openModal, closeModal, showToast } from "../components/modals.js";
 import { resizeImageFile } from "../services/mediaService.js";
@@ -56,6 +55,7 @@ function socialLinkPill(rawUrl){
 
 function openEditProfileModal(user, root, userId){
   let pendingAvatar = null;
+  let avatarRemoved = false;
   openModal(`
     <div class="modal-box__head"><h3>تعديل الملف الشخصي</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div class="field" style="text-align:center;">
@@ -64,8 +64,10 @@ function openEditProfileModal(user, root, userId){
         <span class="avatar-edit-upload__badge">${icon("image", { size: 13 })}</span>
         <input type="file" id="edit-avatar-input" accept="image/*" hidden>
       </label>
+      ${user.avatarImage ? `<button type="button" class="btn btn-ghost btn-sm" id="remove-avatar-btn" style="margin-top:8px;">${icon("close", { size: 12 })}<span>حذف الصورة</span></button>` : ""}
     </div>
     <div class="field"><label>الاسم</label><input type="text" id="edit-name" value="${user.displayName}"></div>
+    <div class="field"><label>اسم المستخدم</label><input type="text" id="edit-username" value="${user.username}" dir="ltr" style="text-align:left;"></div>
     <div class="field"><label>نبذة عنك</label><textarea id="edit-bio" placeholder="اكتب نبذة قصيرة...">${user.bio || ""}</textarea></div>
     <div class="field">
       <label>رابط حساب التواصل الاجتماعي (اختياري)</label>
@@ -79,15 +81,24 @@ function openEditProfileModal(user, root, userId){
         const file = e.target.files[0];
         if(!file) return;
         pendingAvatar = await resizeImageFile(file, 400);
+        avatarRemoved = false;
         box.querySelector("#avatar-edit-preview").innerHTML = `<img src="${pendingAvatar}" alt="">`;
+      });
+      box.querySelector("#remove-avatar-btn")?.addEventListener("click", () => {
+        pendingAvatar = null;
+        avatarRemoved = true;
+        box.querySelector("#avatar-edit-preview").innerHTML = initial(user.displayName);
+        box.querySelector("#remove-avatar-btn").remove();
       });
       box.querySelector("#save-profile-btn").addEventListener("click", () => {
         const displayName = box.querySelector("#edit-name").value.trim();
+        const username = box.querySelector("#edit-username").value.trim();
         const bio = box.querySelector("#edit-bio").value.trim();
         const socialUrl = box.querySelector("#edit-social").value.trim();
-        if(!displayName) return;
-        const patch = { displayName, bio, socialUrl };
+        if(!displayName || !username) return;
+        const patch = { displayName, username, bio, socialUrl };
         if(pendingAvatar) patch.avatarImage = pendingAvatar;
+        else if(avatarRemoved) patch.avatarImage = null;
         store.updateUser(user.id, patch);
         closeModal();
         showToast("تم تحديث ملفك الشخصي");
@@ -105,7 +116,6 @@ export function renderProfilePage(root, userId){
   }
   const isOwnProfile = user.id === store.getCurrentUser().id;
   const roleTag = publicRoleLabel(user.role);
-  const rank = getLeaderboard().findIndex(u => u.id === user.id) + 1;
 
   const stats = user.stats;
   const miniStats = [
@@ -118,12 +128,12 @@ export function renderProfilePage(root, userId){
   const describedBadges = sortBadgesUnlockedFirst(badgeService.describeAllForUser(user));
   const visibleBadges = showAllBadges ? describedBadges : describedBadges.slice(0, 7);
   const recentActivity = [
-    ...store.getPosts().filter(p => p.authorId === user.id).map(p => ({ kind: "post", id: p.id, title: p.title, tag: "كتابة", ic: "feather", date: p.date })),
-    ...store.getReviews().filter(r => r.authorId === user.id).map(r => ({ kind: "review", id: r.id, title: r.bookTitle, tag: "قراءة", ic: "book", date: r.date })),
-    ...store.getArticles().filter(a => a.author === user.id).map(a => ({ kind: "article", id: a.id, title: a.title, tag: "مقال", ic: "document", date: a.date })),
+    ...store.getPosts().filter(p => p.authorId === user.id).map(p => ({ kind: "post", id: p.id, title: p.title, tag: "كتابة", ic: "feather", date: p.date, image: (p.images && p.images[0]) || p.image || null, href: `#/writing/${p.id}` })),
+    ...store.getReviews().filter(r => r.authorId === user.id).map(r => ({ kind: "review", id: r.id, title: r.bookTitle, tag: "قراءة", ic: "book", date: r.date, image: (r.images && r.images[0]) || r.image || null, href: `#/reading/${r.id}` })),
+    ...store.getArticles().filter(a => a.author === user.id).map(a => ({ kind: "article", id: a.id, title: a.title, tag: "مقال", ic: "document", date: a.date, image: (a.images && a.images[0]) || a.image || null, href: `#/articles/${a.id}` })),
     ...store.getUserEvents(user.id).filter(e => e.type === "join_event").map(e => {
       const ev = store.getEvent(e.meta.eventId);
-      return ev ? { kind: "event", id: ev.id, title: ev.title, tag: "فعالية", ic: "calendar", date: e.timestamp } : null;
+      return ev ? { kind: "event", id: ev.id, title: ev.title, tag: "فعالية", ic: "calendar", date: e.timestamp, image: null, href: `#/events/${ev.id}` } : null;
     }).filter(Boolean),
   ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
   const prog = xpProgressWithinLevel(user);
@@ -132,21 +142,17 @@ export function renderProfilePage(root, userId){
     <section class="section">
       <div class="container container--narrow">
 
-        <div class="card profile-head-v2">
+        <div class="profile-head-v2 profile-head-v2--plain">
           <div class="avatar avatar--xl">${avatarHtml(user)}</div>
-          <h2 class="profile-head-v2__name">${user.displayName}</h2>
+          <div class="profile-head-v2__name-row">
+            <h2 class="profile-head-v2__name">${user.displayName}</h2>
+            ${roleTag ? `<span class="badge-pill badge-pill--sage">${icon("shield", { size: 12 })}<span>${roleTag}</span></span>` : ""}
+          </div>
           <div class="profile-head-v2__handle">@${user.username}</div>
-          ${roleTag ? `<div class="profile-head-v2__role">${icon("shield", { size: 13 })}<span>${roleTag}</span></div>` : ""}
 
           <div class="profile-head-v2__progress">
             <div class="profile-head-v2__progress-label">${arNum(prog.into)} / ${arNum(prog.step)}</div>
             <div class="progress progress--wide"><div class="progress__bar" style="width:${prog.ratio*100}%"></div></div>
-          </div>
-
-          <div class="profile-head-v2__meta">
-            <span>${icon("star", { size: 16 })} ${arNum(user.xp)} نقطة</span>
-            <span class="profile-head-v2__divider"></span>
-            <span>${icon("chart", { size: 16 })} #${arNum(rank)} المركز</span>
           </div>
 
           ${isOwnProfile ? `<button class="btn btn-primary btn-sm" id="edit-profile-btn">${icon("feather", { size: 14 })}<span>تعديل الملف الشخصي</span></button>` : ""}
@@ -187,10 +193,11 @@ export function renderProfilePage(root, userId){
           <div class="section-head" style="margin-top:34px;"><h2>${icon("document", { size: 20, cls: "heading-icon" })} آخر ما نشره ${user.displayName}</h2></div>
           <div class="grid grid-3" id="recent-activity-grid">
             ${recentActivity.map(item => `
-              <div class="card card--hover feed-item" data-activity="${item.kind}" data-activity-id="${item.id}" role="button" tabindex="0">
+              <a href="${item.href}" class="card card--hover feed-item recent-activity-card">
+                ${item.image ? `<img src="${item.image}" alt="" class="recent-activity-card__thumb">` : ""}
                 <span class="badge-pill badge-pill--gold" style="margin-bottom:8px;">${icon(item.ic, { size: 12 })}<span>${item.tag}</span></span>
                 <h3 style="font-size:1rem;">${item.title}</h3>
-              </div>
+              </a>
             `).join("")}
           </div>
         ` : ""}
@@ -199,19 +206,6 @@ export function renderProfilePage(root, userId){
     </section>
   `;
 
-  root.querySelectorAll("[data-activity]").forEach(card => {
-    const kind = card.getAttribute("data-activity");
-    const id = card.getAttribute("data-activity-id");
-    const open = async () => {
-      const { openPostViewModal, openReviewViewModal, openArticleViewModal } = await import("../components/modals.js");
-      if(kind === "post") openPostViewModal(id);
-      else if(kind === "review") openReviewViewModal(id);
-      else if(kind === "article") openArticleViewModal(id);
-      else if(kind === "event") window.location.hash = `#/events/${id}`;
-    };
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
-  });
 
   bindBadgeCards(root.querySelector("#badges-grid"), describedBadges);
 

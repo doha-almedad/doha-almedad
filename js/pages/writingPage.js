@@ -158,6 +158,50 @@ function openComposerModal(root, user, paint){
   });
 }
 
+/** صفحة كاملة مستقلة لعرض منشور واحد — وليست نافذة منبثقة */
+export function renderPostViewPage(root, postId){
+  const p = store.getPosts().find(x => x.id === postId);
+  if(!p){
+    root.innerHTML = `<div class="container section"><div class="empty-state"><div class="empty-state__icon">${icon("search", { size: 26 })}</div><p>لم يُعثر على هذا المنشور.</p></div></div>`;
+    return;
+  }
+  const author = store.getUser(p.authorId);
+  const images = p.images || (p.image ? [p.image] : []);
+  const currentUser = store.getCurrentUser();
+  const liked = (p.likedBy || []).includes(currentUser.id);
+  const commentCount = (p.comments || []).length;
+
+  root.innerHTML = `
+    <section class="section">
+      <div class="container container--narrow">
+        <a href="#/writing" class="text-muted" style="font-size:.85rem;display:inline-flex;align-items:center;gap:6px;">${icon("chevronRight", { size: 14 })}<span>العودة إلى الكتابة</span></a>
+
+        <div class="card article-view" style="margin-top:16px;">
+          <div class="highlight-card__meta" style="margin-bottom:14px;">
+            <span class="badge-pill">${author?.displayName || "عضو"}</span>
+            <span class="badge-pill badge-pill--gold">${typeLabel(p.type)}</span>
+            <span class="badge-pill">${timeAgo(p.date)}</span>
+          </div>
+          <h1>${p.title}</h1>
+          ${renderCarousel(images)}
+          <p style="white-space:pre-line;">${p.content}</p>
+          <div class="feed-item__actions">
+            <span data-like="${p.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${arNum((p.likedBy||[]).length)})</span>
+            <span data-comment="${p.id}">${icon("comment", { size: 15 })} تعليق (${arNum(commentCount)})</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+
+  bindCarousels(root);
+  root.querySelector("[data-like]").addEventListener("click", () => {
+    store.toggleLike("post", p.id, currentUser.id);
+    renderPostViewPage(root, postId);
+  });
+  root.querySelector("[data-comment]").addEventListener("click", () => openCommentsModal("post", p.id, () => renderPostViewPage(root, postId)));
+}
+
 export function renderWritingPage(root){
   const user = store.getCurrentUser();
   visibleCount = PAGE_SIZE;
