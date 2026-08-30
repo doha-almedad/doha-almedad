@@ -177,25 +177,34 @@ function timeAgoShort(iso){
   return `منذ ${Math.round(h/24)} يوم`;
 }
 
+const REPLIES_PAGE_SIZE = 5;
+let repliesShownByRoot = {}; // { rootId: count } — إعادة تصفير عند فتح نافذة جديدة
+
 export async function openCommentsModal(kind, itemId, onChange){
   const { store } = await import("../db/store.js");
-  const { icon, initial } = await import("./icons.js");
+  const { icon, initial, avatarHtml } = await import("./icons.js");
   const currentUser = store.getCurrentUser();
+  repliesShownByRoot = {};
 
   function itemOf(){
     return (kind === "post" ? store.getPosts() : store.getReviews()).find(i => i.id === itemId);
   }
 
-  function commentRow(c, allComments){
+  function commentRow(c){
     const author = store.getUser(c.userId);
     const liked = (c.likedBy || []).includes(currentUser.id);
-    const replyToAuthor = c.replyToUserId ? store.getUser(c.replyToUserId) : null;
+    let replyToAuthor = null;
+    if(c.parentCommentId){
+      const parent = itemOf().comments.find(x => x.id === c.parentCommentId);
+      replyToAuthor = parent ? store.getUser(parent.userId) : null;
+    }
     return `
-      <div class="comment-row" data-comment-id="${c.id}">
-        <div class="avatar avatar--sm">${initial(author?.displayName)}</div>
+      <div class="comment-row" id="comment-${c.id}" data-comment-id="${c.id}">
+        <div class="avatar avatar--sm">${avatarHtml(author)}</div>
         <div class="comment-row__body">
           <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}</span></div>
-          <p>${replyToAuthor ? `<span class="comment-mention">@${replyToAuthor.displayName}</span> ` : ""}${c.text}</p>
+          ${replyToAuthor ? `<button type="button" class="comment-row__replyto" data-goto-comment="${c.parentCommentId}">${icon("chevronLeft", { size: 11 })}<span>رداً على ${replyToAuthor.displayName}</span></button>` : ""}
+          <p>${c.text}</p>
           <div class="comment-row__actions">
             <button class="comment-row__reply ${liked ? "is-liked" : ""}" data-like-comment="${c.id}">${icon("heart", { size: 12 })} ${(c.likedBy||[]).length}</button>
             <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.displayName || "عضو"}">رد</button>
@@ -205,20 +214,33 @@ export async function openCommentsModal(kind, itemId, onChange){
     `;
   }
 
+  /** يبني كل خيوط الردود (Threads) — كل تعليق جذري + ردوده المسطّحة بأي عمق، مع تحميل تدريجي */
   function renderBody(){
     const item = itemOf();
     if(!item) return "";
     const comments = item.comments || [];
-    const roots = comments.filter(c => !c.parentId);
+    const roots = comments.filter(c => !c.parentCommentId);
     if(!roots.length){
       return `<div class="empty-state"><div class="empty-state__icon">${icon("comment", { size: 26 })}</div><p>لا تعليقات بعد — كن أول من يعلّق.</p></div>`;
     }
-    return roots.map(c => `
-      ${commentRow(c, comments)}
-      <div class="comment-row__replies">
-        ${comments.filter(r => r.parentId === c.id).map(r => commentRow(r, comments)).join("")}
-      </div>
-    `).join("");
+    return roots.map(root => {
+      const allReplies = comments
+        .filter(c => c.rootCommentId === root.id && c.id !== root.id)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      const shown = repliesShownByRoot[root.id] || REPLIES_PAGE_SIZE;
+      const visibleReplies = allReplies.slice(0, shown);
+      const remaining = allReplies.length - visibleReplies.length;
+
+      return `
+        <div class="comment-thread" data-root-id="${root.id}">
+          ${commentRow(root)}
+          <div class="comment-row__replies">
+            ${visibleReplies.map(commentRow).join("")}
+            ${remaining > 0 ? `<button class="btn btn-ghost btn-sm" data-load-more-replies="${root.id}">عرض ${Math.min(remaining, REPLIES_PAGE_SIZE)} ردود إضافية (من أصل ${remaining})</button>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   openModal(`
@@ -232,26 +254,27 @@ export async function openCommentsModal(kind, itemId, onChange){
   `, {
     size: "lg",
     onMount(box){
-      let replyToRootId = null;   // للتجميع البصري (دائماً تعليق جذر)
-      let replyToCommentId = null; // للعرض "رداً على فلان"
+      let replyToCommentId = null; // الأب المباشر الحقيقي — لا نفرضه على الجذر أبداً
       const list = box.querySelector("#comments-list");
       const ctxLabel = box.querySelector("#reply-context");
 
       function clearReplyState(){
-        replyToRootId = null;
         replyToCommentId = null;
         ctxLabel.style.display = "none";
+      }
+
+      function highlightComment(commentId){
+        const el = list.querySelector(`#comment-${commentId}`);
+        if(!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("is-highlighted");
+        setTimeout(() => el.classList.remove("is-highlighted"), 1500);
       }
 
       function bindRowButtons(){
         list.querySelectorAll("[data-reply-to]").forEach(btn => {
           btn.addEventListener("click", () => {
-            const clickedId = btn.getAttribute("data-reply-to");
-            const item = itemOf();
-            const clicked = item.comments.find(c => c.id === clickedId);
-            // التجميع دائماً تحت التعليق الجذر — لكن نعرض "رداً على" لصاحب التعليق الذي ضُغط عليه فعلياً
-            replyToRootId = clicked.parentId || clicked.id;
-            replyToCommentId = clickedId;
+            replyToCommentId = btn.getAttribute("data-reply-to");
             ctxLabel.style.display = "block";
             ctxLabel.textContent = `الرد على ${btn.getAttribute("data-reply-author")}`;
             box.querySelector("#comment-input").focus();
@@ -264,6 +287,30 @@ export async function openCommentsModal(kind, itemId, onChange){
             bindRowButtons();
           });
         });
+        list.querySelectorAll("[data-goto-comment]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const targetId = btn.getAttribute("data-goto-comment");
+            // إن كان الهدف مخفياً بسبب التحميل التدريجي، أظهر كل ردود نفس الخيط أولاً
+            const thread = btn.closest(".comment-thread");
+            const rootId = thread?.getAttribute("data-root-id");
+            if(rootId && !list.querySelector(`#comment-${targetId}`)){
+              const item = itemOf();
+              const totalInThread = item.comments.filter(c => c.rootCommentId === rootId && c.id !== rootId).length;
+              repliesShownByRoot[rootId] = totalInThread;
+              list.innerHTML = renderBody();
+              bindRowButtons();
+            }
+            highlightComment(targetId);
+          });
+        });
+        list.querySelectorAll("[data-load-more-replies]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const rootId = btn.getAttribute("data-load-more-replies");
+            repliesShownByRoot[rootId] = (repliesShownByRoot[rootId] || REPLIES_PAGE_SIZE) + REPLIES_PAGE_SIZE;
+            list.innerHTML = renderBody();
+            bindRowButtons();
+          });
+        });
       }
       bindRowButtons();
 
@@ -272,13 +319,17 @@ export async function openCommentsModal(kind, itemId, onChange){
         const text = box.querySelector("#comment-input").value.trim();
         if(!text) return;
         const current = store.getCurrentUser();
-        const replyToComment = replyToCommentId ? itemOf().comments.find(c => c.id === replyToCommentId) : null;
-        store.addComment(kind, itemId, {
+        const newComment = store.addComment(kind, itemId, {
           userId: current.id,
           text,
-          parentId: replyToRootId,
-          replyToUserId: replyToComment ? replyToComment.userId : null
+          parentCommentId: replyToCommentId
         });
+        // تأكّد من ظهور الرد الجديد فوراً حتى لو كان الخيط مطويّاً
+        if(newComment?.rootCommentId){
+          const item = itemOf();
+          const totalInThread = item.comments.filter(c => c.rootCommentId === newComment.rootCommentId && c.id !== newComment.rootCommentId).length;
+          repliesShownByRoot[newComment.rootCommentId] = totalInThread;
+        }
         clearReplyState();
         box.querySelector("#comment-input").value = "";
         list.innerHTML = renderBody();
