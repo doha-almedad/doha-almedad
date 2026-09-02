@@ -167,13 +167,14 @@
 .ink-heatmap2__cell.is-today{ outline:2px solid var(--ember); outline-offset:1px; }
 /* ---------- صفحة الفعاليات ---------- */
 .event-card{ display:flex; flex-direction:column; height:100%; border-inline-start:3px solid var(--accent-tan); }
-.event-card:nth-of-type(7n+1){ border-inline-start-color:#A9A0BD; background:#EDEBF2; }
-.event-card:nth-of-type(7n+2){ border-inline-start-color:#C9A15B; background:#F3E5CE; }
-.event-card:nth-of-type(7n+3){ border-inline-start-color:#B98055; background:#E9C8B6; }
-.event-card:nth-of-type(7n+4){ border-inline-start-color:#B06E56; background:#DFAF9F; }
-.event-card:nth-of-type(7n+5){ border-inline-start-color:#A8776E; background:#E7D6D1; }
-.event-card:nth-of-type(7n+6){ border-inline-start-color:#D9A15C; background:#F6D7B4; }
-.event-card:nth-of-type(7n+7){ border-inline-start-color:#C79E90; background:#F2E7E2; }
+/* لوحة ألوان بطاقات الفعاليات — تطبق مباشرة على البطاقات */
+.event-card:nth-child(7n+1){ border-inline-start-color:#A9A0BD; background-color:#EDEBF2 !important; }
+.event-card:nth-child(7n+2){ border-inline-start-color:#C9A15B; background-color:#F3E5CE !important; }
+.event-card:nth-child(7n+3){ border-inline-start-color:#B98055; background-color:#E9C8B6 !important; }
+.event-card:nth-child(7n+4){ border-inline-start-color:#B06E56; background-color:#DFAF9F !important; }
+.event-card:nth-child(7n+5){ border-inline-start-color:#A8776E; background-color:#E7D6D1 !important; }
+.event-card:nth-child(7n+6){ border-inline-start-color:#D9A15C; background-color:#F6D7B4 !important; }
+.event-card:nth-child(7n+7){ border-inline-start-color:#C79E90; background-color:#F2E7E2 !important; }
 .event-card h3, .event-card p, .event-card .event-card__meta{ color:#3F362C; }
 .event-card__progress{ margin-top:14px; }
 .event-card__meta{ display:flex; justify-content:space-between; font-size:.78rem; color:var(--paper-faint); margin-top:6px; }
