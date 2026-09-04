@@ -10,7 +10,7 @@ import { renderBadgeCard, bindBadgeCards, sortBadgesUnlockedFirst } from "../com
 import { xpProgressWithinLevel } from "../services/rewardEngine.js";
 import { icon, initial, publicRoleLabel, parseSocialLink, arNum, avatarHtml } from "../components/icons.js";
 import { openModal, closeModal, showToast } from "../components/modals.js";
-import { resizeImageFile } from "../services/mediaService.js";
+import { cropImageFile } from "../services/mediaService.js";
 
 let showAllBadges = false;
 
@@ -56,7 +56,6 @@ function socialLinkPill(rawUrl){
 function openEditProfileModal(user, root, userId){
   let pendingAvatar = null;
   let avatarRemoved = false;
-  let avatarScale = Math.round((Number(user.avatarScale) || 1) * 100);
   openModal(`
     <div class="modal-box__head"><h3>تعديل الملف الشخصي</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div class="field" style="text-align:center;">
@@ -66,11 +65,6 @@ function openEditProfileModal(user, root, userId){
         <input type="file" id="edit-avatar-input" accept="image/*" hidden>
       </label>
       ${user.avatarImage ? `<button type="button" class="btn btn-ghost btn-sm" id="remove-avatar-btn" style="margin-top:8px;">${icon("close", { size: 12 })}<span>حذف الصورة</span></button>` : ""}
-    </div>
-    <div class="field">
-      <label for="avatar-size">حجم صورة الأفتار: <span id="avatar-size-value">${avatarScale}%</span></label>
-      <input type="range" id="avatar-size" min="80" max="140" step="5" value="${avatarScale}">
-      <div class="field-hint">حرّك المؤشر لتصغير الصورة أو تقريبها داخل الدائرة.</div>
     </div>
     <div class="field"><label>الاسم</label><input type="text" id="edit-name" value="${user.displayName}"></div>
     <div class="field"><label>اسم المستخدم</label><input type="text" id="edit-username" value="${user.username}" dir="ltr" style="text-align:left;"></div>
@@ -84,24 +78,13 @@ function openEditProfileModal(user, root, userId){
   `, {
     onMount(box){
       const avatarPreview = box.querySelector("#avatar-edit-preview");
-      const avatarRange = box.querySelector("#avatar-size");
-      const avatarSizeValue = box.querySelector("#avatar-size-value");
-
-      function applyAvatarScale(){
-        avatarScale = Number(avatarRange.value);
-        avatarSizeValue.textContent = `${avatarScale}%`;
-        const img = avatarPreview.querySelector("img");
-        if(img) img.style.transform = `scale(${avatarScale / 100})`;
-      }
-      avatarRange.addEventListener("input", applyAvatarScale);
-      applyAvatarScale();
-
       box.querySelector("#edit-avatar-input").addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if(!file) return;
-        pendingAvatar = await resizeImageFile(file, 400);
+        pendingAvatar = await cropImageFile(file, { aspectRatio:1, outputWidth:500, title:"قص صورة الأفتار" });
+        if(!pendingAvatar) return;
         avatarRemoved = false;
-        avatarPreview.innerHTML = `<img src="${pendingAvatar}" alt="" style="transform:scale(${avatarScale / 100});">`;
+        avatarPreview.innerHTML = `<img src="${pendingAvatar}" alt="">`;
       });
       box.querySelector("#remove-avatar-btn")?.addEventListener("click", () => {
         pendingAvatar = null;
@@ -115,7 +98,7 @@ function openEditProfileModal(user, root, userId){
         const bio = box.querySelector("#edit-bio").value.trim();
         const socialUrl = box.querySelector("#edit-social").value.trim();
         if(!displayName || !username) return;
-        const patch = { displayName, username, bio, socialUrl, avatarScale: avatarScale / 100 };
+        const patch = { displayName, username, bio, socialUrl, avatarScale: 1 };
         if(pendingAvatar) patch.avatarImage = pendingAvatar;
         else if(avatarRemoved) patch.avatarImage = null;
         store.updateUser(user.id, patch);

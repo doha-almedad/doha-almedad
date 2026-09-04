@@ -29,6 +29,7 @@ function annualGoalsCard(){
     { label: "الفعاليات", cur: actual.events, target: goal.events },
     { label: "الكتب المنشورة", cur: actual.booksPublished, target: goal.booksPublished },
     { label: "كتب القراءة", cur: actual.booksRead, target: goal.booksRead },
+    { label: "المقالات المنشورة", cur: actual.articles || 0, target: goal.articles || 0 },
   ].filter(r => r.target);
 
   if(!rows.length) return "";

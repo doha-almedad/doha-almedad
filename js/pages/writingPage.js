@@ -7,7 +7,7 @@ import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks, openCommentsModal, openModal, closeModal } from "../components/modals.js";
 import { icon, initial, avatarHtml, arNum } from "../components/icons.js";
-import { resizeImageFile } from "../services/mediaService.js";
+import { cropImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
 const TEXT_TYPES = [
@@ -57,6 +57,29 @@ function confirmDeletePost(postId, onDeleted){
   });
 }
 
+export function openEditPostModal(postId, onUpdated, { admin = false } = {}){
+  const post = store.getPosts().find(p => p.id === postId);
+  const current = store.getCurrentUser();
+  const canEdit = admin || current.role === "owner" || current.role === "moderator" || post?.authorId === current.id;
+  if(!post || !canEdit) return;
+  openModal(`
+    <div class="modal-box__head"><h3>تعديل المنشور</h3><button class="modal-close" data-close>${icon("close", { size:18 })}</button></div>
+    <div class="field"><label>العنوان</label><input id="edit-post-title" value="${post.title}"></div>
+    <div class="field"><label>نوع النص</label><select id="edit-post-type">${TEXT_TYPES.map(t => `<option value="${t.value}" ${t.value===post.type?"selected":""}>${t.label}</option>`).join("")}</select></div>
+    <div class="field"><label>النص</label><textarea id="edit-post-content">${post.content}</textarea></div>
+    <button class="btn btn-primary btn-block" id="save-post-edit">حفظ التعديلات</button>
+  `, { size:"lg", onMount(box){
+    box.querySelector("#save-post-edit").addEventListener("click", () => {
+      const title = box.querySelector("#edit-post-title").value.trim();
+      const content = box.querySelector("#edit-post-content").value.trim();
+      if(!title || !content){ showToast("يرجى إدخال العنوان والنص"); return; }
+      store.updatePost(postId, { title, content, type:box.querySelector("#edit-post-type").value, wordCount:wordCount(content) });
+      closeModal(); showToast("تم حفظ التعديلات");
+      if(typeof onUpdated === "function") onUpdated();
+    });
+  }});
+}
+
 function renderFeed(){
   const all = store.getPosts();
   const posts = all.slice(0, visibleCount);
@@ -77,14 +100,15 @@ function renderFeed(){
           <div class="avatar avatar--sm participant-link" data-user-id="${p.authorId}">${avatarHtml(author)}</div>
           <div>
             <div class="feed-item__name participant-link" data-user-id="${p.authorId}">${author?.displayName || "عضو"}</div>
-            <div class="feed-item__time">${timeAgo(p.date)}</div>
+            <div class="feed-item__time">${timeAgo(p.date)} ${p.editedAt ? `· تم التعديل ${timeAgo(p.editedAt)}` : ""}</div>
           </div>
           <div class="feed-item__head-actions">
             <span class="badge-pill badge-pill--gold">${typeLabel(p.type)}</span>
             ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
+            ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__edit" data-edit-post="${p.id}">${icon("feather", { size: 12 })}<span>تعديل</span></button>` : ""}
           </div>
         </div>
-        ${renderCarousel(images, { size: p.imageDisplaySize || "medium" })}
+        ${renderCarousel(images, { size: "full" })}
         <h3>${p.title}</h3>
         <p>${p.content}</p>
         <div class="feed-item__actions">
@@ -140,15 +164,6 @@ function openComposerModal(root, user, paint){
       </label>
       <div id="image-preview-strip">${previewStrip()}</div>
     </div>
-    <div class="field">
-      <label>حجم عرض الصور</label>
-      <select id="post-image-size">
-        <option value="small">صغير</option>
-        <option value="medium" selected>متوسط</option>
-        <option value="full">كامل العرض</option>
-      </select>
-      <div class="field-hint">يُطبّق المقاس المختار على صور هذا المنشور.</div>
-    </div>
     <button class="btn btn-primary btn-block" id="publish-post-btn">${icon("send", { size: 16 })}<span>نشر</span></button>
   `, {
     size: "lg",
@@ -167,8 +182,10 @@ function openComposerModal(root, user, paint){
       box.querySelector("#post-image").addEventListener("change", async (e) => {
         const files = Array.from(e.target.files || []);
         if(!files.length) return;
-        const resized = await Promise.all(files.map(f => resizeImageFile(f)));
-        pendingImages.push(...resized);
+        for(const file of files){
+          const cropped = await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"قص صورة المنشور" });
+          if(cropped) pendingImages.push(cropped);
+        }
         refreshStrip();
       });
 
@@ -176,12 +193,11 @@ function openComposerModal(root, user, paint){
         const title = box.querySelector("#post-title").value.trim();
         const content = box.querySelector("#post-content").value.trim();
         const type = box.querySelector("#post-type").value;
-        const imageDisplaySize = box.querySelector("#post-image-size").value;
         if(!title || !content){
           showToast("يرجى إدخال عنوان ونص قبل النشر");
           return;
         }
-        store.addPost({ authorId: user.id, title, content, type, images: pendingImages, imageDisplaySize, wordCount: wordCount(content) });
+        store.addPost({ authorId: user.id, title, content, type, images: pendingImages, wordCount: wordCount(content) });
         processActivity(user.id, "publish_post", {
           wordCount: wordCount(content),
           isFullWork: type === "chapter"
@@ -218,10 +234,12 @@ export function renderPostViewPage(root, postId){
             <span class="badge-pill">${author?.displayName || "عضو"}</span>
             <span class="badge-pill badge-pill--gold">${typeLabel(p.type)}</span>
             <span class="badge-pill">${timeAgo(p.date)}</span>
+            ${p.editedAt ? `<span class="badge-pill">تم التعديل ${timeAgo(p.editedAt)}</span>` : ""}
             ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
+            ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__edit" data-edit-post="${p.id}">${icon("feather", { size: 12 })}<span>تعديل</span></button>` : ""}
           </div>
           <h1>${p.title}</h1>
-          ${renderCarousel(images, { size: p.imageDisplaySize || "medium" })}
+          ${renderCarousel(images, { size: "full" })}
           <p style="white-space:pre-line;">${p.content}</p>
           <div class="feed-item__actions">
             <span data-like="${p.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${arNum((p.likedBy||[]).length)})</span>
@@ -239,6 +257,7 @@ export function renderPostViewPage(root, postId){
   });
   root.querySelector("[data-comment]").addEventListener("click", () => openCommentsModal("post", p.id, () => renderPostViewPage(root, postId)));
   root.querySelector("[data-delete-post]")?.addEventListener("click", () => confirmDeletePost(p.id, () => { window.location.hash = "#/writing"; }));
+  root.querySelector("[data-edit-post]")?.addEventListener("click", () => openEditPostModal(p.id, () => renderPostViewPage(root, postId)));
 }
 
 export function renderWritingPage(root){
@@ -265,6 +284,9 @@ export function renderWritingPage(root){
     });
     feed.querySelectorAll("[data-delete-post]").forEach(el => {
       el.addEventListener("click", () => confirmDeletePost(el.getAttribute("data-delete-post"), paint));
+    });
+    feed.querySelectorAll("[data-edit-post]").forEach(el => {
+      el.addEventListener("click", () => openEditPostModal(el.getAttribute("data-edit-post"), paint));
     });
     feed.querySelector("#load-more-posts")?.addEventListener("click", () => {
       visibleCount += PAGE_SIZE;

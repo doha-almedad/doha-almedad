@@ -14,6 +14,7 @@ import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks, openModal } from "../components/modals.js";
 import { icon, initial, arNum } from "../components/icons.js";
+import { openEditPostModal } from "./writingPage.js";
 
 let activeTab = "overview";
 
@@ -178,7 +179,7 @@ function contentTab(){
         <thead><tr><th>العنوان</th><th>الكاتب</th><th>إجراء</th></tr></thead>
         <tbody>${posts.map(p => `
           <tr><td>${p.title}</td><td>${store.getUser(p.authorId)?.displayName || "—"}</td>
-          <td><button class="btn btn-danger btn-sm" data-del-post="${p.id}">حذف</button></td></tr>
+          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-post-admin="${p.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-post="${p.id}">حذف</button></td></tr>
         `).join("")}</tbody>
       </table>` : `<p class="text-muted">لا منشورات بعد.</p>`}
     </div>
@@ -222,11 +223,45 @@ function settingsTab(){
   `;
 }
 
+function annualGoalsTab(){
+  const year = new Date().getFullYear();
+  const goal = store.getAnnualGoal(year) || { words:0, events:0, booksPublished:0, booksRead:0, articles:0 };
+  const actual = store.computeYearActuals(year);
+  const rows = [
+    { key:"words", label:"الكلمات المكتوبة", ic:"quill", current:actual.words || 0, target:goal.words || 0 },
+    { key:"events", label:"الفعاليات الأدبية", ic:"calendar", current:actual.events || 0, target:goal.events || 0 },
+    { key:"booksPublished", label:"الكتب المنشورة", ic:"document", current:actual.booksPublished || 0, target:goal.booksPublished || 0 },
+    { key:"booksRead", label:"الكتب المقروءة", ic:"book", current:actual.booksRead || 0, target:goal.booksRead || 0 },
+    { key:"articles", label:"المقالات المنشورة", ic:"document", current:actual.articles || 0, target:goal.articles || 0 },
+  ];
+  return `
+    <div class="admin-goals-head">
+      <span class="eyebrow">خطة ${year}</span>
+      <h2>أهداف الإنتاج السنوي</h2>
+      <p class="text-muted">حدّد المستهدفات، وستعرض الرسوم نسبة الإنجاز الفعلية تلقائياً.</p>
+    </div>
+    <div class="admin-goals-form">
+      ${rows.map(row => `<div class="field"><label>${icon(row.ic, { size:16 })}${row.label}</label><input type="number" min="0" id="annual-goal-${row.key}" value="${row.target}"></div>`).join("")}
+    </div>
+    <button class="btn btn-primary" id="save-annual-goals">حفظ الأهداف</button>
+    <div class="admin-goal-chart" aria-label="رسوم تقدم الأهداف السنوية">
+      ${rows.map(row => {
+        const percent = row.target ? Math.min(100, Math.round((row.current / row.target) * 100)) : 0;
+        return `<div class="admin-goal-row">
+          <div class="admin-goal-row__labels"><span>${row.label}</span><b>${percent}٪</b></div>
+          <div class="progress"><div class="progress__bar" style="width:${percent}%"></div></div>
+          <small>${row.current.toLocaleString("ar")} من ${row.target.toLocaleString("ar")}</small>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
 const TABS = [
   { id: "overview",    label: "نظرة عامة",      ic: "home",    ownerOnly: false },
   { id: "members",     label: "الأعضاء",       ic: "users",   ownerOnly: false },
   { id: "submissions",  label: "طلبات الاعتماد",  ic: "target",   ownerOnly: false },
   { id: "content",     label: "إدارة المحتوى",   ic: "document",  ownerOnly: false },
+  { id: "goals",       label: "الأهداف السنوية", ic: "chart",     ownerOnly: true },
   { id: "settings",     label: "الإعدادات",     ic: "lock",   ownerOnly: true },
 ];
 
@@ -326,6 +361,7 @@ export function renderAdminDashboardPage(root){
     members: () => membersTab(user),
     submissions: submissionsTab,
     content: contentTab,
+    goals: annualGoalsTab,
     settings: settingsTab,
   };
 
@@ -395,6 +431,9 @@ export function renderAdminDashboardPage(root){
     showToast("حُذف المنشور، وسُحبت نقاطه وشعلته المرتبطة");
     refresh();
   }));
+  root.querySelectorAll("[data-edit-post-admin]").forEach(btn => btn.addEventListener("click", () => {
+    openEditPostModal(btn.getAttribute("data-edit-post-admin"), refresh, { admin:true });
+  }));
   root.querySelectorAll("[data-del-review]").forEach(btn => btn.addEventListener("click", () => {
     store.deleteReview(btn.getAttribute("data-del-review"));
     showToast("حُذفت المراجعة، وسُحبت نقاطها وشعلتها المرتبطة");
@@ -441,4 +480,15 @@ export function renderAdminDashboardPage(root){
   }));
 
   root.querySelector("#new-event-btn")?.addEventListener("click", () => openNewEventModal(refresh));
+  root.querySelector("#save-annual-goals")?.addEventListener("click", () => {
+    const year = new Date().getFullYear();
+    const value = key => Math.max(0, Number(root.querySelector(`#annual-goal-${key}`)?.value) || 0);
+    store.setAnnualGoal(year, {
+      words:value("words"), events:value("events"),
+      booksPublished:value("booksPublished"), booksRead:value("booksRead"),
+      articles:value("articles")
+    });
+    showToast("حُفظت أهداف الإنتاج السنوي");
+    refresh();
+  });
 }
