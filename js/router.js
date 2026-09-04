@@ -13,7 +13,6 @@ import { renderEventDetailsPage } from "./pages/eventDetailsPage.js";
 import { renderWritingPage, renderPostViewPage } from "./pages/writingPage.js";
 import { renderReadingPage, renderReviewViewPage } from "./pages/readingPage.js";
 import { renderArticlesPage, renderArticleViewPage } from "./pages/articlesPage.js";
-import { renderLeaderboardPage } from "./pages/leaderboardPage.js";
 import { renderProfilePage } from "./pages/profilePage.js";
 import { renderAdminDashboardPage } from "./pages/adminDashboardPage.js";
 
@@ -31,7 +30,8 @@ const ROUTES = [
   { pattern: "/reading/:id",       render: (r, p) => renderReviewViewPage(r, p.id) },
   { pattern: "/articles",         render: (r) => renderArticlesPage(r) },
   { pattern: "/articles/:id",      render: (r, p) => renderArticleViewPage(r, p.id) },
-  { pattern: "/leaderboard",       render: (r) => renderLeaderboardPage(r) },
+  // إبقاء الرابط القديم متوافقاً مع النسخ المحفوظة، مع تحويله إلى الإدارة.
+  { pattern: "/leaderboard",       render: (r) => renderAdminDashboardPage(r) },
   { pattern: "/profile",          render: (r) => renderProfilePage(r) },
   { pattern: "/profile/:id",       render: (r, p) => renderProfilePage(r, p.id) },
   { pattern: "/admin",            render: (r) => renderAdminDashboardPage(r) },
