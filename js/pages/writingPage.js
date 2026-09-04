@@ -77,7 +77,7 @@ export function openEditPostModal(postId, onUpdated, { admin = false } = {}){
     };
     paintImages();
     box.querySelector("#edit-post-images").addEventListener("change", async e => {
-      for(const file of Array.from(e.target.files || [])) pendingImages.push(await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"ضبط صورة المنشور" }));
+      for(const file of Array.from(e.target.files || [])){ const image = await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"اختر قالب صورة المنشور" }); if(image) pendingImages.push(image); }
       paintImages();
     });
     box.querySelector("#save-post-edit").addEventListener("click", () => {
@@ -97,7 +97,7 @@ function renderFeed(){
   const currentUser = store.getCurrentUser();
 
   if(!all.length){
-    return `<div class="empty-state"><div class="empty-state__icon">${icon("feather", { size: 30 })}</div><p>لم يُنشر أي نص بعد. كن أول من يخطّ حرفاً هنا.</p></div>`;
+    return `<div class="empty-state"><div class="empty-state__icon">${icon("feather", { size: 30 })}</div><p>لم يُنشر أي نص بعد. كن أول من يخطّ حرفًا هنا.</p></div>`;
   }
 
   const cards = posts.map(p => {

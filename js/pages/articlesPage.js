@@ -6,7 +6,7 @@
 import { store } from "../db/store.js";
 import { openModal, closeModal, showToast } from "../components/modals.js";
 import { icon, arNum } from "../components/icons.js";
-import { resizeImageFile } from "../services/mediaService.js";
+import { cropImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
 const CATEGORIES = [
@@ -75,7 +75,7 @@ function openComposerModal(user, refreshList){
   }
 
   openModal(`
-    <div class="modal-box__head"><h3>اكتب مقالاً أو ملخصاً جديداً</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <div class="modal-box__head"><h3>اكتب مقالًا أو ملخصًا جديدًا</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <p class="text-muted" style="font-size:.82rem;margin-bottom:14px;">سيراجع فريق الإشراف مقالك قبل نشره في هذه الصفحة.</p>
     <div class="composer__meta">
       <div class="field">
@@ -91,7 +91,7 @@ function openComposerModal(user, refreshList){
     </div>
     <div class="field">
       <label>وصف الموضوع</label>
-      <textarea id="article-excerpt" placeholder="اكتب وصفاً مختصراً يظهر في بطاقة المقال..."></textarea>
+      <textarea id="article-excerpt" placeholder="اكتب وصفًا مختصرًا يظهر في بطاقة المقال..."></textarea>
       <div class="field-hint">هذا الوصف هو الذي سيظهر للقراء قبل فتح المقال.</div>
     </div>
     <div class="field">
@@ -124,8 +124,10 @@ function openComposerModal(user, refreshList){
       box.querySelector("#article-image").addEventListener("change", async (e) => {
         const files = Array.from(e.target.files || []);
         if(!files.length) return;
-        const resized = await Promise.all(files.map(f => resizeImageFile(f)));
-        pendingImages.push(...resized);
+        for(const file of files){
+          const image = await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"اختر قالب صورة المقال" });
+          if(image) pendingImages.push(image);
+        }
         refreshStrip();
       });
 
@@ -174,7 +176,7 @@ export function renderArticlesPage(root){
         <div id="articles-empty"></div>
       </div>
     </section>
-    <button class="fab-btn" id="article-fab" aria-label="اكتب مقالاً جديداً">${icon("plus", { size: 24 })}</button>
+    <button class="fab-btn" id="article-fab" aria-label="اكتب مقالًا جديدًا">${icon("plus", { size: 24 })}</button>
   `;
 
   const grid = root.querySelector("#articles-grid");

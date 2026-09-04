@@ -7,7 +7,7 @@ import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks, openCommentsModal, openModal, closeModal } from "../components/modals.js";
 import { icon, initial, avatarHtml, arNum } from "../components/icons.js";
-import { resizeImageFile } from "../services/mediaService.js";
+import { cropImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
 const PAGE_SIZE = 3;
@@ -88,7 +88,7 @@ function openComposerModal(root, user, paint){
         <label>تقييمك</label>
         <select id="book-rating">
           <option value="5">5 — ممتاز</option>
-          <option value="4">4 — جيد جداً</option>
+          <option value="4">4 — جيد جدًا</option>
           <option value="3">3 — جيد</option>
           <option value="2">2 — مقبول</option>
           <option value="1">1 — ضعيف</option>
@@ -125,8 +125,10 @@ function openComposerModal(root, user, paint){
       box.querySelector("#book-image").addEventListener("change", async (e) => {
         const files = Array.from(e.target.files || []);
         if(!files.length) return;
-        const resized = await Promise.all(files.map(f => resizeImageFile(f)));
-        pendingImages.push(...resized);
+        for(const file of files){
+          const image = await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"اختر قالب صورة القراءة" });
+          if(image) pendingImages.push(image);
+        }
         refreshStrip();
       });
 

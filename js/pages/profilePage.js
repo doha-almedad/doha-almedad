@@ -74,7 +74,7 @@ function openEditProfileModal(user, root, userId){
     <div class="field">
       <label>رابط حساب التواصل الاجتماعي (اختياري)</label>
       <input type="text" id="edit-social" placeholder="https://instagram.com/username" value="${user.socialUrl || ""}">
-      <div class="field-hint">يُعرض تلقائياً باسم المستخدم مع أيقونة المنصة.</div>
+      <div class="field-hint">يُعرض تلقائيًا باسم المستخدم مع أيقونة المنصة.</div>
     </div>
     <button class="btn btn-primary btn-block" id="save-profile-btn">حفظ التغييرات</button>
   `, {
@@ -83,7 +83,7 @@ function openEditProfileModal(user, root, userId){
       box.querySelector("#edit-avatar-input").addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if(!file) return;
-        pendingAvatar = await cropImageFile(file, { aspectRatio:1, outputWidth:500, title:"قص صورة الأفتار" });
+        pendingAvatar = await cropImageFile(file, { aspectRatio:1, outputWidth:500, title:"قص صورة الأفتار", allowTemplates:false });
         if(!pendingAvatar) return;
         avatarRemoved = false;
         avatarPreview.innerHTML = `<img src="${pendingAvatar}" alt="">`;
@@ -110,6 +110,65 @@ function openEditProfileModal(user, root, userId){
       });
     }
   });
+}
+
+const PERSONAL_GOAL_LABELS = { writing:"الكتابة", reading:"القراءة", events:"الفعاليات", articles:"المقالات" };
+
+function personalGoalDetails(goals){
+  return (goals.sections || []).map(section => {
+    let detail = "";
+    if(section === "writing") detail = `${arNum(goals.writing?.count||0)} نصوص · ${arNum(goals.writing?.words||0)} كلمة · ${goals.writing?.type||"متنوع"}${goals.writing?.deadline?` · حتى ${goals.writing.deadline}`:""}`;
+    if(section === "reading") detail = `${arNum(goals.reading?.count||0)} كتب · ${arNum(goals.reading?.pages||0)} صفحة${goals.reading?.books?.length?` · ${(goals.reading.books).map(b=>b.title).join("، ")}`:""}`;
+    if(section === "events") detail = (goals.events||[]).map(id=>store.getEvent(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد فعالية بعد";
+    if(section === "articles") detail = (goals.articles||[]).map(id=>store.getArticle(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد مقالة بعد";
+    return `<div class="personal-goal-summary"><b>${PERSONAL_GOAL_LABELS[section]}</b><span>${detail}</span></div>`;
+  }).join("");
+}
+
+function personalSpaceHtml(user){
+  const goals = store.getPersonalGoals(user.id);
+  const drafts = store.getDrafts(user.id);
+  return `<section class="personal-space" id="personal-space">
+    <div class="section-head"><div><span class="eyebrow">خاص بك وحدك</span><h2>${icon("lock",{size:20,cls:"heading-icon"})} مساحتي</h2></div><span class="badge-pill">لا يراها الآخرون</span></div>
+    <div class="personal-space__grid">
+      <div class="card personal-space__panel">
+        <div class="personal-space__panel-head"><h3>أهدافي الشخصية</h3><button class="btn btn-outline btn-sm" id="edit-personal-goals">${icon("target",{size:14})}<span>إدارة الأهداف</span></button></div>
+        ${goals.sections?.length ? `<div class="personal-goal-chips">${goals.sections.map(s=>`<span class="badge-pill badge-pill--gold">${PERSONAL_GOAL_LABELS[s]}</span>`).join("")}</div><div class="personal-goal-summaries">${personalGoalDetails(goals)}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. اختر فقط ما ترغب في متابعته.</p>`}
+      </div>
+      <div class="card personal-space__panel">
+        <div class="personal-space__panel-head"><h3>مسوداتي</h3><button class="btn btn-primary btn-sm" id="new-private-draft">${icon("plus",{size:14})}<span>مسودة جديدة</span></button></div>
+        ${drafts.length ? `<div class="private-drafts">${drafts.map(d=>`<div class="private-draft"><div><b>${d.title}</b><small>${d.type} · محفوظة خصوصًا</small></div><div><button class="btn btn-ghost btn-sm" data-edit-draft="${d.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-draft="${d.id}">حذف</button></div></div>`).join("")}</div>` : `<p class="text-muted">لا توجد مسودات محفوظة حتى الآن.</p>`}
+      </div>
+    </div>
+  </section>`;
+}
+
+function openDraftModal(user, draft, rerender){
+  openModal(`<div class="modal-box__head"><h3>${draft?"تعديل المسودة":"مسودة جديدة"}</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <div class="field"><label>العنوان</label><input id="draft-title" value="${draft?.title||""}"></div>
+    <div class="field"><label>نوع النص</label><select id="draft-type">${["قطعة أدبية","قصة قصيرة","نص شعري","خاطرة","مقالة رأي","فصل من عمل"].map(x=>`<option ${draft?.type===x?"selected":""}>${x}</option>`).join("")}</select></div>
+    <div class="field"><label>المسودة</label><textarea id="draft-content" style="min-height:220px;">${draft?.content||""}</textarea></div>
+    <p class="field-hint">هذه المسودة خاصة ولا تظهر في صفحات النشر.</p><button class="btn btn-primary btn-block" id="save-private-draft">حفظ المسودة</button>`, {size:"lg",onMount(box){box.querySelector("#save-private-draft").onclick=()=>{const title=box.querySelector("#draft-title").value.trim(); if(!title){showToast("اكتب عنوانًا للمسودة");return;} store.saveDraft(user.id,{id:draft?.id,title,type:box.querySelector("#draft-type").value,content:box.querySelector("#draft-content").value});closeModal();showToast("حُفظت المسودة في مساحتك");rerender();};}});
+}
+
+function openPersonalGoalsModal(user, rerender){
+  const old = store.getPersonalGoals(user.id);
+  const selected = new Set(old.sections || []);
+  const events = store.getEvents(); const articles = store.getArticles();
+  const checked = key => selected.has(key) ? "checked" : "";
+  openModal(`<div class="modal-box__head"><h3>أهدافي الشخصية</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <p class="text-muted">اختر الأقسام التي تريدها فقط؛ لا يلزم تعبئة الجميع.</p>
+    <div class="personal-goal-picker">
+      ${[["writing","الكتابة"],["reading","القراءة"],["events","الفعاليات"],["articles","المقالات"]].map(([k,l])=>`<label class="goal-choice"><input type="checkbox" data-goal-toggle="${k}" ${checked(k)}><span>${l}</span></label>`).join("")}
+    </div>
+    <div class="personal-goal-fields ${selected.has("writing")?"":"is-hidden"}" data-goal-fields="writing"><h4>هدف الكتابة</h4><div class="composer__meta"><div class="field"><label>عدد النصوص</label><input type="number" min="0" id="pg-writing-count" value="${old.writing?.count||""}"></div><div class="field"><label>عدد الكلمات</label><input type="number" min="0" id="pg-writing-words" value="${old.writing?.words||""}"></div></div><div class="composer__meta"><div class="field"><label>نوع النص</label><select id="pg-writing-type"><option>متنوع</option>${["قطعة أدبية","قصة قصيرة","نص شعري","خاطرة","مقالة رأي","فصل من عمل"].map(x=>`<option ${old.writing?.type===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>الموعد النهائي</label><input type="date" id="pg-writing-deadline" value="${old.writing?.deadline||""}"></div></div></div>
+    <div class="personal-goal-fields ${selected.has("reading")?"":"is-hidden"}" data-goal-fields="reading"><h4>هدف القراءة</h4><div class="composer__meta"><div class="field"><label>عدد الكتب</label><input type="number" min="0" id="pg-reading-count" value="${old.reading?.count||""}"></div><div class="field"><label>عدد الصفحات</label><input type="number" min="0" id="pg-reading-pages" value="${old.reading?.pages||""}"></div></div><div class="field"><label>الكتب وموعد إنهاء كل كتاب</label><textarea id="pg-reading-books" placeholder="كل كتاب في سطر: اسم الكتاب | 2026-12-31">${(old.reading?.books||[]).map(b=>`${b.title} | ${b.deadline||""}`).join("\n")}</textarea><div class="field-hint">اكتب عنوان الكتاب ثم | ثم التاريخ.</div></div></div>
+    <div class="personal-goal-fields ${selected.has("events")?"":"is-hidden"}" data-goal-fields="events"><h4>الفعاليات التي أنوي المشاركة فيها</h4><div class="goal-options-list">${events.map(e=>`<label><input type="checkbox" data-goal-event value="${e.id}" ${(old.events||[]).includes(e.id)?"checked":""}> ${e.title}</label>`).join("")||"لا توجد فعاليات متاحة"}</div></div>
+    <div class="personal-goal-fields ${selected.has("articles")?"":"is-hidden"}" data-goal-fields="articles"><h4>المقالات التي أنوي قراءتها</h4><div class="goal-options-list">${articles.map(a=>`<label><input type="checkbox" data-goal-article value="${a.id}" ${(old.articles||[]).includes(a.id)?"checked":""}> ${a.title}</label>`).join("")||"لا توجد مقالات متاحة"}</div></div>
+    <button class="btn btn-primary btn-block" id="save-personal-goals">حفظ أهدافي</button>`, {size:"lg",onMount(box){
+      box.querySelectorAll("[data-goal-toggle]").forEach(input=>input.onchange=()=>box.querySelector(`[data-goal-fields="${input.dataset.goalToggle}"]`).classList.toggle("is-hidden",!input.checked));
+      box.querySelector("#save-personal-goals").onclick=()=>{const sections=[...box.querySelectorAll("[data-goal-toggle]:checked")].map(x=>x.dataset.goalToggle); const books=box.querySelector("#pg-reading-books").value.split("\n").map(x=>x.trim()).filter(Boolean).map(line=>{const [title,deadline]=line.split("|").map(x=>x.trim());return{title,deadline};}); store.setPersonalGoals(user.id,{sections,writing:{count:Number(box.querySelector("#pg-writing-count").value)||0,words:Number(box.querySelector("#pg-writing-words").value)||0,type:box.querySelector("#pg-writing-type").value,deadline:box.querySelector("#pg-writing-deadline").value},reading:{count:Number(box.querySelector("#pg-reading-count").value)||0,pages:Number(box.querySelector("#pg-reading-pages").value)||0,books},events:[...box.querySelectorAll("[data-goal-event]:checked")].map(x=>x.value),articles:[...box.querySelectorAll("[data-goal-article]:checked")].map(x=>x.value)});closeModal();showToast("حُفظت أهدافك الشخصية");rerender();};
+    }});
 }
 
 export function renderProfilePage(root, userId){
@@ -179,6 +238,8 @@ export function renderProfilePage(root, userId){
           </div>
         </div>
 
+        ${isOwnProfile ? personalSpaceHtml(user) : ""}
+
         <div class="section-head">
           <h2>${icon("medal", { size: 20, cls: "heading-icon" })} الأوسمة</h2>
           <button class="btn btn-ghost btn-sm" id="toggle-badges-btn">${showAllBadges ? "عرض أقل" : "عرض جميع الأوسمة"}</button>
@@ -189,7 +250,7 @@ export function renderProfilePage(root, userId){
 
         <div class="card profile-streak-card">
           <div class="profile-streak-card__head">
-            <div class="profile-streak-card__stat"><b>${arNum(activeDaysCount(user))}</b><span>${icon("flame", { size: 13 })} يوماً نشطاً</span></div>
+            <div class="profile-streak-card__stat"><b>${arNum(activeDaysCount(user))}</b><span>${icon("flame", { size: 13 })} يومًا نشطًا</span></div>
             <div class="profile-streak-card__stat"><b>${arNum(user.longestStreak || 0)}</b><span>أطول سلسلة</span></div>
             <div class="profile-streak-card__stat"><b>${arNum(user.streak || 0)}</b><span>السلسلة الحالية</span></div>
           </div>
@@ -224,4 +285,9 @@ export function renderProfilePage(root, userId){
 
   root.querySelector("#edit-profile-btn")?.addEventListener("click", () => openEditProfileModal(user, root, userId));
   root.querySelector("#toggle-recent-activity")?.addEventListener("click", () => { showAllRecentActivity = !showAllRecentActivity; renderProfilePage(root, userId); });
+  const rerender = () => renderProfilePage(root, userId);
+  root.querySelector("#edit-personal-goals")?.addEventListener("click", () => openPersonalGoalsModal(user, rerender));
+  root.querySelector("#new-private-draft")?.addEventListener("click", () => openDraftModal(user, null, rerender));
+  root.querySelectorAll("[data-edit-draft]").forEach(btn => btn.addEventListener("click", () => openDraftModal(user, store.getDrafts(user.id).find(d=>d.id===btn.dataset.editDraft), rerender)));
+  root.querySelectorAll("[data-delete-draft]").forEach(btn => btn.addEventListener("click", () => { store.deleteDraft(user.id, btn.dataset.deleteDraft); showToast("حُذفت المسودة"); rerender(); }));
 }

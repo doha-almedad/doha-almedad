@@ -4,8 +4,7 @@
    ========================================================= */
 
 import { store } from "../db/store.js";
-import { getLeaderboard } from "../services/rewardEngine.js";
-import { icon, initial, heroBookIllustration, arNum } from "../components/icons.js";
+import { icon, arNum } from "../components/icons.js";
 
 function excerpt(text, len = 110){
   return text.length > len ? text.slice(0, len).trim() + "…" : text;
@@ -19,35 +18,20 @@ function timeAgo(iso){
   return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
-function annualGoalsCard(){
-  const year = new Date().getFullYear();
-  const goal = store.getAnnualGoal(year);
-  if(!goal) return "";
-  const actual = store.computeYearActuals(year);
-  const rows = [
-    { label: "الكلمات", cur: actual.words, target: goal.words },
-    { label: "الفعاليات", cur: actual.events, target: goal.events },
-    { label: "الكتب المنشورة", cur: actual.booksPublished, target: goal.booksPublished },
-    { label: "كتب القراءة", cur: actual.booksRead, target: goal.booksRead },
-    { label: "المقالات المنشورة", cur: actual.articles || 0, target: goal.articles || 0 },
-  ].filter(r => r.target);
-
-  if(!rows.length) return "";
-
-  return `
-    <div class="card annual-goals-card">
-      <h3 style="margin-bottom:16px;">${icon("target", { size: 18, cls: "heading-icon" })} أهداف السنة الحالية — ${arNum(year)}</h3>
-      ${rows.map(r => {
-        const pct = Math.min(100, Math.round((r.cur / r.target) * 100));
-        return `
-          <div class="goal-row">
-            <div class="goal-row__labels"><span>${r.label}</span><span>${arNum(r.cur)} / ${arNum(r.target)}</span></div>
-            <div class="progress"><div class="progress__bar" style="width:${pct}%"></div></div>
-          </div>
-        `;
-      }).join("")}
-    </div>
-  `;
+function personalGoalsCard(user){
+  const goals = store.getPersonalGoals(user.id);
+  const sections = goals.sections || [];
+  const names = { writing:"الكتابة", reading:"القراءة", events:"الفعاليات", articles:"المقالات" };
+  const detail = section => {
+    if(section === "writing") return `${arNum(goals.writing?.count||0)} نصوص · ${arNum(goals.writing?.words||0)} كلمة · ${goals.writing?.type||"متنوع"}${goals.writing?.deadline?` · حتى ${goals.writing.deadline}`:""}`;
+    if(section === "reading") return `${arNum(goals.reading?.count||0)} كتب · ${arNum(goals.reading?.pages||0)} صفحة${goals.reading?.books?.length?` · ${goals.reading.books.map(b=>b.title).join("، ")}`:""}`;
+    if(section === "events") return (goals.events||[]).map(id=>store.getEvent(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد فعالية بعد";
+    return (goals.articles||[]).map(id=>store.getArticle(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد مقالة بعد";
+  };
+  return `<div class="card annual-goals-card home-personal-goals">
+    <div class="home-personal-goals__head"><div><span class="eyebrow">خاصة بك وحدك</span><h3>${icon("target",{size:18,cls:"heading-icon"})} أهداف ${user.displayName}</h3></div><a href="#/profile" class="btn btn-ghost btn-sm">إدارة الأهداف</a></div>
+    ${sections.length ? `<div class="home-personal-goals__grid">${sections.map(section=>`<div class="home-personal-goal"><b>${names[section]}</b><span>${detail(section)}</span></div>`).join("")}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. يمكنك إنشاؤها من «مساحتي» في ملفك الشخصي.</p>`}
+  </div>`;
 }
 
 export function renderHomePage(root){
@@ -56,36 +40,28 @@ export function renderHomePage(root){
   const posts = store.getPosts().slice(0, 3);
   const reviews = store.getReviews().slice(0, 3);
   const articles = store.getArticles().slice(0, 1);
-  const top3 = getLeaderboard().slice(0, 3);
-
-  const year = new Date().getFullYear();
-  const goal = store.getAnnualGoal(year);
-  const actual = store.computeYearActuals(year);
-  const productionRatio = goal?.words ? Math.min(100, Math.round((actual.words / goal.words) * 100)) : 0;
 
   root.innerHTML = `
     <section class="hero">
       <div class="container hero__grid">
         <div class="hero__copy">
-          <span class="hero__eyebrow">أهلاً بك مجدداً، ${user.displayName}</span>
+          <span class="hero__eyebrow">أهلًا بك مجددًا، ${user.displayName}</span>
           <h1 class="hero__title">دوحة تظلّلها الكلمة، ويجتمع تحتها الكتّاب والقرّاء</h1>
-          <p class="hero__lede">شارك نصوصك، سجّل قراءاتك، وخض التحديات الأدبية جنباً إلى جنب مع مجتمعك.</p>
+          <p class="hero__lede">شارك نصوصك، سجّل قراءاتك، وخض التحديات الأدبية جنبًا إلى جنب مع مجتمعك.</p>
           <div class="hero__cta">
             <a href="#/writing" class="btn btn-outline">${icon("feather", { size: 17 })}<span>ابدأ الكتابة</span></a>
             <a href="#/reading" class="btn btn-outline">${icon("book", { size: 17 })}<span>ابدأ القراءة</span></a>
             <a href="#/events" class="btn btn-outline">${icon("calendar", { size: 17 })}<span>تصفّح الفعاليات</span></a>
           </div>
         </div>
-        <div class="hero__art" aria-hidden="true">${heroBookIllustration({ size: 150 })}</div>
       </div>
       <div class="container">
-        <div class="grid grid-4 hero__stats-grid">
+        <div class="grid grid-3 hero__stats-grid">
           <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
-          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("chart", { size: 18 })}</span><b>${arNum(productionRatio)}%</b><span>نسبة الإنتاج التراكمي</span></div>
           <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
           <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
         </div>
-        ${annualGoalsCard()}
+        ${personalGoalsCard(user)}
       </div>
     </section>
 
@@ -111,7 +87,7 @@ export function renderHomePage(root){
     <section class="section section--tight">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">حديثاً</span><h2>أحدث ما كُتب</h2></div>
+          <div><span class="eyebrow">حديثًا</span><h2>أحدث ما كُتب</h2></div>
           <a href="#/writing" class="btn btn-ghost">قسم الكتابة ${icon("chevronLeft", { size: 15 })}</a>
         </div>
         <div class="grid grid-3" id="recent-posts-grid">
@@ -130,7 +106,7 @@ export function renderHomePage(root){
     <section class="section section--tight">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">حديثاً</span><h2>أحدث المراجعات</h2></div>
+          <div><span class="eyebrow">حديثًا</span><h2>أحدث المراجعات</h2></div>
           <a href="#/reading" class="btn btn-ghost">قسم القراءة ${icon("chevronLeft", { size: 15 })}</a>
         </div>
         <div class="grid grid-3" id="recent-reviews-grid">
@@ -148,20 +124,7 @@ export function renderHomePage(root){
 
     <section class="section section--tight">
       <div class="container">
-        <div class="grid grid-2">
-          <div class="card">
-            <div class="section-head" style="margin-bottom:16px;">
-              <h3 style="margin:0;display:flex;align-items:center;gap:8px;">${icon("chart", { size: 18, cls: "heading-icon" })} صدارة هذا الأسبوع</h3>
-              ${(user.role === "owner" || user.role === "moderator") ? `<a href="#/admin" class="btn btn-ghost btn-sm">الإدارة ${icon("chevronLeft", { size: 13 })}</a>` : ""}
-            </div>
-            ${top3.map((u, i) => `
-              <div class="leader-row ${u.id === user.id ? "leader-row--me" : ""}">
-                <div class="leader-row__rank">${arNum(i+1)}</div>
-                <div class="leader-row__user"><div class="avatar avatar--sm">${initial(u.displayName)}</div>${u.displayName}</div>
-                <div class="leader-row__xp">${arNum(u.xp)} XP</div>
-              </div>
-            `).join("")}
-          </div>
+        <div class="grid">
           ${articles.map(a => `
             <a href="#/articles" class="card card--hover highlight-card">
               <div class="highlight-card__meta"><span class="badge-pill badge-pill--ember">${a.category}</span></div>

@@ -11,15 +11,15 @@ import { icon, initial, publicRoleLabel, arNum } from "../components/icons.js";
 const VERIFY_INFO = {
   automatic: {
     ic: "chart", title: "التحقّق التلقائي",
-    desc: "يتحقّق النظام برمجياً وفورياً من بيانات نشاطك داخل المنصة، مثل عدد الكلمات المكتوبة، دون حاجة لأي إجراء إضافي منك."
+    desc: "يتحقّق النظام برمجيًا وفوريًا من بيانات نشاطك داخل المنصة، مثل عدد الكلمات المكتوبة، دون حاجة لأي إجراء إضافي منك."
   },
   select_existing_content: {
     ic: "book", title: "اختيار من أعمالك",
-    desc: "اختر من قائمة أعمالك الأدبية المنشورة سابقاً على المنصة العمل المناسب لهذه الفعالية."
+    desc: "اختر من قائمة أعمالك الأدبية المنشورة سابقًا على المنصة العمل المناسب لهذه الفعالية."
   },
   manual_submission: {
     ic: "document", title: "إثبات خارجي",
-    desc: "للأنشطة التي تمت خارج المنصة، أرفق وصفاً أو رابطاً يوثّق إتمامك للنشاط."
+    desc: "للأنشطة التي تمت خارج المنصة، أرفق وصفًا أو رابطًا يوثّق إتمامك للنشاط."
   },
   admin_verification: {
     ic: "shield", title: "الاعتماد الإداري",
@@ -38,7 +38,7 @@ function submissionForm(ev, user){
   const posts = store.getPosts().filter(p => p.authorId === user.id);
 
   if(ev.verificationMethod === "automatic"){
-    return `<p class="text-muted">لا حاجة لأي إجراء — سيُحتسب تقدّمك تلقائياً كلما نشرت وكتبت ضمن المنصة.</p>`;
+    return `<p class="text-muted">لا حاجة لأي إجراء — سيُحتسب تقدّمك تلقائيًا كلما نشرت وكتبت ضمن المنصة.</p>`;
   }
 
   const existing = store.getEventSubmissions().find(s => s.eventId === ev.id && s.userId === user.id);
@@ -51,7 +51,7 @@ function submissionForm(ev, user){
   if(ev.verificationMethod === "select_existing_content"){
     return `
       <div class="field">
-        <label>اختر عملاً من أعمالك المنشورة</label>
+        <label>اختر عملًا من أعمالك المنشورة</label>
         <select id="select-content">
           <option value="">— اختر —</option>
           ${posts.map(p => `<option value="${p.id}">${p.title}</option>`).join("")}
@@ -119,7 +119,7 @@ export function renderEventDetailsPage(root, eventId){
             </div>
 
             <div class="card" id="proof-panel">
-              <h3>${joined ? "أثبت مشاركتك" : "انضمّ أولاً للمشاركة"}</h3>
+              <h3>${joined ? "أثبت مشاركتك" : "انضمّ أولًا للمشاركة"}</h3>
               ${joined ? submissionForm(ev, user) : `<button class="btn btn-primary" id="join-btn">انضمام إلى الفعالية</button>`}
             </div>
           </div>
@@ -159,7 +159,7 @@ export function renderEventDetailsPage(root, eventId){
 
     if(ev.verificationMethod === "select_existing_content"){
       const val = root.querySelector("#select-content").value;
-      if(!val){ showToast("يرجى اختيار عمل أولاً"); return; }
+      if(!val){ showToast("يرجى اختيار عمل أولًا"); return; }
       const post = store.getPosts().find(p => p.id === val);
       processActivity(user.id, "submit_event_proof", { eventId: ev.id, postId: val });
       store.submitEventProof(ev.id, user.id, { text: post?.title || "", postId: val }, { status: "approved", isPublic });
@@ -174,7 +174,7 @@ export function renderEventDetailsPage(root, eventId){
     }
     if(ev.verificationMethod === "admin_verification"){
       const val = root.querySelector("#admin-proof").value.trim();
-      if(!val){ showToast("يرجى وصف مشاركتك أولاً"); return; }
+      if(!val){ showToast("يرجى وصف مشاركتك أولًا"); return; }
       store.submitEventProof(ev.id, user.id, { text: val }, { status: "pending", isPublic });
       showToast("أُرسلت مشاركتك — بانتظار اعتماد الإدارة");
     }

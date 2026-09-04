@@ -93,7 +93,7 @@ function membersTab(current){
               ${u.role === "owner" ? `<span class="text-muted" style="font-size:.8rem;">—</span>` :
                 u.role === "moderator"
                 ? `<button class="btn btn-ghost btn-sm" data-demote="${u.id}">إزالة الإشراف</button>`
-                : `<button class="btn btn-outline btn-sm" data-promote="${u.id}">تعيين مشرفاً</button>`}
+                : `<button class="btn btn-outline btn-sm" data-promote="${u.id}">تعيين مشرفًا</button>`}
             </td>` : ""}
           </tr>
         `).join("")}
@@ -108,7 +108,7 @@ function submissionsTab(){
   const pendingArticles = store.getArticleSubmissions().filter(s => s.status === "pending");
 
   if(!subs.length && !pendingArticles.length){
-    return `<div class="empty-state"><div class="empty-state__icon">${icon("target", { size: 28 })}</div><p>لا طلبات بانتظار الاعتماد حالياً.</p></div>`;
+    return `<div class="empty-state"><div class="empty-state__icon">${icon("target", { size: 28 })}</div><p>لا طلبات بانتظار الاعتماد حاليًا.</p></div>`;
   }
 
   return `
@@ -221,7 +221,7 @@ function bindEditableImages(box, original, onSave){
   };
   paint();
   box.querySelector("#admin-edit-images").onchange = async e => {
-    for(const file of Array.from(e.target.files || [])) images.push(await cropImageFile(file, {aspectRatio:16/9, outputWidth:1200, title:"ضبط الصورة"}));
+    for(const file of Array.from(e.target.files || [])){ const image = await cropImageFile(file, {aspectRatio:16/9, outputWidth:1200, title:"اختر قالب الصورة"}); if(image) images.push(image); }
     paint();
   };
   onSave(() => images);
@@ -245,7 +245,7 @@ function openEditReviewModal(id, refresh){
 function openEditArticleModal(id, refresh){
   const item = store.getArticle(id); if(!item) return;
   openModal(`<div class="modal-box__head"><h3>تعديل المقال</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
-    <div class="field"><label>العنوان</label><input id="aa-title" value="${item.title}"></div><div class="field"><label>التصنيف</label><input id="aa-category" value="${item.category||""}"></div><div class="field"><label>وصف البطاقة</label><textarea id="aa-excerpt">${item.excerpt||""}</textarea></div><div class="field"><label>المحتوى</label><textarea id="aa-content">${item.content}</textarea></div>
+    <div class="field"><label>العنوان</label><input id="aa-title" value="${item.title}"></div><div class="field"><label>التصنيف</label><select id="aa-category"><option value="مقال" ${item.category === "مقال" ? "selected" : ""}>مقال</option><option value="ملخص" ${item.category === "ملخص" ? "selected" : ""}>ملخص</option></select></div><div class="field"><label>وصف البطاقة</label><textarea id="aa-excerpt">${item.excerpt||""}</textarea></div><div class="field"><label>المحتوى</label><textarea id="aa-content">${item.content}</textarea></div>
     ${editableImagesMarkup(item.images)}<button class="btn btn-primary btn-block" id="aa-save">حفظ التعديلات</button>`, {size:"lg",onMount(box){ bindEditableImages(box,item,getImages => box.querySelector("#aa-save").onclick=()=>{ store.updateArticle(id,{title:box.querySelector("#aa-title").value.trim(),category:box.querySelector("#aa-category").value.trim(),excerpt:box.querySelector("#aa-excerpt").value.trim(),content:box.querySelector("#aa-content").value.trim(),images:getImages(),image:null}); closeModal(); showToast("تم تعديل المقال"); refresh(); }); }});
 }
 
@@ -253,12 +253,12 @@ function settingsTab(){
   return `
     <div class="card card--flat">
       <h3>إعدادات عامة (المالك فقط)</h3>
-      <p>تحكّم المالك في مسمّيات الأقسام، أسماء الأوسمة وقيم نقاطها، وقواعد احتساب الأنشطة يُدار حالياً من الكود مباشرة في <code>js/db/initialData.js</code> و<code>js/services/rewardEngine.js</code> — واجهة تعديل مباشرة لهذه القيم قيد الإعداد في نسخة قادمة.</p>
+      <p>تحكّم المالك في مسمّيات الأقسام، أسماء الأوسمة وقيم نقاطها، وقواعد احتساب الأنشطة يُدار حاليًا من الكود مباشرة في <code>js/db/initialData.js</code> و<code>js/services/rewardEngine.js</code> — واجهة تعديل مباشرة لهذه القيم قيد الإعداد في نسخة قادمة.</p>
       <ul style="margin-top:12px;">
         <li class="text-muted">قاعدة اليوم النشط الواحد: نشاط مؤهل واحد أو أكثر في نفس اليوم = شعلة واحدة.</li>
         <li class="text-muted">التصفّح والإعجاب المجرد لا يُحتسبان ضمن الأنشطة المؤهلة.</li>
         <li class="text-muted">إعجاب واحد فقط لكل عضو على أي منشور أو مراجعة.</li>
-        <li class="text-muted">حذف أي منشور أو فعالية يسحب معه النقاط والإحصائيات المرتبطة به تلقائياً.</li>
+        <li class="text-muted">حذف أي منشور أو فعالية يسحب معه النقاط والإحصائيات المرتبطة به تلقائيًا.</li>
       </ul>
     </div>
   `;
@@ -279,7 +279,7 @@ function annualGoalsTab(){
     <div class="admin-goals-head">
       <span class="eyebrow">خطة ${year}</span>
       <h2>أهداف الإنتاج السنوي</h2>
-      <p class="text-muted">حدّد المستهدفات، وستعرض الرسوم نسبة الإنجاز الفعلية تلقائياً.</p>
+      <p class="text-muted">حدّد المستهدفات، وستعرض الرسوم نسبة الإنجاز الفعلية تلقائيًا.</p>
     </div>
     <div class="admin-goals-form">
       ${rows.map(row => `<div class="field"><label>${icon(row.ic, { size:16 })}${row.label}</label><input type="number" min="0" id="annual-goal-${row.key}" value="${row.target}"></div>`).join("")}
@@ -445,7 +445,7 @@ export function renderAdminDashboardPage(root){
 
   root.querySelectorAll("[data-promote]").forEach(btn => btn.addEventListener("click", () => {
     store.updateUser(btn.getAttribute("data-promote"), { role: "moderator" });
-    showToast("تم تعيين العضو مشرفاً");
+    showToast("تم تعيين العضو مشرفًا");
     refresh();
   }));
   root.querySelectorAll("[data-demote]").forEach(btn => btn.addEventListener("click", () => {
