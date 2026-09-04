@@ -18,9 +18,12 @@ export function sortBadgesUnlockedFirst(describedList){
 
 /** يُعيد HTML لوسام سداسي واحد، مع data-badge-id لربط الحدث لاحقاً */
 export function renderBadgeCard(described){
+  const center = described.unlocked
+    ? (described.image ? `<img src="${described.image}" alt="">` : icon(described.icon || "medal", { size:28 }))
+    : icon("lock", { size:20 });
   return `
-    <div class="badge-hex ${described.unlocked ? "is-unlocked" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0">
-      <div class="badge-hex__shape">${icon(described.unlocked ? "medal" : "lock", { size: described.unlocked ? 26 : 20 })}</div>
+    <div class="badge-hex ${described.unlocked ? "is-unlocked" : "is-locked"}" data-badge-id="${described.id}" role="button" tabindex="0" style="--badge-color:${described.color || "#C98A2E"}">
+      <div class="badge-hex__shape"><div class="badge-hex__center">${center}</div></div>
       <div class="badge-hex__name">${described.name}</div>
     </div>
   `;
@@ -32,6 +35,9 @@ function openBadgeDetail(described){
     <div class="modal-box__head">
       <h3 style="display:flex;align-items:center;gap:8px;">${icon(described.unlocked ? "medal" : "lock", { size: 20 })} ${described.name}</h3>
       <button class="modal-close" data-close>${icon("close", { size: 18 })}</button>
+    </div>
+    <div class="badge-detail-preview" style="--badge-color:${described.color || "#C98A2E"}">
+      <div>${described.unlocked ? (described.image ? `<img src="${described.image}" alt="${described.name}">` : icon(described.icon || "medal", {size:38})) : icon("lock", {size:28})}</div>
     </div>
     <p style="font-size:1.02rem;color:var(--paper);">${described.text}</p>
     ${!described.unlocked ? `

@@ -8,12 +8,12 @@ import { openModal } from "./modals.js";
 import { icon, initial, publicRoleLabel, avatarHtml } from "./icons.js";
 
 const NAV_LINKS = [
-  { path: "#/",            label: "الرئيسية",  ic: "home" },
-  { path: "#/events",       label: "الفعاليات",  ic: "calendar" },
-  { path: "#/writing",      label: "الكتابة",   ic: "feather" },
-  { path: "#/reading",      label: "القراءة",   ic: "book" },
-  { path: "#/articles",     label: "المقالات",  ic: "document" },
-  { path: "#/admin",        label: "الإدارة",    ic: "shield", adminOnly: true },
+  { path: "#/", key:"home", ic: "home" },
+  { path: "#/events", key:"events", ic: "calendar" },
+  { path: "#/writing", key:"writing", ic: "feather" },
+  { path: "#/reading", key:"reading", ic: "book" },
+  { path: "#/articles", key:"articles", ic: "document" },
+  { path: "#/admin", key:"admin", ic: "shield", adminOnly: true },
 ];
 
 function timeAgo(iso){
@@ -80,6 +80,7 @@ export function renderHeader(activePath = "#/"){
   currentActivePath = activePath;
   const user = store.getCurrentUser();
   const unread = store.getNotifications(user.id).some(n => !n.read);
+  const sectionNames = store.getSettings().sectionNames;
   const visibleNavLinks = NAV_LINKS.filter(link => !link.adminOnly || user.role === "owner" || user.role === "moderator");
   const mount = document.getElementById("app-header");
   if(!mount) return;
@@ -90,8 +91,8 @@ export function renderHeader(activePath = "#/"){
         <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المِداد</a>
 
         <nav class="site-nav" id="site-nav">
-          ${visibleNavLinks.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${l.label}</span></a>`).join("")}
-          <a href="#/profile" class="site-nav__profile-link ${activePath === "#/profile" ? "is-active" : ""}">${icon("user", { size: 16 })}<span>ملفي الشخصي</span></a>
+          ${visibleNavLinks.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${sectionNames[l.key]}</span></a>`).join("")}
+          <a href="#/profile" class="site-nav__profile-link ${activePath === "#/profile" ? "is-active" : ""}">${icon("user", { size: 16 })}<span>${sectionNames.profile}</span></a>
         </nav>
 
         <div class="header-actions">
