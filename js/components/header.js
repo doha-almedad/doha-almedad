@@ -87,7 +87,7 @@ export function renderHeader(activePath = "#/"){
   mount.innerHTML = `
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المداد</a>
+        <a href="#/" class="brand"><img src="img/logo.png" alt="" class="brand__mark"> دوحة المِداد</a>
 
         <nav class="site-nav" id="site-nav">
           ${visibleNavLinks.map(l => `<a href="${l.path}" class="${activePath === l.path ? "is-active" : ""}">${icon(l.ic, { size: 16 })}<span>${l.label}</span></a>`).join("")}

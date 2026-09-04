@@ -12,7 +12,7 @@ export function renderFooter(){
   mount.innerHTML = `
     <footer class="site-footer site-footer--slim">
       <div class="container site-footer__row">
-        <span class="brand brand--sm">دوحة المداد</span>
+        <span class="brand brand--sm">دوحة المِداد</span>
         <span class="text-muted">© ${year} — جميع الحقوق محفوظة</span>
       </div>
     </footer>

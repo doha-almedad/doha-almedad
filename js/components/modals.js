@@ -193,6 +193,7 @@ export async function openCommentsModal(kind, itemId, onChange){
   function commentRow(c){
     const author = store.getUser(c.userId);
     const liked = (c.likedBy || []).includes(currentUser.id);
+    const canEdit = c.userId === currentUser.id || currentUser.role === "owner" || currentUser.role === "moderator";
     let replyToAuthor = null;
     if(c.parentCommentId){
       const parent = itemOf().comments.find(x => x.id === c.parentCommentId);
@@ -202,12 +203,13 @@ export async function openCommentsModal(kind, itemId, onChange){
       <div class="comment-row ${c.parentCommentId ? "comment-row--reply" : ""}" id="comment-${c.id}" data-comment-id="${c.id}">
         <div class="avatar avatar--sm">${avatarHtml(author)}</div>
         <div class="comment-row__body">
-          <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}</span></div>
+          <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}${c.editedAt ? ` · تم التعديل ${timeAgoShort(c.editedAt)}` : ""}</span></div>
           ${replyToAuthor ? `<button type="button" class="comment-row__replyto" data-goto-comment="${c.parentCommentId}">${icon("chevronLeft", { size: 11 })}<span>رد على <b class="comment-mention">@${replyToAuthor.username || replyToAuthor.displayName}</b></span></button>` : ""}
           <p>${c.text}</p>
           <div class="comment-row__actions">
             <button class="comment-row__reply ${liked ? "is-liked" : ""}" data-like-comment="${c.id}">${icon("heart", { size: 12 })} ${(c.likedBy||[]).length}</button>
             <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.username || author?.displayName || "عضو"}">رد</button>
+            ${canEdit ? `<button class="comment-row__reply" data-edit-comment="${c.id}">${icon("feather", { size:11 })} تعديل</button>` : ""}
           </div>
         </div>
       </div>
@@ -251,7 +253,7 @@ export async function openCommentsModal(kind, itemId, onChange){
         <span id="reply-context-text"></span>
         <button type="button" id="cancel-reply" aria-label="إلغاء الرد">${icon("close", { size: 13 })}</button>
       </div>
-      <textarea id="comment-input" placeholder="اكتب تعليقاً..." style="min-height:70px;"></textarea>
+      <textarea id="comment-input" placeholder="اكتب تعليقًا..." style="min-height:70px;"></textarea>
     </div>
     <button class="btn btn-primary btn-sm" id="submit-comment-btn">${icon("send", { size: 15 })}<span>إرسال</span></button>
   `, {
@@ -277,6 +279,30 @@ export async function openCommentsModal(kind, itemId, onChange){
       }
 
       function bindRowButtons(){
+        list.querySelectorAll("[data-edit-comment]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const commentId = btn.getAttribute("data-edit-comment");
+            const item = itemOf();
+            const comment = item?.comments?.find(c => c.id === commentId);
+            const row = btn.closest(".comment-row");
+            const paragraph = row?.querySelector(".comment-row__body > p");
+            if(!comment || !paragraph) return;
+            const editor = document.createElement("div");
+            editor.className = "comment-inline-editor";
+            editor.innerHTML = `<textarea></textarea><div><button class="btn btn-ghost btn-sm" data-cancel-comment-edit>إلغاء</button><button class="btn btn-primary btn-sm" data-save-comment-edit>حفظ</button></div>`;
+            editor.querySelector("textarea").value = comment.text;
+            paragraph.replaceWith(editor);
+            editor.querySelector("textarea").focus();
+            editor.querySelector("[data-cancel-comment-edit]").onclick = () => { list.innerHTML = renderBody(); bindRowButtons(); };
+            editor.querySelector("[data-save-comment-edit]").onclick = () => {
+              const value = editor.querySelector("textarea").value.trim();
+              if(!value) return;
+              store.updateComment(kind, itemId, commentId, value, currentUser.id);
+              list.innerHTML = renderBody(); bindRowButtons();
+              if(typeof onChange === "function") onChange();
+            };
+          });
+        });
         list.querySelectorAll("[data-reply-to]").forEach(btn => {
           btn.addEventListener("click", () => {
             replyToCommentId = btn.getAttribute("data-reply-to");
