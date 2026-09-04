@@ -22,7 +22,7 @@ function seedDB(){
     userEvents: [],       // سجلّ الأحداث الخام (user_events)
     eventSubmissions: [], // طلبات إثبات المشاركة بالفعاليات (خصوصاً admin_verification)
     notifications: [],
-    annualGoals: { [currentYear]: { words: 50000, events: 20, booksPublished: 10, booksRead: 60 } },
+    annualGoals: { [currentYear]: { words: 50000, events: 20, booksPublished: 10, booksRead: 60, articles: 24 } },
     currentUserId: CURRENT_USER_ID,
     meta: { createdAt: new Date().toISOString() }
   };
@@ -145,6 +145,17 @@ export const store = {
     db.posts.unshift(item);
     persist();
     return item;
+  },
+  updatePost(id, patch){
+    const post = db.posts.find(p => p.id === id);
+    if(!post) return null;
+    if(Number.isFinite(patch.wordCount)){
+      const author = db.users.find(u => u.id === post.authorId);
+      if(author) author.stats.wordsWritten = Math.max(0, (author.stats.wordsWritten || 0) + patch.wordCount - (post.wordCount || 0));
+    }
+    Object.assign(post, patch, { editedAt: new Date().toISOString() });
+    persist();
+    return post;
   },
 
   // ---------- القراءة (مراجعات) ----------
@@ -318,6 +329,7 @@ export const store = {
       events: items.filter(e => e.type === "join_event").length,
       booksPublished: items.filter(e => e.type === "publish_post" && e.meta.isFullWork).length,
       booksRead: items.filter(e => e.type === "publish_review").length,
+      articles: items.filter(e => e.type === "publish_article").length,
     };
   },
 
