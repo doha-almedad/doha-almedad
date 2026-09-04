@@ -9,6 +9,10 @@ import { dayKey } from "../services/streakService.js";
 
 const DB_KEY = "dawha_almidad_db_v1";
 const listeners = new Set();
+const DEFAULT_SETTINGS = {
+  sectionNames:{ home:"الرئيسية", events:"الفعاليات", writing:"الكتابة", reading:"القراءة", articles:"المقالات", admin:"الإدارة", profile:"ملفي الشخصي" },
+  activityPoints:{ publish_post:50, publish_review:30, join_event:15, submit_event_proof:40, publish_article:45, literary_comment:10 }
+};
 
 function seedDB(){
   const currentYear = new Date().getFullYear();
@@ -23,6 +27,7 @@ function seedDB(){
     eventSubmissions: [], // طلبات إثبات المشاركة بالفعاليات (خصوصاً admin_verification)
     notifications: [],
     annualGoals: { [currentYear]: { words: 50000, events: 20, booksPublished: 10, booksRead: 60, articles: 24 } },
+    settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
     currentUserId: CURRENT_USER_ID,
     meta: { createdAt: new Date().toISOString() }
   };
@@ -43,6 +48,9 @@ function load(){
 let db = load();
 db.personalGoals = db.personalGoals || {};
 db.drafts = db.drafts || [];
+db.customBadges = db.customBadges || [];
+db.personalLibrary = db.personalLibrary || [];
+db.settings = { ...DEFAULT_SETTINGS, ...(db.settings||{}), sectionNames:{...DEFAULT_SETTINGS.sectionNames,...(db.settings?.sectionNames||{})}, activityPoints:{...DEFAULT_SETTINGS.activityPoints,...(db.settings?.activityPoints||{})} };
 
 function persist(){
   localStorage.setItem(DB_KEY, JSON.stringify(db));
@@ -57,6 +65,9 @@ export const store = {
   },
 
   raw(){ return db; },
+
+  getSettings(){ return JSON.parse(JSON.stringify(db.settings)); },
+  updateSettings(patch){ db.settings={...db.settings,...patch,sectionNames:{...db.settings.sectionNames,...(patch.sectionNames||{})},activityPoints:{...db.settings.activityPoints,...(patch.activityPoints||{})}};persist();return this.getSettings(); },
 
   reset(){ db = seedDB(); persist(); },
 
@@ -95,6 +106,15 @@ export const store = {
     db.drafts.push(item); persist(); return item;
   },
   deleteDraft(userId, id){ db.drafts = db.drafts.filter(d => !(d.id === id && d.userId === userId)); persist(); },
+  getPersonalLibrary(userId){ return db.personalLibrary.filter(b=>b.userId===userId).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt)); },
+  savePersonalBook(userId, data){ const now=new Date().toISOString(); if(data.id){const item=db.personalLibrary.find(b=>b.id===data.id&&b.userId===userId);if(!item)return null;Object.assign(item,data,{updatedAt:now});persist();return item;}const item={id:"pbook_"+Date.now(),userId,...data,createdAt:now,updatedAt:now};db.personalLibrary.push(item);persist();return item; },
+  deletePersonalBook(userId,id){ db.personalLibrary=db.personalLibrary.filter(b=>!(b.id===id&&b.userId===userId));persist(); },
+
+  // ---------- الأوسمة المرنة التي تنشئها الإدارة ----------
+  getCustomBadges(){ return [...db.customBadges]; },
+  addCustomBadge(data){ const item={ id:"badge_"+Date.now(), levelRequired:1, ...data, createdAt:new Date().toISOString() }; db.customBadges.push(item); persist(); return item; },
+  updateCustomBadge(id,data){ const item=db.customBadges.find(b=>b.id===id);if(!item)return null;Object.assign(item,data,{editedAt:new Date().toISOString()});persist();return item; },
+  deleteCustomBadge(id){ db.customBadges=db.customBadges.filter(b=>b.id!==id); db.users.forEach(u=>{ if(u.badges) delete u.badges[id]; }); persist(); },
 
   // ---------- الفعاليات ----------
   getEvents(){ return [...db.events].sort((a,b) => a.order - b.order); },
