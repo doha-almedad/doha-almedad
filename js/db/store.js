@@ -92,6 +92,11 @@ export const store = {
     return item;
   },
   getEvent(id){ return db.events.find(e => e.id === id) || null; },
+  updateEvent(id, patch){
+    const item = db.events.find(e => e.id === id);
+    if(!item) return null;
+    Object.assign(item, patch, { editedAt:new Date().toISOString() }); persist(); return item;
+  },
   joinEvent(eventId, userId){
     const ev = this.getEvent(eventId);
     if(!ev) return null;
@@ -103,6 +108,11 @@ export const store = {
   // ---------- المقالات ----------
   getArticles(){ return [...db.articles].sort((a,b) => new Date(b.date) - new Date(a.date)); },
   getArticle(id){ return db.articles.find(a => a.id === id) || null; },
+  updateArticle(id, patch){
+    const item = db.articles.find(a => a.id === id);
+    if(!item) return null;
+    Object.assign(item, patch, { editedAt:new Date().toISOString() }); persist(); return item;
+  },
 
   /** إرسال مقال من عضو لمراجعة الإدارة قبل نشره */
   submitArticle({ authorId, title, category, excerpt, content, images = [] }){
@@ -165,6 +175,11 @@ export const store = {
     db.reviews.unshift(item);
     persist();
     return item;
+  },
+  updateReview(id, patch){
+    const item = db.reviews.find(r => r.id === id);
+    if(!item) return null;
+    Object.assign(item, patch, { editedAt:new Date().toISOString() }); persist(); return item;
   },
 
   /** إعجاب واحد فقط لكل مستخدم — الضغط مجدداً يُلغيه (toggle) */
