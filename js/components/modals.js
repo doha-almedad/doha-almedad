@@ -199,15 +199,15 @@ export async function openCommentsModal(kind, itemId, onChange){
       replyToAuthor = parent ? store.getUser(parent.userId) : null;
     }
     return `
-      <div class="comment-row" id="comment-${c.id}" data-comment-id="${c.id}">
+      <div class="comment-row ${c.parentCommentId ? "comment-row--reply" : ""}" id="comment-${c.id}" data-comment-id="${c.id}">
         <div class="avatar avatar--sm">${avatarHtml(author)}</div>
         <div class="comment-row__body">
           <div class="comment-row__head"><b>${author?.displayName || "عضو"}</b><span>${timeAgoShort(c.date)}</span></div>
-          ${replyToAuthor ? `<button type="button" class="comment-row__replyto" data-goto-comment="${c.parentCommentId}">${icon("chevronLeft", { size: 11 })}<span>رداً على ${replyToAuthor.displayName}</span></button>` : ""}
+          ${replyToAuthor ? `<button type="button" class="comment-row__replyto" data-goto-comment="${c.parentCommentId}">${icon("chevronLeft", { size: 11 })}<span>رد على <b class="comment-mention">@${replyToAuthor.username || replyToAuthor.displayName}</b></span></button>` : ""}
           <p>${c.text}</p>
           <div class="comment-row__actions">
             <button class="comment-row__reply ${liked ? "is-liked" : ""}" data-like-comment="${c.id}">${icon("heart", { size: 12 })} ${(c.likedBy||[]).length}</button>
-            <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.displayName || "عضو"}">رد</button>
+            <button class="comment-row__reply" data-reply-to="${c.id}" data-reply-author="${author?.username || author?.displayName || "عضو"}">رد</button>
           </div>
         </div>
       </div>
@@ -247,7 +247,10 @@ export async function openCommentsModal(kind, itemId, onChange){
     <div class="modal-box__head"><h3>التعليقات</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div id="comments-list" class="comments-list">${renderBody()}</div>
     <div class="field" style="margin-top:14px;">
-      <label id="reply-context" style="display:none;color:var(--gold);"></label>
+      <div id="reply-context" class="reply-context-bar" style="display:none;">
+        <span id="reply-context-text"></span>
+        <button type="button" id="cancel-reply" aria-label="إلغاء الرد">${icon("close", { size: 13 })}</button>
+      </div>
       <textarea id="comment-input" placeholder="اكتب تعليقاً..." style="min-height:70px;"></textarea>
     </div>
     <button class="btn btn-primary btn-sm" id="submit-comment-btn">${icon("send", { size: 15 })}<span>إرسال</span></button>
@@ -257,10 +260,12 @@ export async function openCommentsModal(kind, itemId, onChange){
       let replyToCommentId = null; // الأب المباشر الحقيقي — لا نفرضه على الجذر أبداً
       const list = box.querySelector("#comments-list");
       const ctxLabel = box.querySelector("#reply-context");
+      const ctxText = box.querySelector("#reply-context-text");
 
       function clearReplyState(){
         replyToCommentId = null;
         ctxLabel.style.display = "none";
+        ctxText.textContent = "";
       }
 
       function highlightComment(commentId){
@@ -275,8 +280,8 @@ export async function openCommentsModal(kind, itemId, onChange){
         list.querySelectorAll("[data-reply-to]").forEach(btn => {
           btn.addEventListener("click", () => {
             replyToCommentId = btn.getAttribute("data-reply-to");
-            ctxLabel.style.display = "block";
-            ctxLabel.textContent = `الرد على ${btn.getAttribute("data-reply-author")}`;
+            ctxLabel.style.display = "flex";
+            ctxText.textContent = `الرد على @${btn.getAttribute("data-reply-author")}`;
             box.querySelector("#comment-input").focus();
           });
         });
@@ -313,6 +318,7 @@ export async function openCommentsModal(kind, itemId, onChange){
         });
       }
       bindRowButtons();
+      box.querySelector("#cancel-reply").addEventListener("click", clearReplyState);
 
       box.querySelector("#submit-comment-btn").addEventListener("click", async () => {
         const { store } = await import("../db/store.js");
