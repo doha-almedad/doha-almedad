@@ -18,10 +18,10 @@
 }
 .brand{
   display:flex; align-items:center; gap:10px;
-  font-family:var(--font-logo); font-weight:700; font-size:1.62rem; color:var(--paper);
+  font-family:var(--font-logo); font-weight:700; font-size:1.62rem; color:#6B4226 !important;
 }
 .brand__mark{ width:34px; height:auto; display:block; }
-.brand:hover{ color:var(--gold); }
+.brand:hover{ color:#4A2D1B !important; }
 
 .site-nav{ display:flex; align-items:center; gap:2px; }
 .site-nav a{
@@ -185,6 +185,9 @@
 .badge-card.is-locked{ opacity:.68; }
 .badge-card__name{ font-family:var(--font-display); font-size:1.02rem; margin-bottom:4px; }
 .badge-card__desc{ font-size:.8rem; color:var(--paper-faint); }
+.badge-detail-preview{ width:126px; height:126px; margin:8px auto 22px; border-radius:50%; display:grid; place-items:center; color:var(--badge-color); border:5px double var(--badge-color); background:color-mix(in srgb,var(--badge-color) 18%,#fff); box-shadow:0 0 0 4px color-mix(in srgb,var(--badge-color) 35%,#fff),0 0 0 7px var(--badge-color),0 8px 25px rgba(74,53,36,.2); }
+.badge-detail-preview > div{ width:92px; height:92px; border-radius:50%; display:grid; place-items:center; overflow:hidden; }
+.badge-detail-preview img{ width:100%; height:100%; object-fit:cover; }
 
 /* ---------- النوافذ المنبثقة (Modals) ---------- */
 .modal-overlay{
