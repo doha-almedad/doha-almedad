@@ -54,6 +54,7 @@ export function showToast(message){
   el.className = "toast";
   el.textContent = message;
   root.appendChild(el);
+  if(!String(message).startsWith("جارٍ")) document.dispatchEvent(new CustomEvent("operation:finished"));
   setTimeout(() => el.remove(), 3200);
 }
 
