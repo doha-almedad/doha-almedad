@@ -6,6 +6,9 @@
    ========================================================= */
 
 import { BADGE_DEFINITIONS } from "../db/initialData.js";
+import { store } from "../db/store.js";
+
+function allDefinitions(){ return [...BADGE_DEFINITIONS, ...store.getCustomBadges()]; }
 
 function currentValueFor(user, conditionType){
   switch(conditionType){
@@ -21,7 +24,7 @@ function currentValueFor(user, conditionType){
 
 export const badgeService = {
   /** كل تعريفات الأوسمة، للاستخدام في صفحة البروفايل */
-  all(){ return BADGE_DEFINITIONS; },
+  all(){ return allDefinitions(); },
 
   /** حالة وسام واحد بالنسبة لمستخدم: مفتوح/مقفل + النص الأدبي المناسب */
   describeForUser(user, def){
@@ -40,7 +43,7 @@ export const badgeService = {
   },
 
   describeAllForUser(user){
-    return BADGE_DEFINITIONS.map(def => this.describeForUser(user, def));
+    return allDefinitions().map(def => this.describeForUser(user, def));
   },
 
   /**
@@ -51,7 +54,7 @@ export const badgeService = {
     user.badges = user.badges || {};
     const newlyUnlocked = [];
 
-    for(const def of BADGE_DEFINITIONS){
+    for(const def of allDefinitions()){
       const already = !!user.badges[def.id];
       if(already) continue;
       if((user.level || 1) < def.levelRequired) continue;

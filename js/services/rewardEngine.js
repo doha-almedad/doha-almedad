@@ -60,7 +60,8 @@ export function processActivity(userId, activityType, meta = {}){
   const streakJustIgnitedToday = !wasActiveToday;
 
   // 4) Reputation Service — تحديث النقاط والمستوى
-  user.xp = (user.xp || 0) + config.xp;
+  const awardedXp = Math.max(0, Number(store.getSettings().activityPoints?.[activityType] ?? config.xp));
+  user.xp = (user.xp || 0) + awardedXp;
   const previousLevel = user.level || 1;
   user.level = xpToLevel(user.xp);
   const leveledUp = user.level > previousLevel;
@@ -74,12 +75,12 @@ export function processActivity(userId, activityType, meta = {}){
   // 6) Leaderboard Service — تُحسب عند الطلب مباشرة من بيانات المستخدمين (getLeaderboard)
 
   // 7) Notification Service
-  store.addNotification(userId, `+${config.xp} نقطة — ${config.label}`, "star");
+  store.addNotification(userId, `+${awardedXp} نقطة — ${config.label}`, "star");
   if(streakJustIgnitedToday) store.addNotification(userId, "أُشعلت شعلة حماستك اليوم", "flame");
   if(leveledUp) store.addNotification(userId, `ترقّيت إلى المستوى ${user.level}`, "shield");
   newBadges.forEach(b => store.addNotification(userId, `وسام جديد: ${b.name}`, b.icon));
 
-  return { user, leveledUp, newBadges, xpGained: config.xp };
+  return { user, leveledUp, newBadges, xpGained: awardedXp };
 }
 
 /** لوحة المتصدرين: ترتيب الأعضاء حسب نقاط الخبرة */
