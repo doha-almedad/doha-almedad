@@ -151,7 +151,7 @@ export function renderHomePage(root){
           <div class="card">
             <div class="section-head" style="margin-bottom:16px;">
               <h3 style="margin:0;display:flex;align-items:center;gap:8px;">${icon("chart", { size: 18, cls: "heading-icon" })} صدارة هذا الأسبوع</h3>
-              <a href="#/leaderboard" class="btn btn-ghost btn-sm">الكل ${icon("chevronLeft", { size: 13 })}</a>
+              ${(user.role === "owner" || user.role === "moderator") ? `<a href="#/admin" class="btn btn-ghost btn-sm">الإدارة ${icon("chevronLeft", { size: 13 })}</a>` : ""}
             </div>
             ${top3.map((u, i) => `
               <div class="leader-row ${u.id === user.id ? "leader-row--me" : ""}">

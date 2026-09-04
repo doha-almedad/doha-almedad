@@ -15,7 +15,7 @@ import { processActivity } from "../services/rewardEngine.js";
 import { showToast, bindParticipantLinks, openModal } from "../components/modals.js";
 import { icon, initial, arNum } from "../components/icons.js";
 
-let activeTab = "members";
+let activeTab = "overview";
 
 function roleLabel(role){
   if(role === "owner") return "المالك";
@@ -26,6 +26,50 @@ function roleClass(role){
   if(role === "owner") return "badge-pill--gold";
   if(role === "moderator") return "badge-pill--sage";
   return "";
+}
+
+function dashboardTab(){
+  const users = store.getUsers();
+  const events = store.getEvents();
+  const posts = store.getPosts();
+  const reviews = store.getReviews();
+  const articles = store.getArticles();
+  const pendingEvents = store.getEventSubmissions().filter(s => s.status === "pending");
+  const pendingArticles = store.getArticleSubmissions().filter(s => s.status === "pending");
+  const pendingTotal = pendingEvents.length + pendingArticles.length;
+
+  return `
+    <div class="admin-overview-head">
+      <div>
+        <span class="eyebrow">ملخص اليوم</span>
+        <h2>نظرة عامة على المنصة</h2>
+      </div>
+      <button class="btn btn-primary btn-sm" id="overview-new-event">${icon("plus", { size: 14 })}<span>فعالية جديدة</span></button>
+    </div>
+
+    <div class="grid grid-4 admin-overview-stats">
+      <button class="card admin-metric" data-tab-target="members">
+        <span>${icon("users", { size: 19 })}</span><b>${arNum(users.length)}</b><small>الأعضاء</small>
+      </button>
+      <button class="card admin-metric" data-tab-target="submissions">
+        <span>${icon("target", { size: 19 })}</span><b>${arNum(pendingTotal)}</b><small>طلبات معلّقة</small>
+      </button>
+      <button class="card admin-metric" data-tab-target="content">
+        <span>${icon("calendar", { size: 19 })}</span><b>${arNum(events.length)}</b><small>الفعاليات</small>
+      </button>
+      <button class="card admin-metric" data-tab-target="content">
+        <span>${icon("document", { size: 19 })}</span><b>${arNum(posts.length + reviews.length + articles.length)}</b><small>إجمالي المحتوى</small>
+      </button>
+    </div>
+
+    <div class="admin-overview-panel">
+      <div>
+        <h3>قائمة المراجعة</h3>
+        <p class="text-muted">${pendingTotal ? `يوجد ${arNum(pendingTotal)} طلب يحتاج إلى قرار من الإدارة.` : "لا توجد طلبات معلّقة حاليًا."}</p>
+      </div>
+      <button class="btn btn-outline btn-sm" data-tab-target="submissions">فتح الطلبات</button>
+    </div>
+  `;
 }
 
 function membersTab(current){
@@ -180,6 +224,7 @@ function settingsTab(){
 }
 
 const TABS = [
+  { id: "overview",    label: "نظرة عامة",      ic: "home",    ownerOnly: false },
   { id: "members",     label: "الأعضاء",       ic: "users",   ownerOnly: false },
   { id: "submissions",  label: "طلبات الاعتماد",  ic: "target",   ownerOnly: false },
   { id: "content",     label: "إدارة المحتوى",   ic: "document",  ownerOnly: false },
@@ -277,6 +322,7 @@ export function renderAdminDashboardPage(root){
   if(!visibleTabs.find(t => t.id === activeTab)) activeTab = visibleTabs[0].id;
 
   const bodyMap = {
+    overview: dashboardTab,
     members: () => membersTab(user),
     submissions: submissionsTab,
     content: contentTab,
@@ -312,6 +358,15 @@ export function renderAdminDashboardPage(root){
       renderAdminDashboardPage(root);
     });
   });
+
+  root.querySelectorAll("[data-tab-target]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeTab = btn.getAttribute("data-tab-target");
+      renderAdminDashboardPage(root);
+    });
+  });
+
+  root.querySelector("#overview-new-event")?.addEventListener("click", () => openNewEventModal(refresh));
 
   root.querySelectorAll("[data-promote]").forEach(btn => btn.addEventListener("click", () => {
     store.updateUser(btn.getAttribute("data-promote"), { role: "moderator" });
