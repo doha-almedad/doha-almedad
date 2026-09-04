@@ -244,9 +244,9 @@
 .crop-editor__frame{ position:relative; margin:12px 0 16px; overflow:hidden; border:3px solid #fff; border-radius:10px; box-shadow:0 0 0 1px var(--gold-soft); background:#ddd; }
 .crop-editor__frame::before,.crop-editor__frame::after{ content:""; position:absolute; inset:10px; pointer-events:none; border:1px dashed rgba(255,255,255,.72); }
 .crop-editor__frame canvas{ width:100%; height:auto; display:block; }
-.crop-editor__controls{ display:grid; gap:10px; margin-bottom:18px; }
-.crop-editor__controls label{ display:grid; grid-template-columns:110px 1fr; align-items:center; gap:12px; color:var(--paper-dim); font-size:.88rem; }
-.crop-editor__controls input{ width:100%; }
+.crop-editor__frame canvas{ touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; }
+.crop-editor__frame canvas:active{ cursor:grabbing; }
+.crop-editor__gesture-hint{ margin:-5px 0 15px; text-align:center; color:var(--paper-dim); font-size:.84rem; }
 .crop-editor__actions{ justify-content:flex-end; }
 @media (max-width:520px){ .crop-editor__templates{ grid-template-columns:repeat(2,1fr); } }
 .field-hint{ font-size:.76rem; color:var(--paper-faint); margin-top:4px; }
