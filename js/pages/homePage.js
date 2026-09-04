@@ -24,12 +24,15 @@ function personalGoalsCard(user){
   const names = { writing:"الكتابة", reading:"القراءة", events:"الفعاليات", articles:"المقالات" };
   const detail = section => {
     if(section === "writing") return `${arNum(goals.writing?.count||0)} نصوص · ${arNum(goals.writing?.words||0)} كلمة · ${goals.writing?.type||"متنوع"}${goals.writing?.deadline?` · حتى ${goals.writing.deadline}`:""}`;
-    if(section === "reading") return `${arNum(goals.reading?.count||0)} كتب · ${arNum(goals.reading?.pages||0)} صفحة${goals.reading?.books?.length?` · ${goals.reading.books.map(b=>b.title).join("، ")}`:""}`;
+    if(section === "reading") {
+      const titles = goals.reading?.titles || goals.reading?.books?.map(book => book.title).filter(Boolean) || [];
+      return `${arNum(goals.reading?.count||0)} كتب${goals.reading?.deadline?` · حتى ${goals.reading.deadline}`:""}${titles.length?` · ${titles.join("، ")}`:""}`;
+    }
     if(section === "events") return (goals.events||[]).map(id=>store.getEvent(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد فعالية بعد";
     return (goals.articles||[]).map(id=>store.getArticle(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد مقالة بعد";
   };
   return `<div class="card annual-goals-card home-personal-goals">
-    <div class="home-personal-goals__head"><div><span class="eyebrow">خاصة بك وحدك</span><h3>${icon("target",{size:18,cls:"heading-icon"})} أهداف ${user.displayName}</h3></div><a href="#/profile" class="btn btn-ghost btn-sm">إدارة الأهداف</a></div>
+    <div class="home-personal-goals__head"><h3>${icon("target",{size:18,cls:"heading-icon"})} أهدافي</h3><a href="#/profile" class="btn btn-ghost btn-sm">إدارة الأهداف</a></div>
     ${sections.length ? `<div class="home-personal-goals__grid">${sections.map(section=>`<div class="home-personal-goal"><b>${names[section]}</b><span>${detail(section)}</span></div>`).join("")}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. يمكنك إنشاؤها من «مساحتي» في ملفك الشخصي.</p>`}
   </div>`;
 }
@@ -39,7 +42,7 @@ export function renderHomePage(root){
   const events = store.getEvents().slice(0, 3);
   const posts = store.getPosts().slice(0, 3);
   const reviews = store.getReviews().slice(0, 3);
-  const articles = store.getArticles().slice(0, 1);
+  const articles = store.getArticles().slice(0, 3);
 
   root.innerHTML = `
     <section class="hero">
@@ -57,9 +60,9 @@ export function renderHomePage(root){
       </div>
       <div class="container">
         <div class="grid grid-3 hero__stats-grid">
-          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
-          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
-          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
+          <div class="card stat-box stat-box--winkle"><span class="stat-box__icon">${icon("users", { size: 17 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
+          <div class="card stat-box stat-box--winkle"><span class="stat-box__icon">${icon("calendar", { size: 17 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
+          <div class="card stat-box stat-box--winkle"><span class="stat-box__icon">${icon("quill", { size: 17 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
         </div>
         ${personalGoalsCard(user)}
       </div>
@@ -92,7 +95,7 @@ export function renderHomePage(root){
         </div>
         <div class="grid grid-3" id="recent-posts-grid">
           ${posts.length ? posts.map(p => `
-            <a href="#/writing/${p.id}" class="card card--hover highlight-card">
+            <a href="#/writing/${p.id}" class="card card--hover highlight-card home-update-card">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(p.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${p.title}</h3>
               <p>${excerpt(p.content)}</p>
@@ -111,7 +114,7 @@ export function renderHomePage(root){
         </div>
         <div class="grid grid-3" id="recent-reviews-grid">
           ${reviews.length ? reviews.map(r => `
-            <a href="#/reading/${r.id}" class="card card--hover highlight-card">
+            <a href="#/reading/${r.id}" class="card card--hover highlight-card home-update-card">
               <div class="highlight-card__meta"><span class="badge-pill">${store.getUser(r.authorId)?.displayName || "عضو"}</span></div>
               <h3 class="highlight-card__title">${r.bookTitle}</h3>
               <p>${excerpt(r.content)}</p>
@@ -124,14 +127,18 @@ export function renderHomePage(root){
 
     <section class="section section--tight">
       <div class="container">
-        <div class="grid">
+        <div class="section-head">
+          <div><span class="eyebrow">حديثًا</span><h2>أحدث المقالات والملخصات</h2></div>
+          <a href="#/articles" class="btn btn-ghost">قسم المقالات ${icon("chevronLeft", { size: 15 })}</a>
+        </div>
+        <div class="grid grid-3" id="recent-articles-grid">
           ${articles.map(a => `
-            <a href="#/articles" class="card card--hover highlight-card">
+            <a href="#/articles/${a.id}" class="card card--hover highlight-card home-update-card">
               <div class="highlight-card__meta"><span class="badge-pill badge-pill--ember">${a.category}</span></div>
-              <h3 class="highlight-card__title">${icon("document", { size: 16, cls: "heading-icon" })} مقال مقترح: ${a.title}</h3>
+              <h3 class="highlight-card__title">${icon("document", { size: 16, cls: "heading-icon" })} ${a.title}</h3>
               <p>${excerpt(a.excerpt)}</p>
             </a>
-          `).join("")}
+          `).join("") || `<div class="empty-state"><div class="empty-state__icon">${icon("document", { size: 30 })}</div><p>لا توجد مقالات أو ملخصات بعد.</p></div>`}
         </div>
       </div>
     </section>

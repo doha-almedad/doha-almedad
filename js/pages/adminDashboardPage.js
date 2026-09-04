@@ -16,6 +16,7 @@ import { showToast, bindParticipantLinks, openModal, closeModal } from "../compo
 import { icon, initial, arNum } from "../components/icons.js";
 import { openEditPostModal } from "./writingPage.js";
 import { cropImageFile } from "../services/mediaService.js";
+import { badgeService } from "../services/badgeService.js";
 
 let activeTab = "overview";
 
@@ -249,17 +250,47 @@ function openEditArticleModal(id, refresh){
     ${editableImagesMarkup(item.images)}<button class="btn btn-primary btn-block" id="aa-save">حفظ التعديلات</button>`, {size:"lg",onMount(box){ bindEditableImages(box,item,getImages => box.querySelector("#aa-save").onclick=()=>{ store.updateArticle(id,{title:box.querySelector("#aa-title").value.trim(),category:box.querySelector("#aa-category").value.trim(),excerpt:box.querySelector("#aa-excerpt").value.trim(),content:box.querySelector("#aa-content").value.trim(),images:getImages(),image:null}); closeModal(); showToast("تم تعديل المقال"); refresh(); }); }});
 }
 
+const BADGE_COLORS = ["#1C1E2A","#4B5154","#3D4B65","#495B7E","#5E74A1","#5F8AB4","#C6D6E3","#CCD1D0","#F8F5EF","#7B8B67","#5D6D55","#B5B788","#657A70","#667F6D","#A5B3A8","#B7CDC1","#8F1E0E","#A45A2B","#BD7636","#E69E6E","#CFA481","#B58500","#FED140","#F6CD74","#F4E19C","#8E3237","#7B3941","#855B59","#985B53","#A05D64","#B89194","#E8917D","#CF4520","#84344F","#A76388","#D493AB","#DDB6C9","#C5BCD1","#BAA3A8","#7C6F78","#7B6991"];
+const BADGE_CONDITIONS = [
+  ["wordsWritten","الكلمات المكتوبة"],["booksRead","الكتب المقروءة"],["challengesJoined","الفعاليات المنضم إليها"],
+  ["articlesOrWorksPublished","الأعمال والمقالات المنشورة"],["longestStreak","أطول سلسلة نشاط"],["level","المستوى"]
+];
+
+function badgesTab(){
+  const custom = store.getCustomBadges();
+  return `<div class="admin-content-block"><div class="admin-content-block__head"><div><h3>إدارة الأوسمة</h3><p class="text-muted">أنشئ وسامًا بإطار ملوّن وصورة داخلية، ويُفتح تلقائيًا وفق شرطه.</p></div><button class="btn btn-primary btn-sm" id="new-custom-badge">${icon("plus",{size:14})}<span>وسام جديد</span></button></div>
+    ${custom.length?`<div class="admin-badge-list">${custom.map(b=>`<div class="admin-badge-item"><div class="admin-badge-mini" style="--badge-color:${b.color}">${b.image?`<img src="${b.image}" alt="">`:icon("medal",{size:24})}</div><div><b>${b.name}</b><small>${BADGE_CONDITIONS.find(x=>x[0]===b.conditionType)?.[1]||"شرط"}: ${arNum(b.conditionValue)}</small></div><div style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-custom-badge="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-custom-badge="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<div class="empty-state"><p>لم تُنشأ أوسمة مخصصة بعد.</p></div>`}
+  </div>`;
+}
+
+function openBadgeModal(refresh, badge=null){
+  let badgeImage = badge?.image || null; let color = badge?.color || BADGE_COLORS[22];
+  openModal(`<div class="modal-box__head"><h3>${badge?"تعديل الوسام":"إنشاء وسام جديد"}</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <div class="badge-builder"><div class="badge-builder__preview" id="badge-builder-preview" style="--badge-color:${color}"><div>${badgeImage?`<img src="${badgeImage}" alt="">`:icon("image",{size:30})}</div></div><p>معاينة الوسام</p></div>
+    <div class="field"><label>اسم الوسام</label><input id="badge-name" placeholder="مثال: سيد القلم" value="${badge?.name||""}"></div>
+    <div class="field"><label>صورة وسط الوسام</label><label class="image-upload"><span>${icon("image",{size:20})}<span>تحميل صورة الوسام</span></span><input type="file" id="badge-image" accept="image/*" hidden></label></div>
+    <div class="field"><label>لون الإطار</label><div class="badge-color-palette">${BADGE_COLORS.map(c=>`<button type="button" data-badge-color="${c}" style="--swatch:${c}" class="${c===color?"is-active":""}" aria-label="${c}"></button>`).join("")}</div></div>
+    <div class="composer__meta"><div class="field"><label>شرط الاستحقاق</label><select id="badge-condition">${BADGE_CONDITIONS.map(([v,l])=>`<option value="${v}" ${badge?.conditionType===v?"selected":""}>${l}</option>`).join("")}</select></div><div class="field"><label>القيمة المطلوبة</label><input type="number" min="1" value="${badge?.conditionValue||1}" id="badge-value"></div></div>
+    ${badge?`<p class="field-hint">تعديل الشرط لا يسحب الوسام أو النقاط ممن استحقه سابقًا؛ يُطبّق الشرط الجديد على الاستحقاقات القادمة فقط.</p>`:""}
+    <div class="field"><label>الوصف قبل فتحه</label><input id="badge-locked-desc" placeholder="مثال: الهدف نشر عشرة نصوص" value="${badge?.literaryDesc?.locked||""}"></div><div class="field"><label>الوصف بعد فتحه</label><input id="badge-unlocked-desc" placeholder="مثال: لمن أثرى الدوحة بعشرة نصوص" value="${badge?.literaryDesc?.unlocked||""}"></div>
+    <button class="btn btn-primary btn-block" id="save-custom-badge">حفظ الوسام</button>`, {size:"lg",onMount(box){
+      const preview=box.querySelector("#badge-builder-preview");
+      const paint=()=>{preview.style.setProperty("--badge-color",color);preview.querySelector("div").innerHTML=badgeImage?`<img src="${badgeImage}" alt="">`:icon("image",{size:30});};
+      box.querySelector("#badge-image").onchange=async e=>{const file=e.target.files[0];if(!file)return;badgeImage=await cropImageFile(file,{aspectRatio:1,outputWidth:500,title:"ضبط صورة الوسام",allowTemplates:false});paint();};
+      box.querySelectorAll("[data-badge-color]").forEach(btn=>btn.onclick=()=>{color=btn.dataset.badgeColor;box.querySelectorAll("[data-badge-color]").forEach(x=>x.classList.remove("is-active"));btn.classList.add("is-active");paint();});
+      box.querySelector("#save-custom-badge").onclick=()=>{const name=box.querySelector("#badge-name").value.trim();if(!name||!badgeImage){showToast("اكتب اسم الوسام وحمّل صورته");return;}const data={name,image:badgeImage,color,icon:"medal",conditionType:box.querySelector("#badge-condition").value,conditionValue:Math.max(1,Number(box.querySelector("#badge-value").value)||1),literaryDesc:{locked:box.querySelector("#badge-locked-desc").value.trim()||"لم يتحقق شرط هذا الوسام بعد",unlocked:box.querySelector("#badge-unlocked-desc").value.trim()||"استحق هذا الوسام بجدارة"}};const def=badge?store.updateCustomBadge(badge.id,data):store.addCustomBadge(data);if(!badge){store.getUsers().forEach(u=>{badgeService.checkAndAward(u);store.updateUser(u.id,{badges:u.badges});});}closeModal();showToast(badge?`تم تعديل «${def.name}» دون المساس بمستحقيه`:`أُضيف وسام «${def.name}»`);refresh();};
+    }});
+}
+
 function settingsTab(){
+  const settings = store.getSettings();
+  const sectionFields = [["home","الرئيسية"],["events","الفعاليات"],["writing","الكتابة"],["reading","القراءة"],["articles","المقالات"],["admin","الإدارة"],["profile","الملف الشخصي"]];
+  const pointFields = [["publish_post","نشر نص"],["publish_review","تسجيل قراءة"],["join_event","الانضمام لفعالية"],["submit_event_proof","اعتماد إثبات فعالية"],["publish_article","نشر مقال أو ملخص"],["literary_comment","تعليق أدبي"]];
   return `
-    <div class="card card--flat">
-      <h3>إعدادات عامة (المالك فقط)</h3>
-      <p>تحكّم المالك في مسمّيات الأقسام، أسماء الأوسمة وقيم نقاطها، وقواعد احتساب الأنشطة يُدار حاليًا من الكود مباشرة في <code>js/db/initialData.js</code> و<code>js/services/rewardEngine.js</code> — واجهة تعديل مباشرة لهذه القيم قيد الإعداد في نسخة قادمة.</p>
-      <ul style="margin-top:12px;">
-        <li class="text-muted">قاعدة اليوم النشط الواحد: نشاط مؤهل واحد أو أكثر في نفس اليوم = شعلة واحدة.</li>
-        <li class="text-muted">التصفّح والإعجاب المجرد لا يُحتسبان ضمن الأنشطة المؤهلة.</li>
-        <li class="text-muted">إعجاب واحد فقط لكل عضو على أي منشور أو مراجعة.</li>
-        <li class="text-muted">حذف أي منشور أو فعالية يسحب معه النقاط والإحصائيات المرتبطة به تلقائيًا.</li>
-      </ul>
+    <div class="admin-content-block"><div class="admin-content-block__head"><div><h3>لوحة المالك</h3><p class="text-muted">تحكم مباشر في أسماء أقسام المنصة ونقاط الأنشطة الجديدة.</p></div><span class="badge-pill badge-pill--gold">للمالك فقط</span></div>
+      <h4>أسماء الأقسام</h4><div class="admin-settings-grid">${sectionFields.map(([key,label])=>`<div class="field"><label>${label}</label><input id="section-name-${key}" value="${settings.sectionNames[key]}"></div>`).join("")}</div>
+      <h4 style="margin-top:22px;">نقاط الأنشطة</h4><p class="field-hint">تُطبّق القيم الجديدة على الأنشطة اللاحقة، ولا تخصم ما حصل عليه الأعضاء سابقًا.</p><div class="admin-settings-grid">${pointFields.map(([key,label])=>`<div class="field"><label>${label}</label><input type="number" min="0" id="activity-points-${key}" value="${settings.activityPoints[key]}"></div>`).join("")}</div>
+      <button class="btn btn-primary" id="save-owner-settings">حفظ إعدادات المالك</button>
     </div>
   `;
 }
@@ -302,6 +333,7 @@ const TABS = [
   { id: "members",     label: "الأعضاء",       ic: "users",   ownerOnly: false },
   { id: "submissions",  label: "طلبات الاعتماد",  ic: "target",   ownerOnly: false },
   { id: "content",     label: "إدارة المحتوى",   ic: "document",  ownerOnly: false },
+  { id: "badges",      label: "الأوسمة",          ic: "medal",     ownerOnly: true },
   { id: "goals",       label: "الأهداف السنوية", ic: "chart",     ownerOnly: true },
   { id: "settings",     label: "الإعدادات",     ic: "lock",   ownerOnly: true },
 ];
@@ -402,6 +434,7 @@ export function renderAdminDashboardPage(root){
     members: () => membersTab(user),
     submissions: submissionsTab,
     content: contentTab,
+    badges: badgesTab,
     goals: annualGoalsTab,
     settings: settingsTab,
   };
@@ -524,6 +557,15 @@ export function renderAdminDashboardPage(root){
   }));
 
   root.querySelector("#new-event-btn")?.addEventListener("click", () => openNewEventModal(refresh));
+  root.querySelector("#new-custom-badge")?.addEventListener("click", () => openBadgeModal(refresh));
+  root.querySelectorAll("[data-edit-custom-badge]").forEach(btn=>btn.addEventListener("click",()=>openBadgeModal(refresh,store.getCustomBadges().find(b=>b.id===btn.dataset.editCustomBadge))));
+  root.querySelectorAll("[data-delete-custom-badge]").forEach(btn => btn.addEventListener("click", () => { store.deleteCustomBadge(btn.dataset.deleteCustomBadge); showToast("حُذف الوسام المخصص"); refresh(); }));
+  root.querySelector("#save-owner-settings")?.addEventListener("click",()=>{
+    const sectionKeys=["home","events","writing","reading","articles","admin","profile"], pointKeys=["publish_post","publish_review","join_event","submit_event_proof","publish_article","literary_comment"];
+    const sectionNames=Object.fromEntries(sectionKeys.map(key=>[key,root.querySelector(`#section-name-${key}`).value.trim()||store.getSettings().sectionNames[key]]));
+    const activityPoints=Object.fromEntries(pointKeys.map(key=>[key,Math.max(0,Number(root.querySelector(`#activity-points-${key}`).value)||0)]));
+    store.updateSettings({sectionNames,activityPoints});showToast("حُفظت إعدادات المالك");document.dispatchEvent(new CustomEvent("user:changed"));
+  });
   root.querySelector("#save-annual-goals")?.addEventListener("click", () => {
     const year = new Date().getFullYear();
     const value = key => Math.max(0, Number(root.querySelector(`#annual-goal-${key}`)?.value) || 0);

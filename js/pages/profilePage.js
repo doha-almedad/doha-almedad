@@ -15,6 +15,7 @@ import { cropImageFile } from "../services/mediaService.js";
 let showAllBadges = false;
 let showAllRecentActivity = false;
 let recentProfileId = null;
+let activeProfileSection = "profile";
 
 function miniStat(value, label, iconName, { showZero = false } = {}){
   if(!value && !showZero) return "";
@@ -118,7 +119,7 @@ function personalGoalDetails(goals){
   return (goals.sections || []).map(section => {
     let detail = "";
     if(section === "writing") detail = `${arNum(goals.writing?.count||0)} نصوص · ${arNum(goals.writing?.words||0)} كلمة · ${goals.writing?.type||"متنوع"}${goals.writing?.deadline?` · حتى ${goals.writing.deadline}`:""}`;
-    if(section === "reading") detail = `${arNum(goals.reading?.count||0)} كتب · ${arNum(goals.reading?.pages||0)} صفحة${goals.reading?.books?.length?` · ${(goals.reading.books).map(b=>b.title).join("، ")}`:""}`;
+    if(section === "reading") detail = `${arNum(goals.reading?.count||0)} كتب${goals.reading?.deadline?` · حتى ${goals.reading.deadline}`:""}${goals.reading?.titles?.length?` · ${goals.reading.titles.join("، ")}`:""}`;
     if(section === "events") detail = (goals.events||[]).map(id=>store.getEvent(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد فعالية بعد";
     if(section === "articles") detail = (goals.articles||[]).map(id=>store.getArticle(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد مقالة بعد";
     return `<div class="personal-goal-summary"><b>${PERSONAL_GOAL_LABELS[section]}</b><span>${detail}</span></div>`;
@@ -128,19 +129,33 @@ function personalGoalDetails(goals){
 function personalSpaceHtml(user){
   const goals = store.getPersonalGoals(user.id);
   const drafts = store.getDrafts(user.id);
+  const library = store.getPersonalLibrary(user.id);
   return `<section class="personal-space" id="personal-space">
     <div class="section-head"><div><span class="eyebrow">خاص بك وحدك</span><h2>${icon("lock",{size:20,cls:"heading-icon"})} مساحتي</h2></div><span class="badge-pill">لا يراها الآخرون</span></div>
     <div class="personal-space__grid">
-      <div class="card personal-space__panel">
+      <div class="card personal-space__panel personal-space__panel--goals">
         <div class="personal-space__panel-head"><h3>أهدافي الشخصية</h3><button class="btn btn-outline btn-sm" id="edit-personal-goals">${icon("target",{size:14})}<span>إدارة الأهداف</span></button></div>
         ${goals.sections?.length ? `<div class="personal-goal-chips">${goals.sections.map(s=>`<span class="badge-pill badge-pill--gold">${PERSONAL_GOAL_LABELS[s]}</span>`).join("")}</div><div class="personal-goal-summaries">${personalGoalDetails(goals)}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. اختر فقط ما ترغب في متابعته.</p>`}
       </div>
-      <div class="card personal-space__panel">
+      <div class="card personal-space__panel personal-space__panel--drafts">
         <div class="personal-space__panel-head"><h3>مسوداتي</h3><button class="btn btn-primary btn-sm" id="new-private-draft">${icon("plus",{size:14})}<span>مسودة جديدة</span></button></div>
-        ${drafts.length ? `<div class="private-drafts">${drafts.map(d=>`<div class="private-draft"><div><b>${d.title}</b><small>${d.type} · محفوظة خصوصًا</small></div><div><button class="btn btn-ghost btn-sm" data-edit-draft="${d.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-draft="${d.id}">حذف</button></div></div>`).join("")}</div>` : `<p class="text-muted">لا توجد مسودات محفوظة حتى الآن.</p>`}
+        ${drafts.length ? `<div class="private-drafts">${drafts.map(d=>`<article class="private-draft"><div class="private-draft__rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="private-draft__paper"><span class="private-draft__type">${d.type}</span><b>${d.title}</b><p>${(d.content||"مسودة فارغة").slice(0,95)}${(d.content||"").length>95?"…":""}</p><small>محفوظة خصوصًا</small><div class="private-draft__actions"><button class="btn btn-outline btn-sm" data-open-draft="${d.id}">فتح المسودة</button><button class="btn btn-ghost btn-sm" data-edit-draft="${d.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-draft="${d.id}">حذف</button></div></div></article>`).join("")}</div>` : `<p class="text-muted">لا توجد مسودات محفوظة حتى الآن.</p>`}
+      </div>
+      <div class="card personal-space__panel personal-space__panel--wide personal-space__panel--library">
+        <div class="personal-space__panel-head"><h3>مكتبتي</h3><button class="btn btn-primary btn-sm" id="new-private-book">${icon("plus",{size:14})}<span>إضافة كتاب</span></button></div>
+        ${library.length?`<div class="private-library">${library.map(b=>`<div class="private-book"><div><b>${b.title}</b><span class="rating-stars">${Array.from({length:5},(_,i)=>icon("star",{size:12,cls:i<b.rating?"star-filled":"star-empty"})).join("")}</span>${b.note?`<small>${b.note}</small>`:""}</div><div><button class="btn btn-ghost btn-sm" data-edit-private-book="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-private-book="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<p class="text-muted">مكتبتك الخاصة فارغة. أضف كتابًا واحتفظ بتقييمك وملاحظتك.</p>`}
       </div>
     </div>
   </section>`;
+}
+
+function openDraftViewModal(draft, onEdit){
+  if(!draft) return;
+  openModal(`<div class="modal-box__head"><div><span class="badge-pill">${draft.type}</span><h3 style="margin-top:8px;">${draft.title}</h3></div><button class="modal-close" data-close>${icon("close",{size:18})}</button></div><div class="draft-reading-sheet">${draft.content?`<p>${draft.content}</p>`:`<p class="text-muted">هذه المسودة فارغة.</p>`}</div><button class="btn btn-primary btn-block" id="edit-open-draft">${icon("feather",{size:14})}<span>تعديل المسودة</span></button>`,{size:"lg",onMount(box){box.querySelector("#edit-open-draft").onclick=()=>{closeModal();onEdit();};}});
+}
+
+function openPrivateBookModal(user, book, rerender){
+  openModal(`<div class="modal-box__head"><h3>${book?"تعديل الكتاب":"إضافة كتاب إلى مكتبتي"}</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div><div class="field"><label>عنوان الكتاب</label><input id="private-book-title" value="${book?.title||""}"></div><div class="field"><label>تقييمي</label><select id="private-book-rating">${[5,4,3,2,1].map(n=>`<option value="${n}" ${book?.rating===n?"selected":""}>${n} من 5</option>`).join("")}</select></div><div class="field"><label>ملاحظتي الخاصة</label><textarea id="private-book-note">${book?.note||""}</textarea></div><button class="btn btn-primary btn-block" id="save-private-book">حفظ في مكتبتي</button>`,{onMount(box){box.querySelector("#save-private-book").onclick=()=>{const title=box.querySelector("#private-book-title").value.trim();if(!title){showToast("اكتب عنوان الكتاب");return;}store.savePersonalBook(user.id,{id:book?.id,title,rating:Number(box.querySelector("#private-book-rating").value),note:box.querySelector("#private-book-note").value.trim()});closeModal();showToast("حُفظ الكتاب في مكتبتك");rerender();};}});
 }
 
 function openDraftModal(user, draft, rerender){
@@ -162,12 +177,12 @@ function openPersonalGoalsModal(user, rerender){
       ${[["writing","الكتابة"],["reading","القراءة"],["events","الفعاليات"],["articles","المقالات"]].map(([k,l])=>`<label class="goal-choice"><input type="checkbox" data-goal-toggle="${k}" ${checked(k)}><span>${l}</span></label>`).join("")}
     </div>
     <div class="personal-goal-fields ${selected.has("writing")?"":"is-hidden"}" data-goal-fields="writing"><h4>هدف الكتابة</h4><div class="composer__meta"><div class="field"><label>عدد النصوص</label><input type="number" min="0" id="pg-writing-count" value="${old.writing?.count||""}"></div><div class="field"><label>عدد الكلمات</label><input type="number" min="0" id="pg-writing-words" value="${old.writing?.words||""}"></div></div><div class="composer__meta"><div class="field"><label>نوع النص</label><select id="pg-writing-type"><option>متنوع</option>${["قطعة أدبية","قصة قصيرة","نص شعري","خاطرة","مقالة رأي","فصل من عمل"].map(x=>`<option ${old.writing?.type===x?"selected":""}>${x}</option>`).join("")}</select></div><div class="field"><label>الموعد النهائي</label><input type="date" id="pg-writing-deadline" value="${old.writing?.deadline||""}"></div></div></div>
-    <div class="personal-goal-fields ${selected.has("reading")?"":"is-hidden"}" data-goal-fields="reading"><h4>هدف القراءة</h4><div class="composer__meta"><div class="field"><label>عدد الكتب</label><input type="number" min="0" id="pg-reading-count" value="${old.reading?.count||""}"></div><div class="field"><label>عدد الصفحات</label><input type="number" min="0" id="pg-reading-pages" value="${old.reading?.pages||""}"></div></div><div class="field"><label>الكتب وموعد إنهاء كل كتاب</label><textarea id="pg-reading-books" placeholder="كل كتاب في سطر: اسم الكتاب | 2026-12-31">${(old.reading?.books||[]).map(b=>`${b.title} | ${b.deadline||""}`).join("\n")}</textarea><div class="field-hint">اكتب عنوان الكتاب ثم | ثم التاريخ.</div></div></div>
+    <div class="personal-goal-fields ${selected.has("reading")?"":"is-hidden"}" data-goal-fields="reading"><h4>هدف القراءة</h4><div class="composer__meta"><div class="field"><label>عدد الكتب</label><input type="number" min="0" id="pg-reading-count" value="${old.reading?.count||""}"></div><div class="field"><label>تاريخ الانتهاء</label><input type="date" id="pg-reading-deadline" value="${old.reading?.deadline||""}"></div></div><div class="field"><label>عناوين الكتب</label><textarea id="pg-reading-titles" placeholder="اكتب كل عنوان في سطر مستقل">${(old.reading?.titles||old.reading?.books?.map(b=>b.title)||[]).join("\n")}</textarea></div></div>
     <div class="personal-goal-fields ${selected.has("events")?"":"is-hidden"}" data-goal-fields="events"><h4>الفعاليات التي أنوي المشاركة فيها</h4><div class="goal-options-list">${events.map(e=>`<label><input type="checkbox" data-goal-event value="${e.id}" ${(old.events||[]).includes(e.id)?"checked":""}> ${e.title}</label>`).join("")||"لا توجد فعاليات متاحة"}</div></div>
     <div class="personal-goal-fields ${selected.has("articles")?"":"is-hidden"}" data-goal-fields="articles"><h4>المقالات التي أنوي قراءتها</h4><div class="goal-options-list">${articles.map(a=>`<label><input type="checkbox" data-goal-article value="${a.id}" ${(old.articles||[]).includes(a.id)?"checked":""}> ${a.title}</label>`).join("")||"لا توجد مقالات متاحة"}</div></div>
     <button class="btn btn-primary btn-block" id="save-personal-goals">حفظ أهدافي</button>`, {size:"lg",onMount(box){
       box.querySelectorAll("[data-goal-toggle]").forEach(input=>input.onchange=()=>box.querySelector(`[data-goal-fields="${input.dataset.goalToggle}"]`).classList.toggle("is-hidden",!input.checked));
-      box.querySelector("#save-personal-goals").onclick=()=>{const sections=[...box.querySelectorAll("[data-goal-toggle]:checked")].map(x=>x.dataset.goalToggle); const books=box.querySelector("#pg-reading-books").value.split("\n").map(x=>x.trim()).filter(Boolean).map(line=>{const [title,deadline]=line.split("|").map(x=>x.trim());return{title,deadline};}); store.setPersonalGoals(user.id,{sections,writing:{count:Number(box.querySelector("#pg-writing-count").value)||0,words:Number(box.querySelector("#pg-writing-words").value)||0,type:box.querySelector("#pg-writing-type").value,deadline:box.querySelector("#pg-writing-deadline").value},reading:{count:Number(box.querySelector("#pg-reading-count").value)||0,pages:Number(box.querySelector("#pg-reading-pages").value)||0,books},events:[...box.querySelectorAll("[data-goal-event]:checked")].map(x=>x.value),articles:[...box.querySelectorAll("[data-goal-article]:checked")].map(x=>x.value)});closeModal();showToast("حُفظت أهدافك الشخصية");rerender();};
+      box.querySelector("#save-personal-goals").onclick=()=>{const sections=[...box.querySelectorAll("[data-goal-toggle]:checked")].map(x=>x.dataset.goalToggle); const titles=box.querySelector("#pg-reading-titles").value.split("\n").map(x=>x.trim()).filter(Boolean); store.setPersonalGoals(user.id,{sections,writing:{count:Number(box.querySelector("#pg-writing-count").value)||0,words:Number(box.querySelector("#pg-writing-words").value)||0,type:box.querySelector("#pg-writing-type").value,deadline:box.querySelector("#pg-writing-deadline").value},reading:{count:Number(box.querySelector("#pg-reading-count").value)||0,deadline:box.querySelector("#pg-reading-deadline").value,titles},events:[...box.querySelectorAll("[data-goal-event]:checked")].map(x=>x.value),articles:[...box.querySelectorAll("[data-goal-article]:checked")].map(x=>x.value)});closeModal();showToast("حُفظت أهدافك الشخصية");rerender();};
     }});
 }
 
@@ -178,7 +193,7 @@ export function renderProfilePage(root, userId){
     return;
   }
   const isOwnProfile = user.id === store.getCurrentUser().id;
-  if(recentProfileId !== user.id){ recentProfileId = user.id; showAllRecentActivity = false; }
+  if(recentProfileId !== user.id){ recentProfileId = user.id; showAllRecentActivity = false; activeProfileSection = "profile"; }
   const roleTag = publicRoleLabel(user.role);
 
   const stats = user.stats;
@@ -224,6 +239,10 @@ export function renderProfilePage(root, userId){
           ${isOwnProfile ? `<button class="btn btn-primary btn-sm" id="edit-profile-btn">${icon("feather", { size: 14 })}<span>تعديل الملف الشخصي</span></button>` : ""}
         </div>
 
+        ${isOwnProfile ? `<div class="profile-section-tabs" role="tablist"><button class="${activeProfileSection==="profile"?"is-active":""}" data-profile-section="profile">ملفي الشخصي</button><button class="${activeProfileSection==="space"?"is-active":""}" data-profile-section="space">مساحتي</button></div>` : ""}
+
+        <div class="profile-section-panel ${activeProfileSection==="profile"||!isOwnProfile?"":"is-hidden"}" data-profile-panel="profile">
+
         <div class="card profile-bio-card">
           <div class="profile-bio-card__head">${icon("document", { size: 16, cls: "heading-icon" })} نبذة العضو</div>
           <div class="profile-bio-card__body">
@@ -237,8 +256,6 @@ export function renderProfilePage(root, userId){
             ` : ""}
           </div>
         </div>
-
-        ${isOwnProfile ? personalSpaceHtml(user) : ""}
 
         <div class="section-head">
           <h2>${icon("medal", { size: 20, cls: "heading-icon" })} الأوسمة</h2>
@@ -270,6 +287,9 @@ export function renderProfilePage(root, userId){
           </div>
           ${allRecentActivity.length > 3 ? `<button class="btn btn-outline btn-block" id="toggle-recent-activity">${showAllRecentActivity ? "عرض الأحدث فقط" : "رؤية المزيد"}</button>` : ""}
         ` : ""}
+        </div>
+
+        ${isOwnProfile ? `<div class="profile-section-panel ${activeProfileSection==="space"?"":"is-hidden"}" data-profile-panel="space">${personalSpaceHtml(user)}</div>` : ""}
 
       </div>
     </section>
@@ -285,9 +305,14 @@ export function renderProfilePage(root, userId){
 
   root.querySelector("#edit-profile-btn")?.addEventListener("click", () => openEditProfileModal(user, root, userId));
   root.querySelector("#toggle-recent-activity")?.addEventListener("click", () => { showAllRecentActivity = !showAllRecentActivity; renderProfilePage(root, userId); });
+  root.querySelectorAll("[data-profile-section]").forEach(btn=>btn.addEventListener("click",()=>{activeProfileSection=btn.dataset.profileSection;renderProfilePage(root,userId);}));
   const rerender = () => renderProfilePage(root, userId);
   root.querySelector("#edit-personal-goals")?.addEventListener("click", () => openPersonalGoalsModal(user, rerender));
   root.querySelector("#new-private-draft")?.addEventListener("click", () => openDraftModal(user, null, rerender));
+  root.querySelectorAll("[data-open-draft]").forEach(btn => btn.addEventListener("click", () => { const draft=store.getDrafts(user.id).find(d=>d.id===btn.dataset.openDraft); openDraftViewModal(draft,()=>openDraftModal(user,draft,rerender)); }));
   root.querySelectorAll("[data-edit-draft]").forEach(btn => btn.addEventListener("click", () => openDraftModal(user, store.getDrafts(user.id).find(d=>d.id===btn.dataset.editDraft), rerender)));
   root.querySelectorAll("[data-delete-draft]").forEach(btn => btn.addEventListener("click", () => { store.deleteDraft(user.id, btn.dataset.deleteDraft); showToast("حُذفت المسودة"); rerender(); }));
+  root.querySelector("#new-private-book")?.addEventListener("click",()=>openPrivateBookModal(user,null,rerender));
+  root.querySelectorAll("[data-edit-private-book]").forEach(btn=>btn.addEventListener("click",()=>openPrivateBookModal(user,store.getPersonalLibrary(user.id).find(b=>b.id===btn.dataset.editPrivateBook),rerender)));
+  root.querySelectorAll("[data-delete-private-book]").forEach(btn=>btn.addEventListener("click",()=>{store.deletePersonalBook(user.id,btn.dataset.deletePrivateBook);showToast("حُذف الكتاب من مكتبتك");rerender();}));
 }

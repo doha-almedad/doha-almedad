@@ -25,6 +25,18 @@ function timeAgo(iso){
   return `منذ ${arNum(Math.round(h/24))} يوم`;
 }
 
+export function openEditReviewModal(reviewId, onUpdated, { admin = false } = {}){
+  const review = store.getReviews().find(r=>r.id===reviewId);
+  const current = store.getCurrentUser();
+  if(!review || !(admin || current.role === "owner" || current.role === "moderator" || review.authorId === current.id)) return;
+  let images=[...(review.images || (review.image?[review.image]:[]))];
+  openModal(`<div class="modal-box__head"><h3>تعديل القراءة</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div><div class="field"><label>عنوان الكتاب</label><input id="edit-review-title" value="${review.bookTitle}"></div><div class="field"><label>التقييم</label><select id="edit-review-rating">${[5,4,3,2,1].map(n=>`<option value="${n}" ${review.rating===n?"selected":""}>${n} من 5</option>`).join("")}</select></div><div class="field"><label>المراجعة</label><textarea id="edit-review-content">${review.content}</textarea></div><div class="field"><label>الصور</label><label class="image-upload"><span>${icon("image",{size:20})}<span>إضافة صور</span></span><input type="file" id="edit-review-images" accept="image/*" multiple hidden></label><div id="edit-review-image-list"></div></div><button class="btn btn-primary btn-block" id="save-review-edit">حفظ التعديلات</button>`,{size:"lg",onMount(box){
+    const paint=()=>{box.querySelector("#edit-review-image-list").innerHTML=images.length?`<div class="multi-image-strip">${images.map((src,i)=>`<div class="multi-image-strip__item"><img src="${src}" alt=""><button type="button" class="multi-image-strip__remove" data-remove-review-image="${i}">${icon("close",{size:9})}</button></div>`).join("")}</div>`:`<small class="text-muted">لا توجد صور</small>`;box.querySelectorAll("[data-remove-review-image]").forEach(btn=>btn.onclick=()=>{images.splice(Number(btn.dataset.removeReviewImage),1);paint();});};paint();
+    box.querySelector("#edit-review-images").onchange=async e=>{for(const file of Array.from(e.target.files||[])){const image=await cropImageFile(file,{aspectRatio:16/9,outputWidth:1200,title:"اختر قالب صورة القراءة"});if(image)images.push(image);}paint();};
+    box.querySelector("#save-review-edit").onclick=()=>{const bookTitle=box.querySelector("#edit-review-title").value.trim(),content=box.querySelector("#edit-review-content").value.trim();if(!bookTitle||!content){showToast("أكمل عنوان الكتاب والمراجعة");return;}store.updateReview(reviewId,{bookTitle,content,rating:Number(box.querySelector("#edit-review-rating").value),images,image:null});closeModal();showToast("تم تعديل القراءة");if(typeof onUpdated==="function")onUpdated();};
+  }});
+}
+
 function renderFeed(){
   const all = store.getReviews();
   const reviews = all.slice(0, visibleCount);
@@ -47,7 +59,7 @@ function renderFeed(){
             <div class="feed-item__name participant-link" data-user-id="${r.authorId}">${author?.displayName || "عضو"}</div>
             <div class="feed-item__time">${r.bookTitle} · ${timeAgo(r.date)} ${r.editedAt ? `· تم التعديل ${timeAgo(r.editedAt)}` : ""}</div>
           </div>
-          <span class="rating-stars" style="margin-inline-start:auto;">${stars(r.rating)}</span>
+          <div class="feed-item__head-actions"><span class="rating-stars">${stars(r.rating)}</span>${r.authorId===currentUser.id?`<button type="button" class="feed-item__edit" data-edit-review="${r.id}">${icon("feather",{size:12})}<span>تعديل</span></button>`:""}</div>
         </div>
         ${renderCarousel(images)}
         <p>${r.content}</p>
@@ -173,7 +185,7 @@ export function renderReviewViewPage(root, reviewId){
           <div class="highlight-card__meta" style="margin-bottom:14px;">
             <span class="badge-pill">${author?.displayName || "عضو"}</span>
             <span class="rating-stars">${stars(r.rating)}</span>
-            <span class="badge-pill">${timeAgo(r.date)}</span>
+            <span class="badge-pill">${timeAgo(r.date)}${r.editedAt ? ` · تم التعديل ${timeAgo(r.editedAt)}` : ""}</span>
           </div>
           <h1>${r.bookTitle}</h1>
           ${renderCarousel(images)}
@@ -193,6 +205,11 @@ export function renderReviewViewPage(root, reviewId){
     renderReviewViewPage(root, reviewId);
   });
   root.querySelector("[data-comment]").addEventListener("click", () => openCommentsModal("review", r.id, () => renderReviewViewPage(root, reviewId)));
+  if(r.authorId===currentUser.id){
+    const actions=root.querySelector(".highlight-card__meta");
+    actions?.insertAdjacentHTML("beforeend",`<button class="btn btn-outline btn-sm" id="edit-review-view">${icon("feather",{size:12})} تعديل</button>`);
+    root.querySelector("#edit-review-view")?.addEventListener("click",()=>openEditReviewModal(r.id,()=>renderReviewViewPage(root,reviewId)));
+  }
 }
 
 export function renderReadingPage(root){
@@ -217,6 +234,7 @@ export function renderReadingPage(root){
     feed.querySelectorAll("[data-comment]").forEach(el => {
       el.addEventListener("click", () => openCommentsModal("review", el.getAttribute("data-comment"), paint));
     });
+    feed.querySelectorAll("[data-edit-review]").forEach(el=>el.addEventListener("click",()=>openEditReviewModal(el.dataset.editReview,paint)));
     feed.querySelector("#load-more-reviews")?.addEventListener("click", () => {
       visibleCount += PAGE_SIZE;
       paint();
