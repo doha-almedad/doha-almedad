@@ -41,6 +41,8 @@ function load(){
 }
 
 let db = load();
+db.personalGoals = db.personalGoals || {};
+db.drafts = db.drafts || [];
 
 function persist(){
   localStorage.setItem(DB_KEY, JSON.stringify(db));
@@ -77,6 +79,22 @@ export const store = {
     persist();
     return u;
   },
+
+  // ---------- المساحة الشخصية الخاصة ----------
+  getPersonalGoals(userId){ return db.personalGoals[userId] || { sections:[] }; },
+  setPersonalGoals(userId, goals){ db.personalGoals[userId] = { ...goals, updatedAt:new Date().toISOString() }; persist(); return db.personalGoals[userId]; },
+  getDrafts(userId){ return db.drafts.filter(d => d.userId === userId).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); },
+  saveDraft(userId, data){
+    const now = new Date().toISOString();
+    if(data.id){
+      const item = db.drafts.find(d => d.id === data.id && d.userId === userId);
+      if(!item) return null;
+      Object.assign(item, data, { updatedAt:now }); persist(); return item;
+    }
+    const item = { id:"draft_"+Date.now(), userId, title:data.title, type:data.type || "piece", content:data.content || "", createdAt:now, updatedAt:now };
+    db.drafts.push(item); persist(); return item;
+  },
+  deleteDraft(userId, id){ db.drafts = db.drafts.filter(d => !(d.id === id && d.userId === userId)); persist(); },
 
   // ---------- الفعاليات ----------
   getEvents(){ return [...db.events].sort((a,b) => a.order - b.order); },
@@ -226,6 +244,19 @@ export const store = {
     comment.depth = parentCommentId ? depth : 0;
 
     item.comments.push(comment);
+    persist();
+    return comment;
+  },
+
+  updateComment(kind, itemId, commentId, text, actorId){
+    const list = kind === "post" ? db.posts : db.reviews;
+    const item = list.find(i => i.id === itemId);
+    const comment = item?.comments?.find(c => c.id === commentId);
+    const actor = db.users.find(u => u.id === actorId);
+    const allowed = comment && (comment.userId === actorId || actor?.role === "owner" || actor?.role === "moderator");
+    if(!allowed || !text?.trim()) return null;
+    comment.text = text.trim();
+    comment.editedAt = new Date().toISOString();
     persist();
     return comment;
   },
