@@ -22,6 +22,12 @@ function personalGoalsCard(user){
   const goals = store.getPersonalGoals(user.id);
   const sections = goals.sections || [];
   const names = { writing:"الكتابة", reading:"القراءة", events:"الفعاليات", articles:"المقالات" };
+  const progress = section => {
+    if(section==="writing"){const target=goals.writing?.words||goals.writing?.count||0,current=goals.writing?.words?user.stats.wordsWritten:store.getPosts().filter(p=>p.authorId===user.id).length;return target?Math.min(100,Math.round(current/target*100)):0;}
+    if(section==="reading"){const target=goals.reading?.count||0;return target?Math.min(100,Math.round((user.stats.booksRead||0)/target*100)):0;}
+    if(section==="events"){const ids=goals.events||[],joined=ids.filter(id=>store.getEvent(id)?.participants?.includes(user.id)).length;return ids.length?Math.round(joined/ids.length*100):0;}
+    const ids=goals.articles||[],read=ids.filter(id=>(user.readArticleIds||[]).includes(id)).length;return ids.length?Math.round(read/ids.length*100):0;
+  };
   const detail = section => {
     if(section === "writing") return `${arNum(goals.writing?.count||0)} نصوص · ${arNum(goals.writing?.words||0)} كلمة · ${goals.writing?.type||"متنوع"}${goals.writing?.deadline?` · حتى ${goals.writing.deadline}`:""}`;
     if(section === "reading") {
@@ -33,7 +39,7 @@ function personalGoalsCard(user){
   };
   return `<div class="card annual-goals-card home-personal-goals">
     <div class="home-personal-goals__head"><h3>${icon("target",{size:18,cls:"heading-icon"})} أهدافي</h3><a href="#/profile" class="btn btn-ghost btn-sm">إدارة الأهداف</a></div>
-    ${sections.length ? `<div class="home-personal-goals__grid">${sections.map(section=>`<div class="home-personal-goal"><b>${names[section]}</b><span>${detail(section)}</span></div>`).join("")}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. يمكنك إنشاؤها من «مساحتي» في ملفك الشخصي.</p>`}
+    ${sections.length ? `<div class="home-personal-goals__grid">${sections.map(section=>{const pct=progress(section);return `<div class="home-personal-goal"><b>${names[section]}</b><span>${detail(section)}</span><div class="home-personal-goal__progress"><i style="width:${pct}%"></i></div><small>${arNum(pct)}٪ من الهدف</small></div>`;}).join("")}</div>` : `<p class="text-muted">لم تضف أهدافًا شخصية بعد. يمكنك إنشاؤها من «مساحتي» في ملفك الشخصي.</p>`}
   </div>`;
 }
 

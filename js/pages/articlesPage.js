@@ -150,12 +150,13 @@ function openComposerModal(user, refreshList){
 
 export function renderArticlesPage(root){
   const user = store.getCurrentUser();
+  const sectionName = store.getSettings().sectionNames.articles;
 
   root.innerHTML = `
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">تعلّم وتطوّر</span><h1>${icon("document", { size: 26, cls: "heading-icon" })} المقالات والملخصات</h1></div>
+          <div><span class="eyebrow">تعلّم وتطوّر</span><h1>${icon("document", { size: 26, cls: "heading-icon" })} ${sectionName}</h1></div>
         </div>
 
         <div class="article-search-row">
@@ -210,6 +211,7 @@ export function renderArticleViewPage(root, articleId){
   }
   const author = store.getUser(a.author);
   const images = a.images || (a.image ? [a.image] : []);
+  store.markArticleRead(store.getCurrentUser().id, a.id);
 
   root.innerHTML = `
     <section class="section">

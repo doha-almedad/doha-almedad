@@ -143,7 +143,7 @@ function personalSpaceHtml(user){
       </div>
       <div class="card personal-space__panel personal-space__panel--wide personal-space__panel--library">
         <div class="personal-space__panel-head"><h3>مكتبتي</h3><button class="btn btn-primary btn-sm" id="new-private-book">${icon("plus",{size:14})}<span>إضافة كتاب</span></button></div>
-        ${library.length?`<div class="private-library">${library.map(b=>`<div class="private-book"><div><b>${b.title}</b><span class="rating-stars">${Array.from({length:5},(_,i)=>icon("star",{size:12,cls:i<b.rating?"star-filled":"star-empty"})).join("")}</span>${b.note?`<small>${b.note}</small>`:""}</div><div><button class="btn btn-ghost btn-sm" data-edit-private-book="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-private-book="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<p class="text-muted">مكتبتك الخاصة فارغة. أضف كتابًا واحتفظ بتقييمك وملاحظتك.</p>`}
+        ${library.length?`<div class="private-library">${library.map(b=>`<div class="private-book"><div><b>${b.title}</b><span class="rating-stars">${Array.from({length:5},(_,i)=>icon("star",{size:12,cls:i<b.rating?"star-filled":"star-empty"})).join("")}</span>${b.note?`<small>${b.note}</small>`:""}</div><div><button class="btn btn-outline btn-sm" data-open-private-book="${b.id}">فتح</button><button class="btn btn-ghost btn-sm" data-edit-private-book="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-private-book="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<p class="text-muted">مكتبتك الخاصة فارغة. أضف كتابًا واحتفظ بتقييمك وملاحظتك.</p>`}
       </div>
     </div>
   </section>`;
@@ -156,6 +156,10 @@ function openDraftViewModal(draft, onEdit){
 
 function openPrivateBookModal(user, book, rerender){
   openModal(`<div class="modal-box__head"><h3>${book?"تعديل الكتاب":"إضافة كتاب إلى مكتبتي"}</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div><div class="field"><label>عنوان الكتاب</label><input id="private-book-title" value="${book?.title||""}"></div><div class="field"><label>تقييمي</label><select id="private-book-rating">${[5,4,3,2,1].map(n=>`<option value="${n}" ${book?.rating===n?"selected":""}>${n} من 5</option>`).join("")}</select></div><div class="field"><label>ملاحظتي الخاصة</label><textarea id="private-book-note">${book?.note||""}</textarea></div><button class="btn btn-primary btn-block" id="save-private-book">حفظ في مكتبتي</button>`,{onMount(box){box.querySelector("#save-private-book").onclick=()=>{const title=box.querySelector("#private-book-title").value.trim();if(!title){showToast("اكتب عنوان الكتاب");return;}store.savePersonalBook(user.id,{id:book?.id,title,rating:Number(box.querySelector("#private-book-rating").value),note:box.querySelector("#private-book-note").value.trim()});closeModal();showToast("حُفظ الكتاب في مكتبتك");rerender();};}});
+}
+
+function openPrivateBookView(book){
+  if(!book)return;openModal(`<div class="modal-box__head"><h3>${book.title}</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div><div class="rating-stars" style="margin-bottom:14px;">${Array.from({length:5},(_,i)=>icon("star",{size:20,cls:i<book.rating?"star-filled":"star-empty"})).join("")}</div><div class="card card--flat"><b>ملاحظاتي</b><p style="white-space:pre-wrap;margin-top:8px;">${book.note||"لا توجد ملاحظات لهذا الكتاب."}</p></div>`);
 }
 
 function openDraftModal(user, draft, rerender){
@@ -313,6 +317,7 @@ export function renderProfilePage(root, userId){
   root.querySelectorAll("[data-edit-draft]").forEach(btn => btn.addEventListener("click", () => openDraftModal(user, store.getDrafts(user.id).find(d=>d.id===btn.dataset.editDraft), rerender)));
   root.querySelectorAll("[data-delete-draft]").forEach(btn => btn.addEventListener("click", () => { store.deleteDraft(user.id, btn.dataset.deleteDraft); showToast("حُذفت المسودة"); rerender(); }));
   root.querySelector("#new-private-book")?.addEventListener("click",()=>openPrivateBookModal(user,null,rerender));
+  root.querySelectorAll("[data-open-private-book]").forEach(btn=>btn.addEventListener("click",()=>openPrivateBookView(store.getPersonalLibrary(user.id).find(b=>b.id===btn.dataset.openPrivateBook))));
   root.querySelectorAll("[data-edit-private-book]").forEach(btn=>btn.addEventListener("click",()=>openPrivateBookModal(user,store.getPersonalLibrary(user.id).find(b=>b.id===btn.dataset.editPrivateBook),rerender)));
   root.querySelectorAll("[data-delete-private-book]").forEach(btn=>btn.addEventListener("click",()=>{store.deletePersonalBook(user.id,btn.dataset.deletePrivateBook);showToast("حُذف الكتاب من مكتبتك");rerender();}));
 }

@@ -273,6 +273,7 @@ export function renderPostViewPage(root, postId){
 
 export function renderWritingPage(root){
   const user = store.getCurrentUser();
+  const sectionName = store.getSettings().sectionNames.writing;
   visibleCount = PAGE_SIZE;
 
   function paint(){
@@ -309,7 +310,7 @@ export function renderWritingPage(root){
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">مساحتك الأدبية</span><h1>${icon("feather", { size: 26, cls: "heading-icon" })} الكتابة</h1></div>
+          <div><span class="eyebrow">مساحتك الأدبية</span><h1>${icon("feather", { size: 26, cls: "heading-icon" })} ${sectionName}</h1></div>
         </div>
         <div class="section-head"><h2>آخر المنشورات</h2></div>
         <div id="writing-feed">${renderFeed()}</div>

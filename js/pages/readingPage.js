@@ -214,6 +214,7 @@ export function renderReviewViewPage(root, reviewId){
 
 export function renderReadingPage(root){
   const user = store.getCurrentUser();
+  const sectionName = store.getSettings().sectionNames.reading;
   visibleCount = PAGE_SIZE;
 
   function paint(){
@@ -245,7 +246,7 @@ export function renderReadingPage(root){
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">رفيقك في الرحلة</span><h1>${icon("book", { size: 26, cls: "heading-icon" })} القراءة</h1></div>
+          <div><span class="eyebrow">رفيقك في الرحلة</span><h1>${icon("book", { size: 26, cls: "heading-icon" })} ${sectionName}</h1></div>
         </div>
         <div class="section-head"><h2>مراجعات المجتمع</h2></div>
         <div id="reading-feed">${renderFeed()}</div>

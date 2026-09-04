@@ -23,13 +23,14 @@ function statusOf(ev){
 
 export function renderEventsPage(root){
   const user = store.getCurrentUser();
+  const sectionName = store.getSettings().sectionNames.events;
   const events = store.getEvents();
 
   root.innerHTML = `
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <div><span class="eyebrow">التحديات والمسابقات</span><h1>${icon("calendar", { size: 26, cls: "heading-icon" })} الفعاليات الأدبية</h1></div>
+          <div><span class="eyebrow">التحديات والمسابقات</span><h1>${icon("calendar", { size: 26, cls: "heading-icon" })} ${sectionName}</h1></div>
         </div>
         <div class="grid grid-3" id="events-grid">
           ${events.map(ev => {
