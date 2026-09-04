@@ -9,14 +9,15 @@ import { icon } from "./icons.js";
 let seq = 0;
 
 /** يُعيد HTML لعارض صور — صورة واحدة تُعرض بلا أسهم/نقاط تلقائياً */
-export function renderCarousel(images = []){
+export function renderCarousel(images = [], { size = "medium" } = {}){
   if(!images || !images.length) return "";
   const id = "car_" + (seq++);
+  const sizeClass = ["small", "medium", "full"].includes(size) ? `feed-carousel--${size}` : "feed-carousel--medium";
   if(images.length === 1){
-    return `<div class="feed-carousel"><img src="${images[0]}" alt="" class="feed-item__image"></div>`;
+    return `<div class="feed-carousel ${sizeClass}"><img src="${images[0]}" alt="" class="feed-item__image"></div>`;
   }
   return `
-    <div class="feed-carousel" data-carousel="${id}" data-index="0">
+    <div class="feed-carousel ${sizeClass}" data-carousel="${id}" data-index="0">
       <div class="feed-carousel__track">
         ${images.map(src => `<div class="feed-carousel__slide"><img src="${src}" alt="" class="feed-item__image"></div>`).join("")}
       </div>

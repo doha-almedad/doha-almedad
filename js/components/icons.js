@@ -60,7 +60,10 @@ export function initial(displayName = "?"){
 
 /** يُعيد محتوى الأفاتار: صورة العضو إن وُجدت، وإلا حرفه الأول */
 export function avatarHtml(user){
-  if(user?.avatarImage) return `<img src="${user.avatarImage}" alt="">`;
+  if(user?.avatarImage){
+    const scale = Math.min(1.4, Math.max(.8, Number(user.avatarScale) || 1));
+    return `<img src="${user.avatarImage}" alt="" style="transform:scale(${scale});">`;
+  }
   return initial(user?.displayName);
 }
 
@@ -101,17 +104,17 @@ export function heroBookIllustration({ size = 240 } = {}){
   return `
     <svg viewBox="0 0 240 240" width="${size}" height="${size}" aria-hidden="true">
       <g transform="translate(120 128) rotate(-8)">
-        <rect x="-78" y="-100" width="156" height="200" rx="10" fill="var(--olive-light)" opacity=".55"></rect>
-        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="var(--olive-light)"></rect>
-        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="none" stroke="var(--olive-deep)" stroke-width="2" opacity=".35"></rect>
-        <line x1="-70" y1="-92" x2="-70" y2="92" stroke="var(--olive-deep)" stroke-width="3" opacity=".4"></line>
-        <text x="0" y="10" text-anchor="middle" font-family="var(--font-brand)" font-size="26" fill="var(--olive-deep)" opacity=".85">دوحة</text>
-        <line x1="-42" y1="58" x2="42" y2="58" stroke="var(--olive-deep)" stroke-width="1.5" opacity=".4"></line>
+        <rect x="-78" y="-100" width="156" height="200" rx="10" fill="var(--sky-mid)" opacity=".55"></rect>
+        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="var(--sky-light)"></rect>
+        <rect x="-70" y="-92" width="140" height="184" rx="8" fill="none" stroke="var(--sky-deep)" stroke-width="2" opacity=".55"></rect>
+        <line x1="-70" y1="-92" x2="-70" y2="92" stroke="var(--sky-deep)" stroke-width="3" opacity=".55"></line>
+        <text x="0" y="10" text-anchor="middle" font-family="var(--font-brand)" font-size="26" fill="var(--sky-deep)" opacity=".9">دوحة</text>
+        <line x1="-42" y1="58" x2="42" y2="58" stroke="var(--sky-deep)" stroke-width="1.5" opacity=".55"></line>
       </g>
-      <g transform="translate(184 62)" fill="var(--olive-deep)" opacity=".7">
+      <g transform="translate(184 62)" fill="var(--sky-deep)" opacity=".75">
         <path d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z"></path>
       </g>
-      <g transform="translate(48 190)" fill="var(--olive-deep)" opacity=".55">
+      <g transform="translate(48 190)" fill="var(--sky-deep)" opacity=".6">
         <path d="M0 -8 L2.4 -2.4 L8 0 L2.4 2.4 L0 8 L-2.4 2.4 L-8 0 L-2.4 -2.4 Z"></path>
       </g>
     </svg>
