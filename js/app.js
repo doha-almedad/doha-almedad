@@ -19,8 +19,17 @@ function boot(){
   document.addEventListener("click",e=>{
     const btn=e.target.closest('button[id*="save"],button[id*="publish"],button[id*="approve"],button[id*="submit"]');
     if(!btn||btn.disabled)return;
+    if(btn.dataset.saveLocked==="true"){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    btn.dataset.saveLocked="true";
     btn.classList.add("is-saving");btn.setAttribute("aria-busy","true");
-    setTimeout(()=>{if(btn.isConnected){btn.classList.remove("is-saving");btn.removeAttribute("aria-busy");}},1400);
+    // لا ينتهي التحميل بمؤقت شكلي؛ تنهيه رسالة نتيجة العملية الفعلية.
+    const finish=()=>{if(btn.isConnected){delete btn.dataset.saveLocked;btn.classList.remove("is-saving");btn.removeAttribute("aria-busy");}};
+    document.addEventListener("operation:finished",finish,{once:true});
+    setTimeout(finish,60000); // صمام أمان فقط عند حدوث خطأ غير متوقع.
   },true);
 
   // إصلاح مشكلة اختفاء الشريط العلوي أحياناً عند تدوير الجهاز (iPadOS/Safari)
