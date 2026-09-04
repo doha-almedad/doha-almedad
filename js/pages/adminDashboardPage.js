@@ -44,7 +44,6 @@ function dashboardTab(){
         <span class="eyebrow">ملخص اليوم</span>
         <h2>نظرة عامة على المنصة</h2>
       </div>
-      <button class="btn btn-primary btn-sm" id="overview-new-event">${icon("plus", { size: 14 })}<span>فعالية جديدة</span></button>
     </div>
 
     <div class="grid grid-4 admin-overview-stats">
@@ -282,6 +281,7 @@ function previewArticleSubmission(sub){
   openModal(`
     <div class="modal-box__head"><h3>${sub.title}</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div class="badge-pill badge-pill--ember" style="margin-bottom:12px;display:inline-flex;">${sub.category}</div>
+    ${sub.excerpt ? `<div class="card card--flat" style="margin-bottom:14px;"><b>وصف الموضوع</b><p style="margin:6px 0 0;">${sub.excerpt}</p></div>` : ""}
     <p style="white-space:pre-line;">${sub.content}</p>
   `, { size: "lg" });
 }
@@ -365,8 +365,6 @@ export function renderAdminDashboardPage(root){
       renderAdminDashboardPage(root);
     });
   });
-
-  root.querySelector("#overview-new-event")?.addEventListener("click", () => openNewEventModal(refresh));
 
   root.querySelectorAll("[data-promote]").forEach(btn => btn.addEventListener("click", () => {
     store.updateUser(btn.getAttribute("data-promote"), { role: "moderator" });

@@ -24,11 +24,12 @@ function timeAgo(iso){
 
 function articleCard(a){
   const author = store.getUser(a.author);
+  const categoryClass = a.category === "ملخص" ? "article-card--summary" : "article-card--article";
   return `
-    <div class="card card--hover" data-article-id="${a.id}" role="button" tabindex="0">
+    <div class="card card--hover article-card ${categoryClass}" data-article-id="${a.id}" role="button" tabindex="0">
       <div class="article-card__tag"><span class="badge-pill badge-pill--ember">${a.category}</span></div>
       <h3>${a.title}</h3>
-      <p>${a.excerpt}</p>
+      <p class="article-card__description">${a.excerpt || "لا يوجد وصف مختصر لهذا الموضوع."}</p>
       <div class="highlight-card__foot">
         <span>${author?.displayName || "كاتب"}</span>
         <span>${timeAgo(a.date)}</span>
@@ -89,8 +90,13 @@ function openComposerModal(user, refreshList){
       </div>
     </div>
     <div class="field">
+      <label>وصف الموضوع</label>
+      <textarea id="article-excerpt" placeholder="اكتب وصفاً مختصراً يظهر في بطاقة المقال..."></textarea>
+      <div class="field-hint">هذا الوصف هو الذي سيظهر للقراء قبل فتح المقال.</div>
+    </div>
+    <div class="field">
       <label>المحتوى</label>
-      <textarea id="article-content" placeholder="اكتب هنا..."></textarea>
+      <textarea id="article-content" placeholder="اكتب المحتوى الكامل الذي يظهر بعد فتح البطاقة..."></textarea>
     </div>
     <div class="field">
       <label>صور توضيحية (اختياري)</label>
@@ -126,12 +132,13 @@ function openComposerModal(user, refreshList){
       box.querySelector("#submit-article-btn").addEventListener("click", () => {
         const title = box.querySelector("#article-title").value.trim();
         const category = box.querySelector("#article-category").value;
+        const excerpt = box.querySelector("#article-excerpt").value.trim();
         const content = box.querySelector("#article-content").value.trim();
-        if(!title || !content){
-          showToast("يرجى إدخال عنوان ومحتوى قبل الإرسال");
+        if(!title || !excerpt || !content){
+          showToast("يرجى إدخال العنوان والوصف والمحتوى قبل الإرسال");
           return;
         }
-        store.submitArticle({ authorId: user.id, title, category, content, images: pendingImages });
+        store.submitArticle({ authorId: user.id, title, category, excerpt, content, images: pendingImages });
         closeModal();
         showToast("أُرسل للمراجعة — بانتظار اعتماد فريق الإشراف");
       });

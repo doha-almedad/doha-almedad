@@ -14,8 +14,8 @@ import { resizeImageFile } from "../services/mediaService.js";
 
 let showAllBadges = false;
 
-function miniStat(value, label, iconName){
-  if(!value) return "";
+function miniStat(value, label, iconName, { showZero = false } = {}){
+  if(!value && !showZero) return "";
   return `<div class="mini-stat"><span class="mini-stat__icon">${icon(iconName, { size: 16 })}</span><b>${arNum(value)}</b><span>${label}</span></div>`;
 }
 
@@ -56,6 +56,7 @@ function socialLinkPill(rawUrl){
 function openEditProfileModal(user, root, userId){
   let pendingAvatar = null;
   let avatarRemoved = false;
+  let avatarScale = Math.round((Number(user.avatarScale) || 1) * 100);
   openModal(`
     <div class="modal-box__head"><h3>تعديل الملف الشخصي</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
     <div class="field" style="text-align:center;">
@@ -65,6 +66,11 @@ function openEditProfileModal(user, root, userId){
         <input type="file" id="edit-avatar-input" accept="image/*" hidden>
       </label>
       ${user.avatarImage ? `<button type="button" class="btn btn-ghost btn-sm" id="remove-avatar-btn" style="margin-top:8px;">${icon("close", { size: 12 })}<span>حذف الصورة</span></button>` : ""}
+    </div>
+    <div class="field">
+      <label for="avatar-size">حجم صورة الأفتار: <span id="avatar-size-value">${avatarScale}%</span></label>
+      <input type="range" id="avatar-size" min="80" max="140" step="5" value="${avatarScale}">
+      <div class="field-hint">حرّك المؤشر لتصغير الصورة أو تقريبها داخل الدائرة.</div>
     </div>
     <div class="field"><label>الاسم</label><input type="text" id="edit-name" value="${user.displayName}"></div>
     <div class="field"><label>اسم المستخدم</label><input type="text" id="edit-username" value="${user.username}" dir="ltr" style="text-align:left;"></div>
@@ -77,12 +83,25 @@ function openEditProfileModal(user, root, userId){
     <button class="btn btn-primary btn-block" id="save-profile-btn">حفظ التغييرات</button>
   `, {
     onMount(box){
+      const avatarPreview = box.querySelector("#avatar-edit-preview");
+      const avatarRange = box.querySelector("#avatar-size");
+      const avatarSizeValue = box.querySelector("#avatar-size-value");
+
+      function applyAvatarScale(){
+        avatarScale = Number(avatarRange.value);
+        avatarSizeValue.textContent = `${avatarScale}%`;
+        const img = avatarPreview.querySelector("img");
+        if(img) img.style.transform = `scale(${avatarScale / 100})`;
+      }
+      avatarRange.addEventListener("input", applyAvatarScale);
+      applyAvatarScale();
+
       box.querySelector("#edit-avatar-input").addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if(!file) return;
         pendingAvatar = await resizeImageFile(file, 400);
         avatarRemoved = false;
-        box.querySelector("#avatar-edit-preview").innerHTML = `<img src="${pendingAvatar}" alt="">`;
+        avatarPreview.innerHTML = `<img src="${pendingAvatar}" alt="" style="transform:scale(${avatarScale / 100});">`;
       });
       box.querySelector("#remove-avatar-btn")?.addEventListener("click", () => {
         pendingAvatar = null;
@@ -96,7 +115,7 @@ function openEditProfileModal(user, root, userId){
         const bio = box.querySelector("#edit-bio").value.trim();
         const socialUrl = box.querySelector("#edit-social").value.trim();
         if(!displayName || !username) return;
-        const patch = { displayName, username, bio, socialUrl };
+        const patch = { displayName, username, bio, socialUrl, avatarScale: avatarScale / 100 };
         if(pendingAvatar) patch.avatarImage = pendingAvatar;
         else if(avatarRemoved) patch.avatarImage = null;
         store.updateUser(user.id, patch);
@@ -119,6 +138,7 @@ export function renderProfilePage(root, userId){
 
   const stats = user.stats;
   const miniStats = [
+    miniStat(user.xp, "النقاط", "star", { showZero: true }),
     miniStat(stats.wordsWritten, "الكلمات المكتوبة", "quill"),
     miniStat(stats.booksPublished, "الكتب المنشورة", "book"),
     miniStat(stats.booksRead, "الكتب المقروءة", "book"),
@@ -194,7 +214,7 @@ export function renderProfilePage(root, userId){
           <div class="grid grid-3" id="recent-activity-grid">
             ${recentActivity.map(item => `
               <a href="${item.href}" class="card card--hover feed-item recent-activity-card">
-                ${item.image ? `<img src="${item.image}" alt="" class="recent-activity-card__thumb">` : ""}
+                ${item.image ? `<div class="recent-activity-card__media"><img src="${item.image}" alt="" class="recent-activity-card__thumb"></div>` : ""}
                 <span class="badge-pill badge-pill--gold" style="margin-bottom:8px;">${icon(item.ic, { size: 12 })}<span>${item.tag}</span></span>
                 <h3 style="font-size:1rem;">${item.title}</h3>
               </a>

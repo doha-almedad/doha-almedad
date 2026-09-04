@@ -84,7 +84,7 @@ function renderFeed(){
             ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
           </div>
         </div>
-        ${renderCarousel(images)}
+        ${renderCarousel(images, { size: p.imageDisplaySize || "medium" })}
         <h3>${p.title}</h3>
         <p>${p.content}</p>
         <div class="feed-item__actions">
@@ -140,6 +140,15 @@ function openComposerModal(root, user, paint){
       </label>
       <div id="image-preview-strip">${previewStrip()}</div>
     </div>
+    <div class="field">
+      <label>حجم عرض الصور</label>
+      <select id="post-image-size">
+        <option value="small">صغير</option>
+        <option value="medium" selected>متوسط</option>
+        <option value="full">كامل العرض</option>
+      </select>
+      <div class="field-hint">يُطبّق المقاس المختار على صور هذا المنشور.</div>
+    </div>
     <button class="btn btn-primary btn-block" id="publish-post-btn">${icon("send", { size: 16 })}<span>نشر</span></button>
   `, {
     size: "lg",
@@ -167,11 +176,12 @@ function openComposerModal(root, user, paint){
         const title = box.querySelector("#post-title").value.trim();
         const content = box.querySelector("#post-content").value.trim();
         const type = box.querySelector("#post-type").value;
+        const imageDisplaySize = box.querySelector("#post-image-size").value;
         if(!title || !content){
           showToast("يرجى إدخال عنوان ونص قبل النشر");
           return;
         }
-        store.addPost({ authorId: user.id, title, content, type, images: pendingImages, wordCount: wordCount(content) });
+        store.addPost({ authorId: user.id, title, content, type, images: pendingImages, imageDisplaySize, wordCount: wordCount(content) });
         processActivity(user.id, "publish_post", {
           wordCount: wordCount(content),
           isFullWork: type === "chapter"
@@ -211,7 +221,7 @@ export function renderPostViewPage(root, postId){
             ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
           </div>
           <h1>${p.title}</h1>
-          ${renderCarousel(images)}
+          ${renderCarousel(images, { size: p.imageDisplaySize || "medium" })}
           <p style="white-space:pre-line;">${p.content}</p>
           <div class="feed-item__actions">
             <span data-like="${p.id}" class="${liked ? "is-liked" : ""}">${icon("heart", { size: 15 })} إعجاب (${arNum((p.likedBy||[]).length)})</span>

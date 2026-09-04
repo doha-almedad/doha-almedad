@@ -79,10 +79,10 @@ export function renderHomePage(root){
       </div>
       <div class="container">
         <div class="grid grid-4 hero__stats-grid">
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("chart", { size: 18 })}</span><b>${arNum(productionRatio)}%</b><span>نسبة الإنتاج التراكمي</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
-          <div class="card stat-box stat-box--olive"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
+          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("users", { size: 18 })}</span><b>${arNum(store.getUsers().length)}</b><span>عضو في الدوحة</span></div>
+          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("chart", { size: 18 })}</span><b>${arNum(productionRatio)}%</b><span>نسبة الإنتاج التراكمي</span></div>
+          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("calendar", { size: 18 })}</span><b>${arNum(store.getEvents().length)}</b><span>فعالية أدبية</span></div>
+          <div class="card stat-box stat-box--sky"><span class="stat-box__icon">${icon("quill", { size: 18 })}</span><b>${arNum(store.getPosts().length + store.getReviews().length)}</b><span>مساهمة منشورة</span></div>
         </div>
         ${annualGoalsCard()}
       </div>
