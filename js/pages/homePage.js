@@ -23,8 +23,8 @@ function personalGoalsCard(user){
   const sections = goals.sections || [];
   const names = { writing:"الكتابة", reading:"القراءة", events:"الفعاليات", articles:"المقالات" };
   const progress = section => {
-    if(section==="writing"){const target=goals.writing?.words||goals.writing?.count||0,current=goals.writing?.words?user.stats.wordsWritten:store.getPosts().filter(p=>p.authorId===user.id).length;return target?Math.min(100,Math.round(current/target*100)):0;}
-    if(section==="reading"){const target=goals.reading?.count||0;return target?Math.min(100,Math.round((user.stats.booksRead||0)/target*100)):0;}
+    if(section==="writing"){const target=goals.writing?.words||goals.writing?.count||0,total=goals.writing?.words?user.stats.wordsWritten:store.getPosts().filter(p=>p.authorId===user.id).length,current=Math.max(0,total-(goals.baseline?.[goals.writing?.words?"words":"posts"]||0));return target?Math.min(100,Math.round(current/target*100)):0;}
+    if(section==="reading"){const target=goals.reading?.count||0,titles=goals.reading?.titles||[],library=store.getPersonalLibrary(user.id);const current=titles.length?new Set(library.filter(b=>titles.some(t=>t.trim().toLocaleLowerCase()===b.title.trim().toLocaleLowerCase())).map(b=>b.title.trim().toLocaleLowerCase())).size:Math.max(0,library.length-(goals.baseline?.personalBooks||0));return target?Math.min(100,Math.round(current/target*100)):0;}
     if(section==="events"){const ids=goals.events||[],joined=ids.filter(id=>store.getEvent(id)?.participants?.includes(user.id)).length;return ids.length?Math.round(joined/ids.length*100):0;}
     const ids=goals.articles||[],read=ids.filter(id=>(user.readArticleIds||[]).includes(id)).length;return ids.length?Math.round(read/ids.length*100):0;
   };

@@ -152,12 +152,14 @@ function openComposerModal(root, user, paint){
           showToast("يرجى إدخال اسم الكتاب ومراجعة قبل النشر");
           return;
         }
-        store.addReview({ authorId: user.id, bookTitle, content, rating, images: pendingImages });
-        processActivity(user.id, "publish_review", {});
-        closeModal();
-        showToast("سُجّلت قراءتك — أضيئت شعلة حماستك اليوم");
-        visibleCount = PAGE_SIZE;
-        paint();
+        showToast("جارٍ تسجيل قراءتك…");
+        setTimeout(()=>{
+          store.addReview({ authorId: user.id, bookTitle, content, rating, images: pendingImages });
+          processActivity(user.id, "publish_review", {});
+          closeModal();
+          visibleCount = PAGE_SIZE; paint();
+          showToast("سُجّلت قراءتك — أضيئت شعلة حماستك اليوم");
+        },30);
       });
     }
   });

@@ -208,15 +208,14 @@ function openComposerModal(root, user, paint){
           showToast("يرجى إدخال عنوان ونص قبل النشر");
           return;
         }
-        store.addPost({ authorId: user.id, title, content, type, images: pendingImages, wordCount: wordCount(content) });
-        processActivity(user.id, "publish_post", {
-          wordCount: wordCount(content),
-          isFullWork: type === "chapter"
-        });
-        closeModal();
-        showToast("نُشر نصّك — أضيئت شعلة حماستك اليوم");
-        visibleCount = PAGE_SIZE;
-        paint();
+        showToast("جارٍ نشر نصّك…");
+        setTimeout(()=>{
+          store.addPost({ authorId: user.id, title, content, type, images: pendingImages, wordCount: wordCount(content) });
+          processActivity(user.id, "publish_post", { wordCount: wordCount(content), isFullWork: type === "chapter" });
+          closeModal();
+          visibleCount = PAGE_SIZE; paint();
+          showToast("نُشر نصّك — أضيئت شعلة حماستك اليوم");
+        },30);
       });
     }
   });
