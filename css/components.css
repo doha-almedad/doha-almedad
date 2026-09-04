@@ -229,6 +229,19 @@
 }
 .field textarea{ resize:vertical; min-height:100px; }
 .field input:focus,.field textarea:focus,.field select:focus{ border-color:var(--gold); }
+
+/* ---------- محرر قص الصور ---------- */
+.crop-editor{ position:fixed; inset:0; z-index:1200; display:grid; place-items:center; padding:18px; background:rgba(45,32,23,.72); }
+.crop-editor__panel{ width:min(720px,96vw); max-height:94vh; overflow:auto; background:var(--ink-800); border:1px solid var(--ink-600); border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow-2); }
+.crop-editor__head,.crop-editor__actions{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.crop-editor__head button{ border:0; background:none; color:var(--paper); font-size:1.6rem; cursor:pointer; }
+.crop-editor__frame{ position:relative; margin:12px 0 16px; overflow:hidden; border:3px solid #fff; border-radius:10px; box-shadow:0 0 0 1px var(--gold-soft); background:#ddd; }
+.crop-editor__frame::before,.crop-editor__frame::after{ content:""; position:absolute; inset:10px; pointer-events:none; border:1px dashed rgba(255,255,255,.72); }
+.crop-editor__frame canvas{ width:100%; height:auto; display:block; }
+.crop-editor__controls{ display:grid; gap:10px; margin-bottom:18px; }
+.crop-editor__controls label{ display:grid; grid-template-columns:110px 1fr; align-items:center; gap:12px; color:var(--paper-dim); font-size:.88rem; }
+.crop-editor__controls input{ width:100%; }
+.crop-editor__actions{ justify-content:flex-end; }
 .field-hint{ font-size:.76rem; color:var(--paper-faint); margin-top:4px; }
 
 /* ---------- التنبيهات (Toast) ---------- */
