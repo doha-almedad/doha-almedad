@@ -12,9 +12,10 @@
 
 import { store } from "../db/store.js";
 import { processActivity } from "../services/rewardEngine.js";
-import { showToast, bindParticipantLinks, openModal } from "../components/modals.js";
+import { showToast, bindParticipantLinks, openModal, closeModal } from "../components/modals.js";
 import { icon, initial, arNum } from "../components/icons.js";
 import { openEditPostModal } from "./writingPage.js";
+import { cropImageFile } from "../services/mediaService.js";
 
 let activeTab = "overview";
 
@@ -168,7 +169,7 @@ function contentTab(){
         <thead><tr><th>الفعالية</th><th>المشاركون</th><th>إجراء</th></tr></thead>
         <tbody>${events.map(e => `
           <tr><td>${e.title}</td><td>${arNum(e.participants.length)}</td>
-          <td><button class="btn btn-danger btn-sm" data-del-event="${e.id}">حذف</button></td></tr>
+          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-event="${e.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-event="${e.id}">حذف</button></td></tr>
         `).join("")}</tbody>
       </table>` : `<p class="text-muted">لا فعاليات بعد.</p>`}
     </div>
@@ -190,7 +191,7 @@ function contentTab(){
         <thead><tr><th>الكتاب</th><th>الكاتب</th><th>إجراء</th></tr></thead>
         <tbody>${reviews.map(r => `
           <tr><td>${r.bookTitle}</td><td>${store.getUser(r.authorId)?.displayName || "—"}</td>
-          <td><button class="btn btn-danger btn-sm" data-del-review="${r.id}">حذف</button></td></tr>
+          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-review="${r.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-review="${r.id}">حذف</button></td></tr>
         `).join("")}</tbody>
       </table>` : `<p class="text-muted">لا مراجعات بعد.</p>`}
     </div>
@@ -201,11 +202,51 @@ function contentTab(){
         <thead><tr><th>العنوان</th><th>الكاتب</th><th>إجراء</th></tr></thead>
         <tbody>${articles.map(a => `
           <tr><td><a href="#" data-preview-published-article="${a.id}">${a.title}</a></td><td>${store.getUser(a.author)?.displayName || "—"}</td>
-          <td><button class="btn btn-danger btn-sm" data-del-article="${a.id}">حذف</button></td></tr>
+          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-article="${a.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-article="${a.id}">حذف</button></td></tr>
         `).join("")}</tbody>
       </table>` : `<p class="text-muted">لا مقالات منشورة بعد.</p>`}
     </div>
   `;
+}
+
+function editableImagesMarkup(images){
+  return `<div class="field"><label>الصور</label><label class="image-upload"><span>${icon("image", {size:20})}<span>إضافة صور جديدة</span></span><input type="file" id="admin-edit-images" accept="image/*" multiple hidden></label><div id="admin-edit-image-list"></div></div>`;
+}
+
+function bindEditableImages(box, original, onSave){
+  let images = [...(original.images || (original.image ? [original.image] : []))];
+  const paint = () => {
+    box.querySelector("#admin-edit-image-list").innerHTML = images.length ? `<div class="multi-image-strip">${images.map((src,i) => `<div class="multi-image-strip__item"><img src="${src}" alt=""><button type="button" class="multi-image-strip__remove" data-remove-admin-image="${i}">${icon("close", {size:9})}</button></div>`).join("")}</div>` : `<small class="text-muted">لا توجد صور</small>`;
+    box.querySelectorAll("[data-remove-admin-image]").forEach(btn => btn.onclick = () => { images.splice(Number(btn.dataset.removeAdminImage),1); paint(); });
+  };
+  paint();
+  box.querySelector("#admin-edit-images").onchange = async e => {
+    for(const file of Array.from(e.target.files || [])) images.push(await cropImageFile(file, {aspectRatio:16/9, outputWidth:1200, title:"ضبط الصورة"}));
+    paint();
+  };
+  onSave(() => images);
+}
+
+function openEditEventModal(id, refresh){
+  const item = store.getEvent(id); if(!item) return;
+  openModal(`<div class="modal-box__head"><h3>تعديل الفعالية</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <div class="field"><label>العنوان</label><input id="ae-title" value="${item.title}"></div><div class="field"><label>الوصف</label><textarea id="ae-desc">${item.description}</textarea></div>
+    <div class="composer__meta"><div class="field"><label>البداية</label><input type="date" id="ae-start" value="${item.startDate?.slice(0,10)||""}"></div><div class="field"><label>النهاية</label><input type="date" id="ae-end" value="${item.endDate?.slice(0,10)||""}"></div></div>
+    ${editableImagesMarkup(item.images)}<button class="btn btn-primary btn-block" id="ae-save">حفظ التعديلات</button>`, {size:"lg",onMount(box){ bindEditableImages(box,item,getImages => box.querySelector("#ae-save").onclick=()=>{ store.updateEvent(id,{title:box.querySelector("#ae-title").value.trim(),description:box.querySelector("#ae-desc").value.trim(),startDate:new Date(box.querySelector("#ae-start").value).toISOString(),endDate:new Date(box.querySelector("#ae-end").value).toISOString(),images:getImages(),image:null}); closeModal(); showToast("تم تعديل الفعالية"); refresh(); }); }});
+}
+
+function openEditReviewModal(id, refresh){
+  const item = store.getReviews().find(r=>r.id===id); if(!item) return;
+  openModal(`<div class="modal-box__head"><h3>تعديل سجل القراءة</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <div class="field"><label>عنوان الكتاب</label><input id="ar-book" value="${item.bookTitle}"></div><div class="field"><label>التقييم</label><select id="ar-rating">${[5,4,3,2,1].map(n=>`<option value="${n}" ${item.rating===n?"selected":""}>${n}</option>`).join("")}</select></div><div class="field"><label>المراجعة</label><textarea id="ar-content">${item.content}</textarea></div>
+    ${editableImagesMarkup(item.images)}<button class="btn btn-primary btn-block" id="ar-save">حفظ التعديلات</button>`, {size:"lg",onMount(box){ bindEditableImages(box,item,getImages => box.querySelector("#ar-save").onclick=()=>{ store.updateReview(id,{bookTitle:box.querySelector("#ar-book").value.trim(),rating:Number(box.querySelector("#ar-rating").value),content:box.querySelector("#ar-content").value.trim(),images:getImages(),image:null}); closeModal(); showToast("تم تعديل سجل القراءة"); refresh(); }); }});
+}
+
+function openEditArticleModal(id, refresh){
+  const item = store.getArticle(id); if(!item) return;
+  openModal(`<div class="modal-box__head"><h3>تعديل المقال</h3><button class="modal-close" data-close>${icon("close",{size:18})}</button></div>
+    <div class="field"><label>العنوان</label><input id="aa-title" value="${item.title}"></div><div class="field"><label>التصنيف</label><input id="aa-category" value="${item.category||""}"></div><div class="field"><label>وصف البطاقة</label><textarea id="aa-excerpt">${item.excerpt||""}</textarea></div><div class="field"><label>المحتوى</label><textarea id="aa-content">${item.content}</textarea></div>
+    ${editableImagesMarkup(item.images)}<button class="btn btn-primary btn-block" id="aa-save">حفظ التعديلات</button>`, {size:"lg",onMount(box){ bindEditableImages(box,item,getImages => box.querySelector("#aa-save").onclick=()=>{ store.updateArticle(id,{title:box.querySelector("#aa-title").value.trim(),category:box.querySelector("#aa-category").value.trim(),excerpt:box.querySelector("#aa-excerpt").value.trim(),content:box.querySelector("#aa-content").value.trim(),images:getImages(),image:null}); closeModal(); showToast("تم تعديل المقال"); refresh(); }); }});
 }
 
 function settingsTab(){
@@ -434,6 +475,9 @@ export function renderAdminDashboardPage(root){
   root.querySelectorAll("[data-edit-post-admin]").forEach(btn => btn.addEventListener("click", () => {
     openEditPostModal(btn.getAttribute("data-edit-post-admin"), refresh, { admin:true });
   }));
+  root.querySelectorAll("[data-edit-event]").forEach(btn => btn.addEventListener("click", () => openEditEventModal(btn.dataset.editEvent, refresh)));
+  root.querySelectorAll("[data-edit-review]").forEach(btn => btn.addEventListener("click", () => openEditReviewModal(btn.dataset.editReview, refresh)));
+  root.querySelectorAll("[data-edit-article]").forEach(btn => btn.addEventListener("click", () => openEditArticleModal(btn.dataset.editArticle, refresh)));
   root.querySelectorAll("[data-del-review]").forEach(btn => btn.addEventListener("click", () => {
     store.deleteReview(btn.getAttribute("data-del-review"));
     showToast("حُذفت المراجعة، وسُحبت نقاطها وشعلتها المرتبطة");

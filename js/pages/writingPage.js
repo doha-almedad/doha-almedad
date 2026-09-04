@@ -62,18 +62,29 @@ export function openEditPostModal(postId, onUpdated, { admin = false } = {}){
   const current = store.getCurrentUser();
   const canEdit = admin || current.role === "owner" || current.role === "moderator" || post?.authorId === current.id;
   if(!post || !canEdit) return;
+  let pendingImages = [...(post.images || (post.image ? [post.image] : []))];
   openModal(`
     <div class="modal-box__head"><h3>تعديل المنشور</h3><button class="modal-close" data-close>${icon("close", { size:18 })}</button></div>
     <div class="field"><label>العنوان</label><input id="edit-post-title" value="${post.title}"></div>
     <div class="field"><label>نوع النص</label><select id="edit-post-type">${TEXT_TYPES.map(t => `<option value="${t.value}" ${t.value===post.type?"selected":""}>${t.label}</option>`).join("")}</select></div>
     <div class="field"><label>النص</label><textarea id="edit-post-content">${post.content}</textarea></div>
+    <div class="field"><label>صور المنشور</label><label class="image-upload"><span>${icon("image", { size:20 })}<span>إضافة صورة أو استبدالها</span></span><input type="file" id="edit-post-images" accept="image/*" multiple hidden></label><div id="edit-post-image-list"></div></div>
     <button class="btn btn-primary btn-block" id="save-post-edit">حفظ التعديلات</button>
   `, { size:"lg", onMount(box){
+    const paintImages = () => {
+      box.querySelector("#edit-post-image-list").innerHTML = pendingImages.length ? `<div class="multi-image-strip">${pendingImages.map((src,i) => `<div class="multi-image-strip__item"><img src="${src}" alt=""><button type="button" class="multi-image-strip__remove" data-remove-edit-image="${i}">${icon("close", {size:9})}</button></div>`).join("")}</div>` : `<small class="text-muted">لا توجد صور</small>`;
+      box.querySelectorAll("[data-remove-edit-image]").forEach(btn => btn.onclick = () => { pendingImages.splice(Number(btn.dataset.removeEditImage),1); paintImages(); });
+    };
+    paintImages();
+    box.querySelector("#edit-post-images").addEventListener("change", async e => {
+      for(const file of Array.from(e.target.files || [])) pendingImages.push(await cropImageFile(file, { aspectRatio:16/9, outputWidth:1200, title:"ضبط صورة المنشور" }));
+      paintImages();
+    });
     box.querySelector("#save-post-edit").addEventListener("click", () => {
       const title = box.querySelector("#edit-post-title").value.trim();
       const content = box.querySelector("#edit-post-content").value.trim();
       if(!title || !content){ showToast("يرجى إدخال العنوان والنص"); return; }
-      store.updatePost(postId, { title, content, type:box.querySelector("#edit-post-type").value, wordCount:wordCount(content) });
+      store.updatePost(postId, { title, content, type:box.querySelector("#edit-post-type").value, wordCount:wordCount(content), images:pendingImages, image:null });
       closeModal(); showToast("تم حفظ التعديلات");
       if(typeof onUpdated === "function") onUpdated();
     });

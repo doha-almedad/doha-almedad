@@ -45,7 +45,7 @@ function renderFeed(){
           <div class="avatar avatar--sm participant-link" data-user-id="${r.authorId}">${avatarHtml(author)}</div>
           <div>
             <div class="feed-item__name participant-link" data-user-id="${r.authorId}">${author?.displayName || "عضو"}</div>
-            <div class="feed-item__time">${r.bookTitle} · ${timeAgo(r.date)}</div>
+            <div class="feed-item__time">${r.bookTitle} · ${timeAgo(r.date)} ${r.editedAt ? `· تم التعديل ${timeAgo(r.editedAt)}` : ""}</div>
           </div>
           <span class="rating-stars" style="margin-inline-start:auto;">${stars(r.rating)}</span>
         </div>

@@ -76,7 +76,7 @@ export function renderHomePage(root){
             <a href="#/events" class="btn btn-outline">${icon("calendar", { size: 17 })}<span>تصفّح الفعاليات</span></a>
           </div>
         </div>
-        <div class="hero__art" aria-hidden="true">${heroBookIllustration({ size: 190 })}</div>
+        <div class="hero__art" aria-hidden="true">${heroBookIllustration({ size: 150 })}</div>
       </div>
       <div class="container">
         <div class="grid grid-4 hero__stats-grid">

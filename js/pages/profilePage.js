@@ -13,6 +13,8 @@ import { openModal, closeModal, showToast } from "../components/modals.js";
 import { cropImageFile } from "../services/mediaService.js";
 
 let showAllBadges = false;
+let showAllRecentActivity = false;
+let recentProfileId = null;
 
 function miniStat(value, label, iconName, { showZero = false } = {}){
   if(!value && !showZero) return "";
@@ -117,6 +119,7 @@ export function renderProfilePage(root, userId){
     return;
   }
   const isOwnProfile = user.id === store.getCurrentUser().id;
+  if(recentProfileId !== user.id){ recentProfileId = user.id; showAllRecentActivity = false; }
   const roleTag = publicRoleLabel(user.role);
 
   const stats = user.stats;
@@ -130,7 +133,7 @@ export function renderProfilePage(root, userId){
 
   const describedBadges = sortBadgesUnlockedFirst(badgeService.describeAllForUser(user));
   const visibleBadges = showAllBadges ? describedBadges : describedBadges.slice(0, 7);
-  const recentActivity = [
+  const allRecentActivity = [
     ...store.getPosts().filter(p => p.authorId === user.id).map(p => ({ kind: "post", id: p.id, title: p.title, tag: "كتابة", ic: "feather", date: p.date, image: (p.images && p.images[0]) || p.image || null, href: `#/writing/${p.id}` })),
     ...store.getReviews().filter(r => r.authorId === user.id).map(r => ({ kind: "review", id: r.id, title: r.bookTitle, tag: "قراءة", ic: "book", date: r.date, image: (r.images && r.images[0]) || r.image || null, href: `#/reading/${r.id}` })),
     ...store.getArticles().filter(a => a.author === user.id).map(a => ({ kind: "article", id: a.id, title: a.title, tag: "مقال", ic: "document", date: a.date, image: (a.images && a.images[0]) || a.image || null, href: `#/articles/${a.id}` })),
@@ -138,7 +141,8 @@ export function renderProfilePage(root, userId){
       const ev = store.getEvent(e.meta.eventId);
       return ev ? { kind: "event", id: ev.id, title: ev.title, tag: "فعالية", ic: "calendar", date: e.timestamp, image: null, href: `#/events/${ev.id}` } : null;
     }).filter(Boolean),
-  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const recentActivity = showAllRecentActivity ? allRecentActivity : allRecentActivity.slice(0, 3);
   const prog = xpProgressWithinLevel(user);
 
   root.innerHTML = `
@@ -203,6 +207,7 @@ export function renderProfilePage(root, userId){
               </a>
             `).join("")}
           </div>
+          ${allRecentActivity.length > 3 ? `<button class="btn btn-outline btn-block" id="toggle-recent-activity">${showAllRecentActivity ? "عرض الأحدث فقط" : "رؤية المزيد"}</button>` : ""}
         ` : ""}
 
       </div>
@@ -218,4 +223,5 @@ export function renderProfilePage(root, userId){
   });
 
   root.querySelector("#edit-profile-btn")?.addEventListener("click", () => openEditProfileModal(user, root, userId));
+  root.querySelector("#toggle-recent-activity")?.addEventListener("click", () => { showAllRecentActivity = !showAllRecentActivity; renderProfilePage(root, userId); });
 }

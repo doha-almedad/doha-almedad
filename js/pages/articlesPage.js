@@ -32,7 +32,7 @@ function articleCard(a){
       <p class="article-card__description">${a.excerpt || "لا يوجد وصف مختصر لهذا الموضوع."}</p>
       <div class="highlight-card__foot">
         <span>${author?.displayName || "كاتب"}</span>
-        <span>${timeAgo(a.date)}</span>
+        <span>${timeAgo(a.date)}${a.editedAt ? ` · تم التعديل ${timeAgo(a.editedAt)}` : ""}</span>
       </div>
       <a class="btn btn-outline btn-sm btn-block" style="margin-top:12px;" href="#/articles/${a.id}">${icon("document", { size: 14 })}<span>اقرأ الآن</span></a>
     </div>
@@ -218,7 +218,7 @@ export function renderArticleViewPage(root, articleId){
           <div class="highlight-card__meta" style="margin-bottom:14px;">
             <span class="badge-pill badge-pill--ember">${a.category}</span>
             <span class="badge-pill">${author?.displayName || "كاتب"}</span>
-            <span class="badge-pill">${timeAgo(a.date)}</span>
+            <span class="badge-pill">${timeAgo(a.date)}${a.editedAt ? ` · تم التعديل ${timeAgo(a.editedAt)}` : ""}</span>
           </div>
           <h1>${a.title}</h1>
           ${renderCarousel(images)}
