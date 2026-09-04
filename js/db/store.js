@@ -50,6 +50,7 @@ db.personalGoals = db.personalGoals || {};
 db.drafts = db.drafts || [];
 db.customBadges = db.customBadges || [];
 db.personalLibrary = db.personalLibrary || [];
+db.badgeOverrides = db.badgeOverrides || {};
 db.settings = { ...DEFAULT_SETTINGS, ...(db.settings||{}), sectionNames:{...DEFAULT_SETTINGS.sectionNames,...(db.settings?.sectionNames||{})}, activityPoints:{...DEFAULT_SETTINGS.activityPoints,...(db.settings?.activityPoints||{})} };
 
 function persist(){
@@ -114,6 +115,8 @@ export const store = {
   getCustomBadges(){ return [...db.customBadges]; },
   addCustomBadge(data){ const item={ id:"badge_"+Date.now(), levelRequired:1, ...data, createdAt:new Date().toISOString() }; db.customBadges.push(item); persist(); return item; },
   updateCustomBadge(id,data){ const item=db.customBadges.find(b=>b.id===id);if(!item)return null;Object.assign(item,data,{editedAt:new Date().toISOString()});persist();return item; },
+  getBadgeOverrides(){ return {...db.badgeOverrides}; },
+  updateBadgeDefinition(id,data){ const custom=db.customBadges.find(b=>b.id===id);if(custom)return this.updateCustomBadge(id,data);db.badgeOverrides[id]={...(db.badgeOverrides[id]||{}),...data,editedAt:new Date().toISOString()};persist();return {id,...db.badgeOverrides[id]}; },
   deleteCustomBadge(id){ db.customBadges=db.customBadges.filter(b=>b.id!==id); db.users.forEach(u=>{ if(u.badges) delete u.badges[id]; }); persist(); },
 
   // ---------- الفعاليات ----------
@@ -219,6 +222,7 @@ export const store = {
     if(!item) return null;
     Object.assign(item, patch, { editedAt:new Date().toISOString() }); persist(); return item;
   },
+  markArticleRead(userId,articleId){ const u=this.getUser(userId);if(!u)return;u.readArticleIds=[...new Set([...(u.readArticleIds||[]),articleId])];persist(); },
 
   /** إعجاب واحد فقط لكل مستخدم — الضغط مجدداً يُلغيه (toggle) */
   toggleLike(kind, itemId, userId){
