@@ -8,7 +8,7 @@
 import { BADGE_DEFINITIONS } from "../db/initialData.js";
 import { store } from "../db/store.js";
 
-function allDefinitions(){ const overrides=store.getBadgeOverrides();return [...BADGE_DEFINITIONS.map(def=>({...def,...(overrides[def.id]||{}),literaryDesc:{...def.literaryDesc,...(overrides[def.id]?.literaryDesc||{})}})), ...store.getCustomBadges()]; }
+function allDefinitions(){ const overrides=store.getBadgeOverrides(),disabled=new Set(store.getDisabledBadges());return [...BADGE_DEFINITIONS.filter(def=>!disabled.has(def.id)).map(def=>({...def,...(overrides[def.id]||{}),literaryDesc:{...def.literaryDesc,...(overrides[def.id]?.literaryDesc||{})}})), ...store.getCustomBadges()]; }
 
 function currentValueFor(user, conditionType){
   switch(conditionType){
