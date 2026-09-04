@@ -33,6 +33,30 @@ function timeAgo(iso){
 function wordCount(text){ return text.trim().split(/\s+/).filter(Boolean).length; }
 function typeLabel(value){ return TEXT_TYPES.find(t => t.value === value)?.label || "قطعة أدبية"; }
 
+function confirmDeletePost(postId, onDeleted){
+  const post = store.getPosts().find(p => p.id === postId);
+  const currentUser = store.getCurrentUser();
+  if(!post || post.authorId !== currentUser.id) return;
+
+  openModal(`
+    <div class="modal-box__head"><h3>حذف المنشور</h3><button class="modal-close" data-close>${icon("close", { size: 18 })}</button></div>
+    <p>هل تريد حذف «${post.title}»؟ لا يمكن التراجع عن هذا الإجراء.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-ghost" data-close>إلغاء</button>
+      <button class="btn btn-danger" id="confirm-delete-post">حذف المنشور</button>
+    </div>
+  `, {
+    onMount(box){
+      box.querySelector("#confirm-delete-post").addEventListener("click", () => {
+        store.deletePost(postId);
+        closeModal();
+        showToast("تم حذف منشورك");
+        if(typeof onDeleted === "function") onDeleted();
+      });
+    }
+  });
+}
+
 function renderFeed(){
   const all = store.getPosts();
   const posts = all.slice(0, visibleCount);
@@ -55,7 +79,10 @@ function renderFeed(){
             <div class="feed-item__name participant-link" data-user-id="${p.authorId}">${author?.displayName || "عضو"}</div>
             <div class="feed-item__time">${timeAgo(p.date)}</div>
           </div>
-          <span class="badge-pill badge-pill--gold" style="margin-inline-start:auto;">${typeLabel(p.type)}</span>
+          <div class="feed-item__head-actions">
+            <span class="badge-pill badge-pill--gold">${typeLabel(p.type)}</span>
+            ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
+          </div>
         </div>
         ${renderCarousel(images)}
         <h3>${p.title}</h3>
@@ -181,6 +208,7 @@ export function renderPostViewPage(root, postId){
             <span class="badge-pill">${author?.displayName || "عضو"}</span>
             <span class="badge-pill badge-pill--gold">${typeLabel(p.type)}</span>
             <span class="badge-pill">${timeAgo(p.date)}</span>
+            ${p.authorId === currentUser.id ? `<button type="button" class="feed-item__delete" data-delete-post="${p.id}">${icon("close", { size: 12 })}<span>حذف</span></button>` : ""}
           </div>
           <h1>${p.title}</h1>
           ${renderCarousel(images)}
@@ -200,6 +228,7 @@ export function renderPostViewPage(root, postId){
     renderPostViewPage(root, postId);
   });
   root.querySelector("[data-comment]").addEventListener("click", () => openCommentsModal("post", p.id, () => renderPostViewPage(root, postId)));
+  root.querySelector("[data-delete-post]")?.addEventListener("click", () => confirmDeletePost(p.id, () => { window.location.hash = "#/writing"; }));
 }
 
 export function renderWritingPage(root){
@@ -223,6 +252,9 @@ export function renderWritingPage(root){
     });
     feed.querySelectorAll("[data-comment]").forEach(el => {
       el.addEventListener("click", () => openCommentsModal("post", el.getAttribute("data-comment"), paint));
+    });
+    feed.querySelectorAll("[data-delete-post]").forEach(el => {
+      el.addEventListener("click", () => confirmDeletePost(el.getAttribute("data-delete-post"), paint));
     });
     feed.querySelector("#load-more-posts")?.addEventListener("click", () => {
       visibleCount += PAGE_SIZE;
