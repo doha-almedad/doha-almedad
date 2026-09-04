@@ -105,10 +105,10 @@ export const store = {
   getArticle(id){ return db.articles.find(a => a.id === id) || null; },
 
   /** إرسال مقال من عضو لمراجعة الإدارة قبل نشره */
-  submitArticle({ authorId, title, category, content, images = [] }){
+  submitArticle({ authorId, title, category, excerpt, content, images = [] }){
     const submission = {
       id: "as_" + Date.now(),
-      authorId, title, category, content, images,
+      authorId, title, category, excerpt, content, images,
       status: "pending", // pending | approved | rejected
       submittedAt: new Date().toISOString()
     };
@@ -124,7 +124,7 @@ export const store = {
     sub.status = "approved";
     db.articles.unshift({
       id: "ar_" + Date.now(), title: sub.title, category: sub.category,
-      excerpt: sub.content.slice(0, 130), content: sub.content,
+      excerpt: sub.excerpt || sub.content.slice(0, 130), content: sub.content,
       author: sub.authorId, images: sub.images || [], date: new Date().toISOString()
     });
     persist();
