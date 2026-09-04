@@ -64,7 +64,7 @@ function notFoundPage(r){
       <div class="empty-state">
         <div class="empty-state__icon">${icon("search", { size: 34 })}</div>
         <h2 style="justify-content:center;">الصفحة غير موجودة</h2>
-        <p>لعل الرابط الذي اتّبعته قد تغيّر أو لم يعد قائماً.</p>
+        <p>لعل الرابط الذي اتّبعته قد تغيّر أو لم يعد قائمًا.</p>
         <a href="#/" class="btn btn-primary">العودة للرئيسية</a>
       </div>
     </div>
