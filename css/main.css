@@ -3,6 +3,14 @@
    التصميم الأساسي: الألوان، الخطوط، الشبكة، التجاوب
    ========================================================= */
 
+@font-face{
+  font-family:"Al Qassam";
+  src:url("../fonts/al-qassam-extended.ttf") format("truetype");
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
+
 :root{
   /* -- لوحة الألوان: دوحة دافئة (كريمي، بنّي، ذهبي) --
      أسماء المتغيرات (ink/paper/gold...) أُبقيت كما هي لتفادي
@@ -33,10 +41,10 @@
   --shadow-1:0 2px 10px rgba(74,53,36,.10);
   --shadow-2:0 14px 34px rgba(74,53,36,.16);
 
-  --font-display:"Noto Naskh Arabic", serif;
-  --font-brand:"Noto Naskh Arabic", serif;
-  --font-accent:"Noto Naskh Arabic", serif;
-  --font-body:"Tajawal", sans-serif;
+  --font-display:"Al Qassam", "Noto Naskh Arabic", serif;
+  --font-brand:"Al Qassam", "Noto Naskh Arabic", serif;
+  --font-accent:"Al Qassam", "Noto Naskh Arabic", serif;
+  --font-body:"Al Qassam", "Tajawal", sans-serif;
 
   --header-h:68px;
   --container:1180px;

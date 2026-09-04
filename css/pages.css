@@ -166,14 +166,15 @@
 .ink-heatmap2__cell[data-level="4"]{ background:#A06B1C; box-shadow:0 0 5px rgba(160,107,28,.5); }
 .ink-heatmap2__cell.is-today{ outline:2px solid var(--ember); outline-offset:1px; }
 /* ---------- صفحة الفعاليات ---------- */
-.event-card{ display:flex; flex-direction:column; height:100%; border-inline-start:3px solid var(--accent-tan); }
-.event-card:nth-of-type(7n+1){ border-inline-start-color:#A9A0BD; background:#EDEBF2; }
-.event-card:nth-of-type(7n+2){ border-inline-start-color:#C9A15B; background:#F3E5CE; }
-.event-card:nth-of-type(7n+3){ border-inline-start-color:#B98055; background:#E9C8B6; }
-.event-card:nth-of-type(7n+4){ border-inline-start-color:#B06E56; background:#DFAF9F; }
-.event-card:nth-of-type(7n+5){ border-inline-start-color:#A8776E; background:#E7D6D1; }
-.event-card:nth-of-type(7n+6){ border-inline-start-color:#D9A15C; background:#F6D7B4; }
-.event-card:nth-of-type(7n+7){ border-inline-start-color:#C79E90; background:#F2E7E2; }
+.event-card{ display:flex; flex-direction:column; height:100%; border-inline-start:4px solid var(--accent-tan); }
+/* اللون المرجعي للحافة، ودرجة فاتحة جداً منه لمساحة البطاقة */
+.event-card:nth-of-type(7n+1){ border-inline-start-color:#EDEBF2; background:#F9F8FC; }
+.event-card:nth-of-type(7n+2){ border-inline-start-color:#F3E5CE; background:#FDF9F3; }
+.event-card:nth-of-type(7n+3){ border-inline-start-color:#E9C8B6; background:#FCF3EE; }
+.event-card:nth-of-type(7n+4){ border-inline-start-color:#DFAF9F; background:#FBF0EC; }
+.event-card:nth-of-type(7n+5){ border-inline-start-color:#E7D6D1; background:#FBF6F4; }
+.event-card:nth-of-type(7n+6){ border-inline-start-color:#F6D7B4; background:#FFF7EE; }
+.event-card:nth-of-type(7n+7){ border-inline-start-color:#F2E7E2; background:#FDF9F7; }
 .event-card h3, .event-card p, .event-card .event-card__meta{ color:#3F362C; }
 .event-card__progress{ margin-top:14px; }
 .event-card__meta{ display:flex; justify-content:space-between; font-size:.78rem; color:var(--paper-faint); margin-top:6px; }
@@ -227,6 +228,13 @@
 .composer__meta .field{ flex:1; min-width:160px; margin-bottom:0; }
 .feed-item{ padding:20px; margin-bottom:16px; }
 .feed-item__head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.feed-item__head-actions{ margin-inline-start:auto; display:flex; align-items:center; gap:8px; }
+.feed-item__delete{
+  display:inline-flex; align-items:center; gap:4px; padding:5px 8px;
+  border:1px solid rgba(140,59,47,.24); border-radius:999px; background:rgba(140,59,47,.07);
+  color:var(--wine); cursor:pointer; font-size:.75rem;
+}
+.feed-item__delete:hover{ background:rgba(140,59,47,.14); }
 .feed-item__name{ font-weight:700; }
 .feed-item__time{ font-size:.78rem; color:var(--paper-faint); }
 .feed-item__actions{ display:flex; gap:16px; margin-top:12px; font-size:.85rem; color:var(--paper-faint); }
@@ -288,8 +296,8 @@
 .zero-hint{ font-size:.74rem; color:var(--paper-faint); margin-top:-14px; margin-bottom:24px; }
 .recent-activity-card{ position:relative; overflow:hidden; }
 .recent-activity-card__thumb{
-  width:calc(100% + 44px); margin:-22px -22px 14px; max-height:140px; object-fit:cover;
-  display:block;
+  width:calc(100% + 44px); height:auto; margin:-22px -22px 14px;
+  object-fit:contain; object-position:center; display:block; background:var(--ink-900);
 }
 
 /* ---------- التعليقات ---------- */
@@ -306,8 +314,22 @@
 .comment-row__actions{ display:flex; gap:14px; }
 .comment-row__replyto{ display:flex; align-items:center; gap:4px; font-size:.74rem; color:var(--gold-soft); margin-bottom:3px; }
 .comment-mention{ color:var(--gold); font-weight:700; }
-.comment-row__replies{ margin-top:2px; }
-.comment-row__replies .comment-row{ padding-top:8px; }
+.comment-thread{ border-bottom:1px solid var(--ink-700); padding-bottom:8px; }
+.comment-thread:last-child{ border-bottom:0; }
+.comment-row__replies{
+  margin:2px 42px 0 0; padding-inline-start:14px;
+  border-inline-start:2px solid var(--ink-600);
+}
+.comment-row__replies .comment-row{ padding:9px 0; }
+.comment-row--reply{ background:rgba(255,255,255,.28); border-radius:var(--radius-sm); padding-inline:9px !important; margin-bottom:5px; }
+.comment-row__replyto{ border:0; }
+.comment-mention{ direction:ltr; unicode-bidi:isolate; }
+.reply-context-bar{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:8px 10px; border-radius:var(--radius-sm); background:var(--ink-800); color:var(--gold);
+}
+.reply-context-bar button{ border:0; background:none; color:var(--paper-faint); cursor:pointer; }
+@media (max-width:620px){ .comment-row__replies{ margin-inline-start:24px; margin-inline-end:20px; } }
 
 /* ---------- رفع الصور ---------- */
 .image-upload{
