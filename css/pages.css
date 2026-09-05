@@ -548,3 +548,8 @@
 .personal-goal-fields input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:2px;}
 .article-read-confirm{margin-top:22px;padding-top:16px;border-top:1px solid var(--ink-700);}
 .article-read-confirm .field-hint{display:block;margin-top:7px;text-align:center;}
+
+.detail-back-link{font-size:.85rem;display:inline-flex;align-items:center;gap:6px}
+.review-view-rating{display:flex;align-items:center;gap:10px;margin:4px 0 18px;color:var(--text-muted);font-size:.9rem}
+.review-view-rating .rating-stars{display:inline-flex;gap:2px}
+.article-view>.highlight-card__meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
