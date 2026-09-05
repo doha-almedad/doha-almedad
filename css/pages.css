@@ -569,3 +569,10 @@
 }
 .review-view-rating>span:first-child{display:none}
 @media(max-width:640px){.review-view-rating{top:22px!important;left:20px!important}}
+
+.review-view-rating,.review-rating-top-left{
+  font-family:Arial,sans-serif;
+  font-weight:700;
+  letter-spacing:2px;
+  color:#C98B28;
+}
