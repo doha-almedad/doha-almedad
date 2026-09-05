@@ -7,8 +7,8 @@
 export const INITIAL_USERS = [
   {
     id: "u_ghaith",
-    username: "ghaith",
-    displayName: "غيث",
+    username: "raghad",
+    displayName: "رغد",
     bio: "",
     socialUrl: "",
     role: "owner",
@@ -24,8 +24,8 @@ export const INITIAL_USERS = [
   },
   {
     id: "u_layla",
-    username: "layla_k",
-    displayName: "ليلى",
+    username: "cocktail",
+    displayName: "كوكتيل",
     bio: "",
     socialUrl: "",
     role: "moderator",
@@ -41,8 +41,8 @@ export const INITIAL_USERS = [
   },
   {
     id: "u_sami",
-    username: "sami_r",
-    displayName: "سامي",
+    username: "majd",
+    displayName: "مجد",
     bio: "",
     socialUrl: "",
     role: "member",
@@ -58,8 +58,8 @@ export const INITIAL_USERS = [
   },
   {
     id: "u_noura",
-    username: "noura_a",
-    displayName: "نورة",
+    username: "ghadeer",
+    displayName: "غدير",
     bio: "",
     socialUrl: "",
     role: "member",

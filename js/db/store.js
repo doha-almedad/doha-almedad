@@ -54,6 +54,15 @@ const missingInitialUsers = INITIAL_USERS.filter(user => !existingUserIds.has(us
 if(missingInitialUsers.length){
   db.users = [...(db.users || []), ...missingInitialUsers.map(user => JSON.parse(JSON.stringify(user)))];
 }
+// مزامنة أسماء الحسابات التجريبية مع النسخة الحالية دون تغيير المعرّفات أو المحتوى المرتبط بها.
+for(const initialUser of INITIAL_USERS){
+  const existing = (db.users || []).find(user => user.id === initialUser.id);
+  if(existing){
+    existing.displayName = initialUser.displayName;
+    existing.username = initialUser.username;
+    existing.role = initialUser.role;
+  }
+}
 db.personalGoals = db.personalGoals || {};
 db.drafts = db.drafts || [];
 db.customBadges = db.customBadges || [];
@@ -62,7 +71,7 @@ db.badgeOverrides = db.badgeOverrides || {};
 db.disabledBadges = db.disabledBadges || [];
 db.personalLibrary = (db.personalLibrary || []).map((book,index)=>book.id?book:{...book,id:`pbook_recovered_${index}_${Date.now()}`});
 db.settings = { ...DEFAULT_SETTINGS, ...(db.settings||{}), sectionNames:{...DEFAULT_SETTINGS.sectionNames,...(db.settings?.sectionNames||{})}, activityPoints:{...DEFAULT_SETTINGS.activityPoints,...(db.settings?.activityPoints||{})} };
-if(missingInitialUsers.length) localStorage.setItem(DB_KEY, JSON.stringify(db));
+localStorage.setItem(DB_KEY, JSON.stringify(db));
 
 function persist(){
   localStorage.setItem(DB_KEY, JSON.stringify(db));
