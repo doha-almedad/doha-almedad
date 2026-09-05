@@ -603,3 +603,16 @@
 .profile-avatar-level-wrap .avatar--xl{margin-bottom:0}
 .profile-level-badge{position:absolute;left:-5px;bottom:5px;min-width:34px;height:34px;padding:0 7px;border-radius:999px;background:var(--paper);border:2px solid var(--gold);color:var(--gold-deep);display:flex;align-items:center;justify-content:center;gap:3px;font-size:.72rem;font-weight:800;box-shadow:0 3px 10px rgba(91,59,37,.12);z-index:3}
 .profile-level-badge svg{flex:0 0 auto}
+/* Refine avatar level badge: clearer number, lighter border */
+.profile-level-badge{
+  min-width:36px;
+  height:36px;
+  padding:0 7px;
+  border-width:1px;
+  font-size:1rem;
+  font-weight:800;
+  line-height:1;
+  gap:2px;
+  box-shadow:0 2px 7px rgba(91,59,37,.10);
+}
+.profile-level-badge svg{width:13px;height:13px;stroke-width:1.4}
