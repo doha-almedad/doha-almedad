@@ -1,3 +1,16 @@
+
+function finishCommentButton(btn){
+  if(!btn) return;
+  btn.classList.remove("is-saving");
+  btn.disabled = false;
+  const original = btn.dataset?.originalHtml || btn.dataset?.loadingOriginalHtml;
+  if(original) btn.innerHTML = original;
+  else {
+    const label = btn.querySelector("span");
+    if(label) label.textContent = "إرسال";
+  }
+}
+
 /* =========================================================
    دوحة المداد — modals.js
    النوافذ المنبثقة (الإشعارات، الإعدادات، وتفاصيل البطاقات)
@@ -299,7 +312,6 @@ export async function openCommentsModal(kind, itemId, onChange){
               const value = editor.querySelector("textarea").value.trim();
               if(!value) return;
               store.updateComment(kind, itemId, commentId, value, currentUser.id);
-      document.dispatchEvent(new CustomEvent("operation:finished"));
               list.innerHTML = renderBody(); bindRowButtons();
               if(typeof onChange === "function") onChange();
               document.dispatchEvent(new CustomEvent("operation:finished"));
@@ -359,7 +371,11 @@ export async function openCommentsModal(kind, itemId, onChange){
           text,
           parentCommentId: replyToCommentId
         });
-      document.dispatchEvent(new CustomEvent("operation:finished"));
+      queueMicrotask(() => {
+        const modal = document.querySelector(".modal-box");
+        const btn = modal?.querySelector("[data-send-comment], .comment-submit, button[type='submit']");
+        finishCommentButton(btn);
+      });
         // تأكّد من ظهور الرد الجديد فوراً حتى لو كان الخيط مطويّاً
         if(newComment?.rootCommentId){
           const item = itemOf();
