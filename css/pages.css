@@ -550,6 +550,9 @@
 .article-read-confirm .field-hint{display:block;margin-top:7px;text-align:center;}
 
 .detail-back-link{font-size:.85rem;display:inline-flex;align-items:center;gap:6px}
-.review-view-rating{display:flex;align-items:center;gap:10px;margin:4px 0 18px;color:var(--text-muted);font-size:.9rem}
+.review-view-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;direction:rtl}
+.review-view-top .highlight-card__meta{margin:0!important;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.review-view-rating{display:flex;align-items:center;justify-content:flex-start;margin:2px 0 0;color:var(--gold);font-size:.9rem;direction:ltr;flex:0 0 auto}
 .review-view-rating .rating-stars{display:inline-flex;gap:2px}
+@media(max-width:520px){.review-view-top{gap:8px}.review-view-rating{font-size:.82rem}}
 .article-view>.highlight-card__meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
