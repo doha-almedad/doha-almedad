@@ -14,7 +14,7 @@ const PAGE_SIZE = 3;
 let visibleCount = PAGE_SIZE;
 
 function stars(n){
-  return Array.from({ length: 5 }, (_, i) => icon("star", { size: 13, cls: i < n ? "star-filled" : "star-empty" })).join("");
+  return Array.from({ length: 5 }, (_, i) =><div class="review-rating-top-left">${stars(r.rating)}</div> icon("star", { size: 13, cls: i < n ? "star-filled" : "star-empty" })).join("");
 }
 
 function timeAgo(iso){
@@ -52,7 +52,7 @@ function renderFeed(){
     const commentCount = (r.comments || []).length;
     const images = r.images || (r.image ? [r.image] : []);
     return `
-      <article class="card feed-item">
+      <article class="card review-detail-card feed-item">
         <div class="feed-item__head">
           <div class="avatar avatar--sm participant-link" data-user-id="${r.authorId}">${avatarHtml(author)}</div>
           <div>
@@ -184,12 +184,14 @@ export function renderReviewViewPage(root, reviewId){
         ${(()=>{const returnProfile=sessionStorage.getItem("dawha_content_return_profile");return returnProfile?`<a href="#/profile/${returnProfile}" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى ملف ${store.getUser(returnProfile)?.displayName||"العضو"}</span></a>`:`<a href="#/reading" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى القراءة</span></a>`;})()}
 
         <div class="card article-view" style="margin-top:16px;">
-          <div class="highlight-card__meta" style="margin-bottom:14px;">
-            <span class="badge-pill">${author?.displayName || "عضو"}</span>
-            <span class="badge-pill">${timeAgo(r.date)}${r.editedAt ? ` · تم التعديل ${timeAgo(r.editedAt)}` : ""}</span>
+          <div class="review-view-top">
+            <div class="highlight-card__meta">
+              <span class="badge-pill">${author?.displayName || "عضو"}</span>
+              <span class="badge-pill">${timeAgo(r.date)}${r.editedAt ? ` · تم التعديل ${timeAgo(r.editedAt)}` : ""}</span>
+            </div>
+            <div class="review-view-rating" aria-label="التقييم">${stars(r.rating)}</div>
           </div>
           <h1>${r.bookTitle}</h1>
-          <div class="review-view-rating"><span>التقييم</span><span class="rating-stars">${stars(r.rating)}</span></div>
           ${renderCarousel(images)}
           <p style="white-space:pre-line;">${r.content}</p>
           <div class="feed-item__actions">
