@@ -228,8 +228,7 @@
 .personal-goal-fields h4{ margin-bottom:13px; }
 .personal-goal-fields .composer__meta{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; }
 .personal-goal-fields .field{ width:100%; min-width:0; }
-.personal-goal-fields .field input,.personal-goal-fields .field select{ width:100%; height:48px; min-height:48px; max-width:100%; min-width:0; box-sizing:border-box; }
-.personal-goal-fields input[type="date"]{ display:block; inline-size:100%; max-inline-size:100%; min-inline-size:0; block-size:48px; padding-inline:12px; -webkit-appearance:none; appearance:none; }
+.personal-goal-fields .field input,.personal-goal-fields .field select{ width:100%; height:48px; min-height:48px; }
 .goal-options-list{ display:grid; gap:8px; max-height:180px; overflow:auto; }
 .goal-options-list label{ display:flex; align-items:flex-start; gap:8px; }
 @media (max-width:720px){ .personal-space{ padding:15px; } .personal-space__grid,.private-library{ grid-template-columns:1fr; } .private-drafts{ grid-template-columns:repeat(2,minmax(0,1fr)); } .personal-goal-picker{ grid-template-columns:repeat(2,1fr); } .personal-goal-fields .composer__meta{ grid-template-columns:1fr; } }
@@ -543,5 +542,9 @@
 .legend-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-inline-end:5px; }
 .mini-chart{ display:block; }
 
-.article-read-confirm{ margin-top:28px; padding-top:18px; border-top:1px solid var(--ink-700); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.article-read-confirm small{ flex:1; min-width:220px; }
+/* Goal date fields: keep Safari/iOS from expanding the native date control */
+.personal-goal-fields input[type="date"]{box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:48px;min-height:48px;padding-inline:12px;}
+.personal-goal-fields input[type="date"]::-webkit-date-and-time-value{text-align:start;min-width:0;}
+.personal-goal-fields input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:2px;}
+.article-read-confirm{margin-top:22px;padding-top:16px;border-top:1px solid var(--ink-700);}
+.article-read-confirm .field-hint{display:block;margin-top:7px;text-align:center;}
