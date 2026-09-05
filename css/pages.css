@@ -576,3 +576,20 @@
   letter-spacing:2px;
   color:#C98B28;
 }
+
+/* Fixed-size personal-space previews: details open on click */
+.personal-goal-summary{height:128px;min-height:128px;max-height:128px;overflow:hidden;cursor:pointer}
+.personal-goal-summary span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.private-draft{height:248px;min-height:248px;max-height:248px;cursor:pointer}
+.private-draft__paper{height:232px;min-height:232px;max-height:232px}
+.private-draft p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;white-space:normal}
+.private-book{height:172px;min-height:172px;max-height:172px;overflow:hidden;cursor:pointer}
+.private-book>div:first-child{min-width:0;overflow:hidden}
+.private-book small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.personal-goal-summary:focus-visible,.private-draft:focus-visible,.private-book:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(max-width:720px){
+ .personal-goal-summary{height:120px;min-height:120px;max-height:120px}
+ .private-draft{height:238px;min-height:238px;max-height:238px}
+ .private-draft__paper{height:222px;min-height:222px;max-height:222px}
+ .private-book{height:164px;min-height:164px;max-height:164px}
+}
