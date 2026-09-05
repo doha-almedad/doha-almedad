@@ -59,7 +59,7 @@ function renderFeed(){
             <div class="feed-item__name participant-link" data-user-id="${r.authorId}">${author?.displayName || "عضو"}</div>
             <div class="feed-item__time">${r.bookTitle} · ${timeAgo(r.date)} ${r.editedAt ? `· تم التعديل ${timeAgo(r.editedAt)}` : ""}</div>
           </div>
-          <div class="feed-item__head-actions"><span class="rating-stars">${stars(r.rating)}</span>${r.authorId===currentUser.id?`<button type="button" class="feed-item__edit" data-edit-review="${r.id}">${icon("feather",{size:12})}<span>تعديل</span></button>`:""}</div>
+          <div class="feed-item__head-actions"><span class="rating-stars">${"★".repeat(Math.max(0,Math.min(5,Number(r.rating)||0)))}${"☆".repeat(Math.max(0,5-(Number(r.rating)||0)))}</span>${r.authorId===currentUser.id?`<button type="button" class="feed-item__edit" data-edit-review="${r.id}">${icon("feather",{size:12})}<span>تعديل</span></button>`:""}</div>
         </div>
         ${renderCarousel(images)}
         <p>${r.content}</p>
@@ -189,7 +189,7 @@ export function renderReviewViewPage(root, reviewId){
               <span class="badge-pill">${author?.displayName || "عضو"}</span>
               <span class="badge-pill">${timeAgo(r.date)}${r.editedAt ? ` · تم التعديل ${timeAgo(r.editedAt)}` : ""}</span>
             </div>
-            <div class="review-view-rating" aria-label="التقييم">${stars(r.rating)}</div>
+            <div class="review-view-rating" aria-label="التقييم">${"★".repeat(Math.max(0,Math.min(5,Number(r.rating)||0)))}${"☆".repeat(Math.max(0,5-(Number(r.rating)||0)))}</div>
           </div>
           <h1>${r.bookTitle}</h1>
           ${renderCarousel(images)}
