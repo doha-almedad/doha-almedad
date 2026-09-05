@@ -162,6 +162,7 @@ export const store = {
   // ---------- المقالات ----------
   getArticles(){ return [...db.articles].sort((a,b) => new Date(b.date) - new Date(a.date)); },
   getArticle(id){ return db.articles.find(a => a.id === id) || null; },
+  getArticleReaders(articleId){ return db.users.filter(u => (u.readArticleIds || []).includes(articleId)); },
   updateArticle(id, patch){
     const item = db.articles.find(a => a.id === id);
     if(!item) return null;
