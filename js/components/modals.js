@@ -299,8 +299,10 @@ export async function openCommentsModal(kind, itemId, onChange){
               const value = editor.querySelector("textarea").value.trim();
               if(!value) return;
               store.updateComment(kind, itemId, commentId, value, currentUser.id);
+      document.dispatchEvent(new CustomEvent("operation:finished"));
               list.innerHTML = renderBody(); bindRowButtons();
               if(typeof onChange === "function") onChange();
+              document.dispatchEvent(new CustomEvent("operation:finished"));
             };
           });
         });
@@ -357,6 +359,7 @@ export async function openCommentsModal(kind, itemId, onChange){
           text,
           parentCommentId: replyToCommentId
         });
+      document.dispatchEvent(new CustomEvent("operation:finished"));
         // تأكّد من ظهور الرد الجديد فوراً حتى لو كان الخيط مطويّاً
         if(newComment?.rootCommentId){
           const item = itemOf();
@@ -368,6 +371,8 @@ export async function openCommentsModal(kind, itemId, onChange){
         list.innerHTML = renderBody();
         bindRowButtons();
         if(typeof onChange === "function") onChange();
+        // انتهت العملية فعلياً بعد حفظ التعليق وظهوره في القائمة.
+        document.dispatchEvent(new CustomEvent("operation:finished"));
       });
     }
   });
