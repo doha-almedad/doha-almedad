@@ -616,3 +616,23 @@
   box-shadow:0 2px 7px rgba(91,59,37,.10);
 }
 .profile-level-badge svg{width:13px;height:13px;stroke-width:1.4}
+
+/* Admin members table: one continuous row separator across all columns */
+.admin-members-table{
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+}
+.admin-members-table tbody tr{
+  border-bottom:1px solid var(--border)!important;
+}
+.admin-members-table tbody td{
+  border-bottom:0!important;
+  vertical-align:middle!important;
+  height:82px;
+  padding-top:14px!important;
+  padding-bottom:14px!important;
+}
+.admin-members-table td:first-child,
+.admin-members-table td:last-child{
+  border-bottom:0!important;
+}
