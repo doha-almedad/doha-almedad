@@ -284,7 +284,7 @@ export function renderProfilePage(root, userId){
 
         <div class="card profile-streak-card">
           <div class="profile-streak-card__head">
-            <div class="profile-streak-card__stat"><b>${arNum(activeDaysCount(user))}</b><span>${icon("flame", { size: 13 })} يومًا نشطًا</span></div>
+            <div class="profile-streak-card__stat"><b>${arNum(activeDaysCount(user))}</b><span>يومًا نشطًا</span></div>
             <div class="profile-streak-card__stat"><b>${arNum(user.longestStreak || 0)}</b><span>أطول سلسلة</span></div>
             <div class="profile-streak-card__stat"><b>${arNum(user.streak || 0)}</b><span>السلسلة الحالية</span></div>
           </div>
