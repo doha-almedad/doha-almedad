@@ -55,6 +55,23 @@ export const INITIAL_USERS = [
     stats: { wordsWritten: 0, booksPublished: 0, booksRead: 0, challengesJoined: 0, articlesPublished: 0 },
     badges: {},
     joinedAt: "2025-03-20T00:00:00.000Z"
+  },
+  {
+    id: "u_noura",
+    username: "noura_a",
+    displayName: "نورة",
+    bio: "",
+    socialUrl: "",
+    role: "member",
+    xp: 0,
+    level: 1,
+    streak: 0,
+    longestStreak: 0,
+    lastActiveDate: null,
+    activityLog: {},
+    stats: { wordsWritten: 0, booksPublished: 0, booksRead: 0, challengesJoined: 0, articlesPublished: 0 },
+    badges: {},
+    joinedAt: "2025-04-12T00:00:00.000Z"
   }
 ];
 
