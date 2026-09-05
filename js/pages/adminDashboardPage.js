@@ -204,8 +204,7 @@ function contentTab(){
         <tbody>${articles.map(a => { const readers=store.getArticleReaders(a.id); return `
           <tr><td><a href="#" data-preview-published-article="${a.id}">${a.title}</a></td><td>${store.getUser(a.author)?.displayName || "—"}</td>
           <td title="${readers.map(u=>u.displayName).join("، ")}">${arNum(readers.length)} عضو</td>
-          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-article="${a.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-article="${a.id}">حذف</button></td></tr>`; }).join("")}
-        `).join("")}</tbody>
+          <td style="display:flex;gap:6px;"><button class="btn btn-outline btn-sm" data-edit-article="${a.id}">تعديل</button><button class="btn btn-danger btn-sm" data-del-article="${a.id}">حذف</button></td></tr>`; }).join("")}</tbody>
       </table>` : `<p class="text-muted">لا مقالات منشورة بعد.</p>`}
     </div>
   `;

@@ -215,7 +215,7 @@ export function renderArticleViewPage(root, articleId){
   const author = store.getUser(a.author);
   const images = a.images || (a.image ? [a.image] : []);
   const currentUser = store.getCurrentUser();
-  const alreadyRead = (currentUser.readArticleIds||[]).includes(a.id);
+  const alreadyRead = (currentUser.readArticleIds || []).includes(a.id);
 
   root.innerHTML = `
     <section class="section">
@@ -232,8 +232,10 @@ export function renderArticleViewPage(root, articleId){
           ${renderCarousel(images)}
           <p style="white-space:pre-line;">${a.content}</p>
           <div class="article-read-confirm">
-            <button class="btn ${alreadyRead ? "btn-outline" : "btn-primary"}" id="confirm-article-read" ${alreadyRead ? "disabled" : ""}>${alreadyRead ? "✓ تمت القراءة" : "أتممت قراءة المقال"}</button>
-            <small class="text-muted">لا يُحتسب المقال ضمن هدفك القرائي إلا بعد تأكيد إتمام القراءة.</small>
+            <button class="btn ${alreadyRead ? "btn-outline" : "btn-primary"} btn-block" id="confirm-article-read" ${alreadyRead ? "disabled" : ""}>
+              ${alreadyRead ? "تم تسجيل إتمام القراءة" : "أتممت قراءة المقال"}
+            </button>
+            <small class="field-hint">لا يُحتسب المقال ضمن أهدافك إلا بعد تأكيد إتمام القراءة.</small>
           </div>
         </div>
       </div>
@@ -241,13 +243,14 @@ export function renderArticleViewPage(root, articleId){
   `;
 
   bindCarousels(root);
-  const readBtn = root.querySelector("#confirm-article-read");
-  if(readBtn && !alreadyRead){
-    readBtn.addEventListener("click", () => {
-      store.markArticleRead(currentUser.id, a.id);
-      readBtn.disabled = true;
-      readBtn.className = "btn btn-outline";
-      readBtn.textContent = "✓ تمت القراءة";
-    });
-  }
+  root.querySelector("#confirm-article-read")?.addEventListener("click", e => {
+    const btn = e.currentTarget;
+    if(btn.disabled) return;
+    store.markArticleRead(currentUser.id, a.id);
+    btn.disabled = true;
+    btn.classList.remove("btn-primary");
+    btn.classList.add("btn-outline");
+    btn.textContent = "تم تسجيل إتمام القراءة";
+    showToast("سُجل إتمام قراءة المقال");
+  });
 }
