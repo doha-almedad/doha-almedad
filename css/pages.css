@@ -636,3 +636,27 @@
 .admin-members-table td:last-child{
   border-bottom:0!important;
 }
+
+/* Admin members table separators — continuous across every column */
+.admin-members-table{
+  width:100%;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  table-layout:fixed;
+}
+.admin-members-table tbody tr{
+  border-bottom:0!important;
+}
+.admin-members-table tbody td{
+  height:82px;
+  vertical-align:middle!important;
+  padding:14px 16px!important;
+  border-bottom:1px solid rgba(198,151,75,.28)!important;
+}
+.admin-members-table tbody tr:last-child td{
+  border-bottom:0!important;
+}
+.admin-members-table thead th{
+  border-bottom:1px solid rgba(198,151,75,.34)!important;
+  padding:14px 16px!important;
+}
