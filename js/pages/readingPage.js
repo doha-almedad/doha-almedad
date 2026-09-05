@@ -14,7 +14,7 @@ const PAGE_SIZE = 3;
 let visibleCount = PAGE_SIZE;
 
 function stars(n){
-  return Array.from({ length: 5 }, (_, i) =><div class="review-rating-top-left">${stars(r.rating)}</div> icon("star", { size: 13, cls: i < n ? "star-filled" : "star-empty" })).join("");
+  return Array.from({ length: 5 }, (_, i) => icon("star", { size: 13, cls: i < n ? "star-filled" : "star-empty" })).join("");
 }
 
 function timeAgo(iso){
@@ -52,7 +52,7 @@ function renderFeed(){
     const commentCount = (r.comments || []).length;
     const images = r.images || (r.image ? [r.image] : []);
     return `
-      <article class="card review-detail-card feed-item">
+      <article class="card feed-item">
         <div class="feed-item__head">
           <div class="avatar avatar--sm participant-link" data-user-id="${r.authorId}">${avatarHtml(author)}</div>
           <div>
