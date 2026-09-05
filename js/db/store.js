@@ -46,6 +46,14 @@ function load(){
 }
 
 let db = load();
+
+// ترحيل البيانات الأولية الجديدة إلى قواعد المتصفحات القديمة دون حذف محتوى المستخدم.
+// مثال: عند إضافة عضو تجريبي جديد إلى INITIAL_USERS سيظهر أيضًا لمن سبق أن فتح الموقع.
+const existingUserIds = new Set((db.users || []).map(user => user.id));
+const missingInitialUsers = INITIAL_USERS.filter(user => !existingUserIds.has(user.id));
+if(missingInitialUsers.length){
+  db.users = [...(db.users || []), ...missingInitialUsers.map(user => JSON.parse(JSON.stringify(user)))];
+}
 db.personalGoals = db.personalGoals || {};
 db.drafts = db.drafts || [];
 db.customBadges = db.customBadges || [];
@@ -54,6 +62,7 @@ db.badgeOverrides = db.badgeOverrides || {};
 db.disabledBadges = db.disabledBadges || [];
 db.personalLibrary = (db.personalLibrary || []).map((book,index)=>book.id?book:{...book,id:`pbook_recovered_${index}_${Date.now()}`});
 db.settings = { ...DEFAULT_SETTINGS, ...(db.settings||{}), sectionNames:{...DEFAULT_SETTINGS.sectionNames,...(db.settings?.sectionNames||{})}, activityPoints:{...DEFAULT_SETTINGS.activityPoints,...(db.settings?.activityPoints||{})} };
+if(missingInitialUsers.length) localStorage.setItem(DB_KEY, JSON.stringify(db));
 
 function persist(){
   localStorage.setItem(DB_KEY, JSON.stringify(db));
@@ -227,7 +236,6 @@ export const store = {
     Object.assign(item, patch, { editedAt:new Date().toISOString() }); persist(); return item;
   },
   markArticleRead(userId,articleId){ const u=this.getUser(userId);if(!u)return;u.readArticleIds=[...new Set([...(u.readArticleIds||[]),articleId])];persist(); },
-  getArticleReaders(articleId){ return db.users.filter(u => (u.readArticleIds||[]).includes(articleId)); },
 
   /** إعجاب واحد فقط لكل مستخدم — الضغط مجدداً يُلغيه (toggle) */
   toggleLike(kind, itemId, userId){
