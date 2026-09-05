@@ -684,3 +684,17 @@
 .admin-members-table tbody tr:last-child td{
   border-bottom:0!important;
 }
+
+/* Members table — simple full-width horizontal separators */
+.admin-members-table{
+  width:100%!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+}
+.admin-members-table tbody td{
+  border-bottom:1px solid rgba(198,151,75,.28)!important;
+  background:transparent!important;
+}
+.admin-members-table tbody tr:last-child td{
+  border-bottom:0!important;
+}
