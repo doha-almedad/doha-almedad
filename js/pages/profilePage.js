@@ -122,7 +122,7 @@ function personalGoalDetails(goals){
     if(section === "reading") detail = `${arNum(goals.reading?.count||0)} كتب${goals.reading?.deadline?` · حتى ${goals.reading.deadline}`:""}${goals.reading?.titles?.length?` · ${goals.reading.titles.join("، ")}`:""}`;
     if(section === "events") detail = (goals.events||[]).map(id=>store.getEvent(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد فعالية بعد";
     if(section === "articles") detail = (goals.articles||[]).map(id=>store.getArticle(id)?.title).filter(Boolean).join("، ") || "لم تُحدّد مقالة بعد";
-    return `<div class="personal-goal-summary"><b>${PERSONAL_GOAL_LABELS[section]}</b><span>${detail}</span></div>`;
+    return `<div class="personal-goal-summary" data-open-personal-goal="${section}" role="button" tabindex="0"><b>${PERSONAL_GOAL_LABELS[section]}</b><span>${detail}</span></div>`;
   }).join("");
 }
 
@@ -139,11 +139,11 @@ function personalSpaceHtml(user){
       </div>
       <div class="card personal-space__panel personal-space__panel--drafts">
         <div class="personal-space__panel-head"><h3>مسوداتي</h3><button class="btn btn-primary btn-sm" id="new-private-draft">${icon("plus",{size:14})}<span>مسودة جديدة</span></button></div>
-        ${drafts.length ? `<div class="private-drafts">${drafts.map(d=>`<article class="private-draft"><div class="private-draft__rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="private-draft__paper"><span class="private-draft__type">${d.type}</span><b>${d.title}</b><p>${(d.content||"مسودة فارغة").slice(0,95)}${(d.content||"").length>95?"…":""}</p><small>محفوظة خصوصًا</small><div class="private-draft__actions"><button class="btn btn-outline btn-sm" data-open-draft="${d.id}">فتح المسودة</button><button class="btn btn-ghost btn-sm" data-edit-draft="${d.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-draft="${d.id}">حذف</button></div></div></article>`).join("")}</div>` : `<p class="text-muted">لا توجد مسودات محفوظة حتى الآن.</p>`}
+        ${drafts.length ? `<div class="private-drafts">${drafts.map(d=>`<article class="private-draft" data-open-draft-card="${d.id}" role="button" tabindex="0"><div class="private-draft__rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="private-draft__paper"><span class="private-draft__type">${d.type}</span><b>${d.title}</b><p>${(d.content||"مسودة فارغة").slice(0,95)}${(d.content||"").length>95?"…":""}</p><small>محفوظة خصوصًا</small><div class="private-draft__actions"><button class="btn btn-outline btn-sm" data-open-draft="${d.id}">فتح المسودة</button><button class="btn btn-ghost btn-sm" data-edit-draft="${d.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-draft="${d.id}">حذف</button></div></div></article>`).join("")}</div>` : `<p class="text-muted">لا توجد مسودات محفوظة حتى الآن.</p>`}
       </div>
       <div class="card personal-space__panel personal-space__panel--wide personal-space__panel--library">
         <div class="personal-space__panel-head"><h3>مكتبتي</h3><button class="btn btn-primary btn-sm" id="new-private-book">${icon("plus",{size:14})}<span>إضافة كتاب</span></button></div>
-        ${library.length?`<div class="private-library">${library.map(b=>`<div class="private-book"><div><b>${b.title}</b><span class="rating-stars">${Array.from({length:5},(_,i)=>icon("star",{size:12,cls:i<b.rating?"star-filled":"star-empty"})).join("")}</span>${b.note?`<small>${b.note}</small>`:""}</div><div><button class="btn btn-outline btn-sm" data-open-private-book="${b.id}">فتح</button><button class="btn btn-ghost btn-sm" data-edit-private-book="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-private-book="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<p class="text-muted">مكتبتك الخاصة فارغة. أضف كتابًا واحتفظ بتقييمك وملاحظتك.</p>`}
+        ${library.length?`<div class="private-library">${library.map(b=>`<div class="private-book" data-open-private-book-card="${b.id}" role="button" tabindex="0"><div><b>${b.title}</b><span class="rating-stars">${Array.from({length:5},(_,i)=>icon("star",{size:12,cls:i<b.rating?"star-filled":"star-empty"})).join("")}</span>${b.note?`<small>${b.note}</small>`:""}</div><div><button class="btn btn-outline btn-sm" data-open-private-book="${b.id}">فتح</button><button class="btn btn-ghost btn-sm" data-edit-private-book="${b.id}">تعديل</button><button class="btn btn-danger btn-sm" data-delete-private-book="${b.id}">حذف</button></div></div>`).join("")}</div>`:`<p class="text-muted">مكتبتك الخاصة فارغة. أضف كتابًا واحتفظ بتقييمك وملاحظتك.</p>`}
       </div>
     </div>
   </section>`;
@@ -319,6 +319,9 @@ export function renderProfilePage(root, userId){
   root.querySelectorAll("[data-profile-section]").forEach(btn=>btn.addEventListener("click",()=>{activeProfileSection=btn.dataset.profileSection;renderProfilePage(root,userId);}));
   const rerender = () => renderProfilePage(root, userId);
   root.querySelector("#edit-personal-goals")?.addEventListener("click", () => openPersonalGoalsModal(user, rerender));
+  root.querySelectorAll("[data-open-personal-goal]").forEach(card => card.addEventListener("click", () => openPersonalGoalsModal(user, rerender)));
+  root.querySelectorAll("[data-open-draft-card]").forEach(card => card.addEventListener("click", e => { if(e.target.closest("button")) return; const draft=store.getDrafts(user.id).find(d=>d.id===card.dataset.openDraftCard); openDraftViewModal(draft,()=>openDraftModal(user,draft,rerender)); }));
+  root.querySelectorAll("[data-open-private-book-card]").forEach(card => card.addEventListener("click", e => { if(e.target.closest("button")) return; openPrivateBookView(store.getPersonalLibrary(user.id).find(b=>b.id===card.dataset.openPrivateBookCard)); }));
   root.querySelector("#new-private-draft")?.addEventListener("click", () => openDraftModal(user, null, rerender));
   root.querySelectorAll("[data-open-draft]").forEach(btn => btn.addEventListener("click", () => { const draft=store.getDrafts(user.id).find(d=>d.id===btn.dataset.openDraft); openDraftViewModal(draft,()=>openDraftModal(user,draft,rerender)); }));
   root.querySelectorAll("[data-edit-draft]").forEach(btn => btn.addEventListener("click", () => openDraftModal(user, store.getDrafts(user.id).find(d=>d.id===btn.dataset.editDraft), rerender)));
