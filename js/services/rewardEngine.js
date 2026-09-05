@@ -9,7 +9,7 @@
 import { store } from "../db/store.js";
 import { streakService, dayKey } from "./streakService.js";
 import { badgeService } from "./badgeService.js";
-import { LEVEL_XP_STEP } from "../db/initialData.js";
+import { LEVEL_XP_STEP, LEVELS } from "../db/initialData.js";
 
 /** الأنشطة المؤهلة فقط تُحتسب — التصفّح والإعجاب المجرد لا يُحتسبان إطلاقاً */
 export const ACTIVITY_CONFIG = {
@@ -22,7 +22,8 @@ export const ACTIVITY_CONFIG = {
 };
 
 function xpToLevel(xp){
-  return Math.max(1, Math.floor(xp / LEVEL_XP_STEP) + 1);
+  const points = Math.max(0, Number(xp) || 0);
+  return [...LEVELS].reverse().find(l => points >= l.xp)?.level || 1;
 }
 
 /**
@@ -89,7 +90,11 @@ export function getLeaderboard(){
 }
 
 export function xpProgressWithinLevel(user){
-  const currentLevelBaseXp = (user.level - 1) * LEVEL_XP_STEP;
-  const into = user.xp - currentLevelBaseXp;
-  return { into, step: LEVEL_XP_STEP, ratio: Math.min(1, into / LEVEL_XP_STEP) };
+  const points = Math.max(0, Number(user.xp) || 0);
+  const current = [...LEVELS].reverse().find(l => points >= l.xp) || LEVELS[0];
+  const next = LEVELS.find(l => l.xp > points) || null;
+  if(!next) return { into: points-current.xp, step: 0, ratio: 1, current, next: null };
+  const span = next.xp-current.xp;
+  const into = points-current.xp;
+  return { into, step: span, ratio: Math.max(0,Math.min(1,into/span)), current, next };
 }
