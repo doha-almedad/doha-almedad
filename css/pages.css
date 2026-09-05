@@ -597,3 +597,9 @@
 .profile-level-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;width:min(350px,90vw);margin:6px auto 4px;font-size:.86rem;color:var(--text)}
 .profile-level-meta strong{font-size:.95rem}
 .profile-level-next{text-align:center;font-size:.76rem;color:var(--text-muted);margin:0 auto 7px}
+
+/* Level badge attached to avatar */
+.profile-avatar-level-wrap{position:relative;display:inline-block;margin-bottom:14px}
+.profile-avatar-level-wrap .avatar--xl{margin-bottom:0}
+.profile-level-badge{position:absolute;left:-5px;bottom:5px;min-width:34px;height:34px;padding:0 7px;border-radius:999px;background:var(--paper);border:2px solid var(--gold);color:var(--gold-deep);display:flex;align-items:center;justify-content:center;gap:3px;font-size:.72rem;font-weight:800;box-shadow:0 3px 10px rgba(91,59,37,.12);z-index:3}
+.profile-level-badge svg{flex:0 0 auto}
