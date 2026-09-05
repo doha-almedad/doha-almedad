@@ -227,8 +227,8 @@ export function renderProfilePage(root, userId){
   const prog = xpProgressWithinLevel(user);
   const levelName = prog.current?.name || `المستوى ${user.level || 1}`;
   const levelProgressText = prog.next
-    ? `${user.xp || 0} / ${prog.next.xp} نقطة`
-    : `${user.xp || 0} نقطة · أعلى مستوى`;
+    ? `${arNum(user.xp || 0)} / ${arNum(prog.next.xp)} نقطة`
+    : `${arNum(user.xp || 0)} نقطة · أعلى مستوى`;
   const nextLevelText = prog.next ? `التالي: ${prog.next.name} عند ${prog.next.xp} نقطة` : "بلغت أعلى مستوى";
 
   root.innerHTML = `
@@ -236,7 +236,12 @@ export function renderProfilePage(root, userId){
       <div class="container container--narrow">
 
         <div class="profile-head-v2 profile-head-v2--plain">
-          <div class="avatar avatar--xl">${avatarHtml(user)}</div>
+          <div class="profile-avatar-level-wrap">
+            <div class="avatar avatar--xl">${avatarHtml(user)}</div>
+            <div class="profile-level-badge" title="${levelName}" aria-label="${levelName}">
+              ${icon("medal", { size: 15 })}<span>${arNum(prog.current?.level || user.level || 1)}</span>
+            </div>
+          </div>
           <div class="profile-head-v2__name-row">
             <h2 class="profile-head-v2__name">${user.displayName}</h2>
             ${roleTag ? `<span class="badge-pill badge-pill--sage">${icon("shield", { size: 12 })}<span>${roleTag}</span></span>` : ""}
