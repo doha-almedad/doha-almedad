@@ -233,4 +233,14 @@ export const BADGE_DEFINITIONS = [
   }
 ];
 
-export const LEVEL_XP_STEP = 500; // كل 500 نقطة خبرة = مستوى جديد
+export const LEVELS = [
+  { level: 1, name: "بذرة الحرف", xp: 0 },
+  { level: 2, name: "قارئ واعد", xp: 100 },
+  { level: 3, name: "رفيق الكلمة", xp: 250 },
+  { level: 4, name: "صانع الأثر", xp: 500 },
+  { level: 5, name: "كاتب متقدم", xp: 900 },
+  { level: 6, name: "سادن الأدب", xp: 1500 },
+  { level: 7, name: "منارة المِداد", xp: 2500 },
+  { level: 8, name: "أديب الدوحة", xp: 4000 }
+];
+export const LEVEL_XP_STEP = 500; // للتوافق مع الإصدارات السابقة فقط
