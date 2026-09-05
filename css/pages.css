@@ -593,3 +593,7 @@
  .private-draft__paper{height:222px;min-height:222px;max-height:222px}
  .private-book{height:164px;min-height:164px;max-height:164px}
 }
+
+.profile-level-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;width:min(350px,90vw);margin:6px auto 4px;font-size:.86rem;color:var(--text)}
+.profile-level-meta strong{font-size:.95rem}
+.profile-level-next{text-align:center;font-size:.76rem;color:var(--text-muted);margin:0 auto 7px}
