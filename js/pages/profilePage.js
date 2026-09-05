@@ -225,6 +225,11 @@ export function renderProfilePage(root, userId){
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
   const recentActivity = showAllRecentActivity ? allRecentActivity : allRecentActivity.slice(0, 3);
   const prog = xpProgressWithinLevel(user);
+  const levelName = prog.current?.name || `المستوى ${user.level || 1}`;
+  const levelProgressText = prog.next
+    ? `${user.xp || 0} / ${prog.next.xp} نقطة`
+    : `${user.xp || 0} نقطة · أعلى مستوى`;
+  const nextLevelText = prog.next ? `التالي: ${prog.next.name} عند ${prog.next.xp} نقطة` : "بلغت أعلى مستوى";
 
   root.innerHTML = `
     <section class="section">
@@ -239,7 +244,7 @@ export function renderProfilePage(root, userId){
           <div class="profile-head-v2__handle">@${user.username}</div>
 
           <div class="profile-head-v2__progress">
-            <div class="profile-head-v2__progress-label">${arNum(prog.into)} / ${arNum(prog.step)}</div>
+            <div class="profile-head-v2__progress-label">${levelProgressText}</div>
             <div class="progress progress--wide"><div class="progress__bar" style="width:${prog.ratio*100}%"></div></div>
           </div>
 
