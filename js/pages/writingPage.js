@@ -237,7 +237,7 @@ export function renderPostViewPage(root, postId){
   root.innerHTML = `
     <section class="section">
       <div class="container container--narrow">
-        <a href="#/writing" class="text-muted" style="font-size:.85rem;display:inline-flex;align-items:center;gap:6px;">${icon("chevronRight", { size: 14 })}<span>العودة إلى الكتابة</span></a>
+        ${(()=>{const returnProfile=sessionStorage.getItem("dawha_content_return_profile");return returnProfile?`<a href="#/profile/${returnProfile}" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى ملف ${store.getUser(returnProfile)?.displayName||"العضو"}</span></a>`:`<a href="#/writing" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى الكتابة</span></a>`;})()}
 
         <div class="card article-view" style="margin-top:16px;">
           <div class="highlight-card__meta" style="margin-bottom:14px;">

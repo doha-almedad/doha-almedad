@@ -181,15 +181,15 @@ export function renderReviewViewPage(root, reviewId){
   root.innerHTML = `
     <section class="section">
       <div class="container container--narrow">
-        <a href="#/reading" class="text-muted" style="font-size:.85rem;display:inline-flex;align-items:center;gap:6px;">${icon("chevronRight", { size: 14 })}<span>العودة إلى القراءة</span></a>
+        ${(()=>{const returnProfile=sessionStorage.getItem("dawha_content_return_profile");return returnProfile?`<a href="#/profile/${returnProfile}" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى ملف ${store.getUser(returnProfile)?.displayName||"العضو"}</span></a>`:`<a href="#/reading" class="text-muted detail-back-link">${icon("chevronRight",{size:14})}<span>العودة إلى القراءة</span></a>`;})()}
 
         <div class="card article-view" style="margin-top:16px;">
           <div class="highlight-card__meta" style="margin-bottom:14px;">
             <span class="badge-pill">${author?.displayName || "عضو"}</span>
-            <span class="rating-stars">${stars(r.rating)}</span>
             <span class="badge-pill">${timeAgo(r.date)}${r.editedAt ? ` · تم التعديل ${timeAgo(r.editedAt)}` : ""}</span>
           </div>
           <h1>${r.bookTitle}</h1>
+          <div class="review-view-rating"><span>التقييم</span><span class="rating-stars">${stars(r.rating)}</span></div>
           ${renderCarousel(images)}
           <p style="white-space:pre-line;">${r.content}</p>
           <div class="feed-item__actions">

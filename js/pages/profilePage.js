@@ -285,7 +285,7 @@ export function renderProfilePage(root, userId){
           <div class="section-head" style="margin-top:34px;"><h2>${icon("document", { size: 20, cls: "heading-icon" })} آخر ما نشره ${user.displayName}</h2></div>
           <div class="grid grid-3" id="recent-activity-grid">
             ${recentActivity.map(item => `
-              <a href="${item.href}" class="card card--hover feed-item recent-activity-card">
+              <a href="${item.href}" data-profile-content-link="${user.id}" class="card card--hover feed-item recent-activity-card">
                 ${item.image ? `<div class="recent-activity-card__media"><img src="${item.image}" alt="" class="recent-activity-card__thumb"></div>` : ""}
                 <span class="badge-pill badge-pill--gold" style="margin-bottom:8px;">${icon(item.ic, { size: 12 })}<span>${item.tag}</span></span>
                 <h3 style="font-size:1rem;">${item.title}</h3>
@@ -302,6 +302,10 @@ export function renderProfilePage(root, userId){
     </section>
   `;
 
+
+  root.querySelectorAll("[data-profile-content-link]").forEach(link=>{
+    link.addEventListener("click",()=>sessionStorage.setItem("dawha_content_return_profile", link.dataset.profileContentLink));
+  });
 
   bindBadgeCards(root.querySelector("#badges-grid"), describedBadges);
 
