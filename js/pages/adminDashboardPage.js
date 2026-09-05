@@ -78,8 +78,7 @@ function membersTab(current){
   const users = store.getUsers();
   const canManage = current.role === "owner";
   return `
-    <table class="admin-table">
-      <thead><tr><th>العضو</th><th>الدور</th><th>المستوى</th><th>الخبرة</th>${canManage ? "<th>إجراء</th>" : ""}</tr></thead>
+    <table class="admin-table admin-members-table"><thead><tr><th>العضو</th><th>الدور</th><th>المستوى</th><th>الخبرة</th>${canManage ? "<th>إجراء</th>" : ""}</tr></thead>
       <tbody>
         ${users.map(u => `
           <tr>
