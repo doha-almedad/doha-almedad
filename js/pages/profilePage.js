@@ -229,7 +229,7 @@ export function renderProfilePage(root, userId){
   const levelProgressText = prog.next
     ? `${arNum(user.xp || 0)} / ${arNum(prog.next.xp)} نقطة`
     : `${arNum(user.xp || 0)} نقطة · أعلى مستوى`;
-  const nextLevelText = prog.next ? `التالي: ${prog.next.name} عند ${prog.next.xp} نقطة` : "بلغت أعلى مستوى";
+  const nextLevelText = prog.next ? `التالي: ${prog.next.name} عند ${arNum(prog.next.xp)} نقطة` : "بلغت أعلى مستوى";
 
   root.innerHTML = `
     <section class="section">
@@ -238,8 +238,8 @@ export function renderProfilePage(root, userId){
         <div class="profile-head-v2 profile-head-v2--plain">
           <div class="profile-avatar-level-wrap">
             <div class="avatar avatar--xl">${avatarHtml(user)}</div>
-            <div class="profile-level-badge" title="${levelName}" aria-label="${levelName}">
-              ${icon("medal", { size: 15 })}<span>${arNum(prog.current?.level || user.level || 1)}</span>
+            <div class="profile-level-badge" title="${levelName}" aria-label="${levelName}" style="position:absolute;left:-12px;bottom:4px;width:42px;height:42px;border-radius:50%;background:#fff8e8;border:3px solid #c98b28;color:#8a5a18;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;box-shadow:0 4px 14px rgba(91,59,37,.2);z-index:20;">
+              <span>${arNum(prog.current?.level || user.level || 1)}</span>
             </div>
           </div>
           <div class="profile-head-v2__name-row">
