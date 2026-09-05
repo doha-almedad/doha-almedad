@@ -184,20 +184,20 @@
 .profile-streak-card__stat b{ display:block; font-family:var(--font-display); font-size:1.5rem; color:var(--ember); }
 .personal-space{ margin:34px 0; padding:24px; border:1px dashed #C99B68; border-radius:var(--radius-lg); background:linear-gradient(145deg,#FBF1E2,#F6E4D5); }
 .personal-space .section-head{ margin-bottom:18px; }
-.personal-space__grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.personal-space__grid{ display:grid; grid-template-columns:1fr; gap:18px; }
 .personal-space__panel{ margin:0; border-color:rgba(109,140,142,.22); }
 .personal-space__panel--goals{ background:#EDF3F3; border-inline-start:4px solid #6D8C8E; }
 .personal-space__panel--drafts{ background:#F3ECEE; border-inline-start:4px solid #845C65; }
 .personal-space__panel--library{ background:#F4F1ED; border-inline-start:4px solid #C6BAAB; }
-.personal-space__panel--wide{ grid-column:1/-1; }
+.personal-space__panel--wide{ grid-column:auto; }
 .personal-space__panel-head{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px; }
 .personal-space__panel-head h3{ margin:0; }
 .personal-goal-chips{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; }
-.personal-goal-summaries{ display:grid; gap:8px; }
+.personal-goal-summaries{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
 .personal-goal-summary{ padding:10px 12px; border-inline-start:3px solid var(--sky-deep); background:var(--sky-light); border-radius:var(--radius-sm); }
 .personal-goal-summary b,.personal-goal-summary span{ display:block; }
 .personal-goal-summary span{ margin-top:2px; color:var(--paper-dim); font-size:.84rem; line-height:1.7; }
-.private-drafts{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.private-drafts{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .private-draft{ position:relative; min-width:0; padding-top:8px; }
 .private-draft__paper{ position:relative; min-height:210px; display:flex; flex-direction:column; padding:28px 15px 14px; overflow:hidden; border:1px solid #B58D96; border-radius:7px 7px 13px 13px; background:repeating-linear-gradient(to bottom,#FAF4F5 0,#FAF4F5 31px,#E8D7DB 32px); box-shadow:5px 6px 0 #845C65,0 8px 18px rgba(82,48,57,.12); }
 .private-draft__paper::before{ content:""; position:absolute; inset-block:0; inset-inline-start:10px; width:2px; background:rgba(132,92,101,.25); }
@@ -231,8 +231,8 @@
 .personal-goal-fields .field input,.personal-goal-fields .field select{ width:100%; height:48px; min-height:48px; }
 .goal-options-list{ display:grid; gap:8px; max-height:180px; overflow:auto; }
 .goal-options-list label{ display:flex; align-items:flex-start; gap:8px; }
-@media (max-width:720px){ .personal-space{ padding:15px; } .personal-space__grid,.private-library{ grid-template-columns:1fr; } .private-drafts{ grid-template-columns:repeat(2,minmax(0,1fr)); } .personal-goal-picker{ grid-template-columns:repeat(2,1fr); } .personal-goal-fields .composer__meta{ grid-template-columns:1fr; } }
-@media (max-width:480px){ .private-drafts{ grid-template-columns:1fr; } }
+@media (max-width:720px){ .personal-space{ padding:15px; } .personal-space__grid,.private-library{ grid-template-columns:1fr; } .personal-goal-summaries{grid-template-columns:repeat(2,minmax(0,1fr));} .private-drafts{ grid-template-columns:repeat(2,minmax(0,1fr)); } .personal-goal-picker{ grid-template-columns:repeat(2,1fr); } .personal-goal-fields .composer__meta{ grid-template-columns:1fr; } }
+@media (max-width:480px){ .personal-goal-summaries,.private-drafts{ grid-template-columns:1fr; } }
 .profile-streak-card__stat span{ display:inline-flex; align-items:center; gap:4px; font-size:.74rem; color:var(--paper-faint); }
 
 /* -- خريطة النشاط (أسابيع × أيام) -- */
