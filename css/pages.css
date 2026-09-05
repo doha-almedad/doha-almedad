@@ -698,3 +698,30 @@
 .admin-members-table tbody tr:last-child td{
   border-bottom:0!important;
 }
+
+/* FINAL members separators: exactly one uninterrupted line per row */
+.admin-members-table{
+  width:100%!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+.admin-members-table tbody tr{
+  position:relative!important;
+}
+.admin-members-table tbody td{
+  border:0!important;
+  border-bottom:0!important;
+  position:relative;
+  z-index:1;
+}
+.admin-members-table tbody tr:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  right:0;
+  left:0;
+  bottom:0;
+  height:1px;
+  background:rgba(198,151,75,.28);
+  pointer-events:none;
+  z-index:2;
+}
