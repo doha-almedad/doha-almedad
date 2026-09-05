@@ -3,7 +3,22 @@
    الأزرار، البطاقات، النوافذ المنبثقة، الرأس والتذييل
    ========================================================= */
 .btn.is-saving{ pointer-events:none; opacity:.68; cursor:wait; }
-.btn.is-saving::after{ content:"…"; display:inline-block; animation:ink-pulse 1s ease-in-out infinite; }
+.btn.is-saving::after{
+  content:"";
+  width:30px; height:14px; display:inline-block;
+  background:
+    radial-gradient(circle,currentColor 0 3px,transparent 3.5px) 1px 7px/8px 8px no-repeat,
+    radial-gradient(circle,currentColor 0 3px,transparent 3.5px) 11px 7px/8px 8px no-repeat,
+    radial-gradient(circle,currentColor 0 3px,transparent 3.5px) 21px 7px/8px 8px no-repeat;
+  animation:loading-wave 1.05s ease-in-out infinite;
+}
+@keyframes loading-wave{
+  0%,100%{ background-position:1px 7px,11px 7px,21px 7px; }
+  16%{ background-position:1px 1px,11px 7px,21px 7px; }
+  33%{ background-position:1px 4px,11px 1px,21px 7px; }
+  50%{ background-position:1px 7px,11px 4px,21px 1px; }
+  66%{ background-position:1px 7px,11px 7px,21px 4px; }
+}
 
 /* ---------- الرأس / شريط التنقل ---------- */
 #app-header{ min-height:var(--header-h); }
@@ -177,7 +192,7 @@
   position:absolute; inset:-6px;
   border-radius:50%;
   background:radial-gradient(circle, rgba(233,190,104,.45), transparent 70%);
-  animation:badge-sparkle 2.6s ease-in-out infinite;
+  animation:none;
   pointer-events:none;
 }
 @keyframes badge-sparkle{

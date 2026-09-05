@@ -174,7 +174,7 @@
 }
 .badge-hex__center{ width:58px; height:58px; border-radius:50%; overflow:hidden; display:grid; place-items:center; position:relative; z-index:1; }
 .badge-hex__center img{ width:100%; height:100%; object-fit:cover; }
-.badge-hex.is-unlocked .badge-hex__shape{ animation:badge-sparkle 2.6s ease-in-out infinite; }
+.badge-hex.is-unlocked .badge-hex__shape{ animation:none; }
 .badge-hex.is-locked{ opacity:.48; filter:grayscale(.9); }
 .badge-hex__name{ font-size:.78rem; color:var(--paper-dim); }
 /* -- بطاقة حماسة الكتابة -- */
