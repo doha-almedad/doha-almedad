@@ -556,3 +556,20 @@
 .review-view-rating .rating-stars{display:inline-flex;gap:2px}
 @media(max-width:520px){.review-view-top{gap:8px}.review-view-rating{font-size:.82rem}}
 .article-view>.highlight-card__meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* Review detail: rating anchored to the real top-left corner */
+.article-view{position:relative}
+.review-rating-top-left{
+  position:absolute;
+  top:28px;
+  left:28px;
+  direction:ltr;
+  display:flex;
+  gap:3px;
+  color:#C98B28;
+  line-height:1;
+  z-index:2;
+}
+@media(max-width:640px){
+  .review-rating-top-left{top:22px;left:20px}
+}
