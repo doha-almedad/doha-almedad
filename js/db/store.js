@@ -64,6 +64,7 @@ for(const initialUser of INITIAL_USERS){
   }
 }
 db.personalGoals = db.personalGoals || {};
+db.journeyPreferences = db.journeyPreferences || {};
 db.drafts = db.drafts || [];
 db.customBadges = db.customBadges || [];
 db.personalLibrary = db.personalLibrary || [];
@@ -113,6 +114,8 @@ export const store = {
   },
 
   // ---------- المساحة الشخصية الخاصة ----------
+  getJourneyPreferences(userId){ return db.journeyPreferences[userId] || null; },
+  setJourneyPreferences(userId, prefs){ db.journeyPreferences[userId] = { ...prefs, updatedAt:new Date().toISOString() }; persist(); return db.journeyPreferences[userId]; },
   getPersonalGoals(userId){ return db.personalGoals[userId] || { sections:[] }; },
   setPersonalGoals(userId, goals){ db.personalGoals[userId] = { ...goals, updatedAt:new Date().toISOString() }; persist(); return db.personalGoals[userId]; },
   getDrafts(userId){ return db.drafts.filter(d => d.userId === userId).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); },
