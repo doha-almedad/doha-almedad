@@ -111,3 +111,29 @@ export function renderHomePage(root){
 }
 
 function animateCount(el){const end=Number(el.dataset.count)||0,start=performance.now(),duration=900; const tick=now=>{const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3); el.textContent=arNum(Math.round(end*e)); if(p<1)requestAnimationFrame(tick)}; requestAnimationFrame(tick);}
+
+function initJourneyScrollReveal(){
+  const cards=[...document.querySelectorAll(".journey-winding-path .journey-path-card")];
+  if(!cards.length) return;
+  if(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){
+    cards.forEach(c=>c.classList.add("is-visible")); return;
+  }
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add("is-visible");
+        io.unobserve(entry.target);
+      }
+    });
+  },{threshold:.22,rootMargin:"0px 0px -8% 0px"});
+  cards.forEach((c,i)=>{
+    c.style.transitionDelay=`${Math.min(i,3)*70}ms`;
+    io.observe(c);
+  });
+}
+const _journeyObserver=new MutationObserver(()=>{
+  if(document.querySelector(".journey-winding-path .journey-path-card")){
+    requestAnimationFrame(initJourneyScrollReveal);
+  }
+});
+_journeyObserver.observe(document.documentElement,{childList:true,subtree:true});
