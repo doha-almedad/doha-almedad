@@ -688,3 +688,48 @@
 @media(prefers-reduced-motion:reduce){
   .journey-winding-path .journey-path-card{opacity:1!important;transform:none!important;transition:none!important}
 }
+
+/* FIX: actual journey markup — winding vertical route */
+.home-journey .journey-track.journey-winding-path{
+  display:flex!important;
+  grid-template-columns:none!important;
+  flex-direction:column!important;
+  gap:clamp(82px,11vw,145px)!important;
+  position:relative!important;
+  padding:70px 7% 90px!important;
+}
+.home-journey .journey-track.journey-winding-path::before{
+  top:25px!important;
+  right:14%!important;
+  left:14%!important;
+  bottom:25px!important;
+  height:auto!important;
+  background:none!important;
+  border:0!important;
+  z-index:0!important;
+  opacity:1!important;
+  /* a single soft S-like route made from layered curved strokes */
+  background-image:
+    radial-gradient(ellipse 58% 24% at 72% 14%, transparent 68%, rgba(195,137,47,.42) 69%, rgba(195,137,47,.42) 69.8%, transparent 70.8%),
+    radial-gradient(ellipse 58% 24% at 28% 39%, transparent 68%, rgba(195,137,47,.42) 69%, rgba(195,137,47,.42) 69.8%, transparent 70.8%),
+    radial-gradient(ellipse 58% 24% at 72% 64%, transparent 68%, rgba(195,137,47,.42) 69%, rgba(195,137,47,.42) 69.8%, transparent 70.8%),
+    radial-gradient(ellipse 58% 24% at 28% 89%, transparent 68%, rgba(195,137,47,.42) 69%, rgba(195,137,47,.42) 69.8%, transparent 70.8%)!important;
+}
+.home-journey .journey-winding-path > .journey-path-card{
+  display:block!important;
+  width:min(410px,72%)!important;
+  min-height:220px!important;
+  margin:0!important;
+  position:relative!important;
+  z-index:2!important;
+}
+.home-journey .journey-winding-path > .journey-path-card:nth-child(odd){
+  align-self:flex-end!important;
+}
+.home-journey .journey-winding-path > .journey-path-card:nth-child(even){
+  align-self:flex-start!important;
+}
+@media(max-width:700px){
+  .home-journey .journey-track.journey-winding-path{padding-inline:3%!important;gap:72px!important}
+  .home-journey .journey-winding-path > .journey-path-card{width:84%!important}
+}
