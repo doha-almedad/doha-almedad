@@ -132,7 +132,7 @@ function renderFeed(){
   }).join("");
 
   const more = all.length > posts.length
-    ? `<button class="btn btn-outline btn-block" id="load-more-posts">الاطلاع على المزيد</button>`
+    ? ``
     : "";
 
   return cards + more;
