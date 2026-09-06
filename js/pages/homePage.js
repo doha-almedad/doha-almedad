@@ -57,7 +57,7 @@ function journeyCard(user){
   }
   const cards=journeySuggestions(prefs);
   return `<div class="journey-summary"><button class="journey-summary__open" id="open-journey-details"><span>${icon("compass",{size:18})}</span><b>تفاصيل رحلتي</b><small>اعرف لماذا ظهرت لك هذه الخطوات وإلى أين يقودك مسارك</small></button></div><div class="journey-track journey-step-route">
-      <svg class="journey-step-route__line" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true"><path d="M850 150 H650 V310 H410 V470 H180 V610"/></svg>
+      <svg class="journey-step-route__line" viewBox="0 0 900 720" preserveAspectRatio="none" aria-hidden="true"><path d="M150 600 H330 V430 H540 V260 H750 V90"/></svg>
       ${cards.slice(0,4).map((c,i)=>`<a href="${c.href}" class="card journey-card journey-step-card reveal-on-scroll journey-step-card--${i+1}" style="--reveal-delay:${i*110}ms"><span class="journey-card__step">${arNum(i+1)}</span><span class="journey-card__icon">${icon(c.ic,{size:20})}</span><small>${c.k}</small><h3>${c.t}</h3><p>${c.d}</p><span class="journey-card__tag">${c.tag}</span></a>`).join("")}
     </div><div class="journey-actions"><button class="btn btn-ghost" id="open-journey-details-2">عرض الرحلة كاملة</button><button class="btn btn-ghost journey-edit" id="edit-journey-survey">تعديل اهتمامات رحلتي</button></div>`;
 }
