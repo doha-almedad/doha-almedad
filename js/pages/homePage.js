@@ -56,7 +56,7 @@ function journeyCard(user){
     return `<div class="journey-welcome card"><span class="journey-welcome__mark">${icon("compass",{size:26})}</span><div><h3>لنرسم رحلتك في الدوحة</h3><p>أخبرنا بما تحب: القراءة، الكتابة، الفعاليات، والأنواع الأدبية التي تجذبك. سنبني لك مسارًا يناسبك دون أن نفرض عليك طريقًا واحدًا.</p></div><button class="btn btn-primary" id="start-journey-survey">ابدأ الاستفتاء</button></div>`;
   }
   const cards=journeySuggestions(prefs);
-  return `<div class="journey-summary"><button class="journey-summary__open" id="open-journey-details"><span>${icon("compass",{size:18})}</span><b>تفاصيل رحلتي</b><small>اعرف لماذا ظهرت لك هذه الخطوات وإلى أين يقودك مسارك</small></button></div><div class="journey-track">${cards.slice(0,4).map((c,i)=>`<a href="${c.href}" class="card journey-card reveal-on-scroll" style="--reveal-delay:${i*90}ms"><span class="journey-card__step">${arNum(i+1)}</span><span class="journey-card__icon">${icon(c.ic,{size:20})}</span><small>${c.k}</small><h3>${c.t}</h3><p>${c.d}</p><span class="journey-card__tag">${c.tag}</span></a>`).join("")}</div><div class="journey-actions"><button class="btn btn-ghost" id="open-journey-details-2">عرض الرحلة كاملة</button><button class="btn btn-ghost journey-edit" id="edit-journey-survey">تعديل اهتمامات رحلتي</button></div>`;
+  return `<div class="journey-summary"><button class="journey-summary__open" id="open-journey-details"><span>${icon("compass",{size:18})}</span><b>تفاصيل رحلتي</b><small>اعرف لماذا ظهرت لك هذه الخطوات وإلى أين يقودك مسارك</small></button></div><div class="journey-track journey-winding-path">${cards.slice(0,4).map((c,i)=>`<a href="${c.href}" class="card journey-card journey-path-card reveal-on-scroll" style="--reveal-delay:${i*90}ms"><span class="journey-card__step">${arNum(i+1)}</span><span class="journey-card__icon">${icon(c.ic,{size:20})}</span><small>${c.k}</small><h3>${c.t}</h3><p>${c.d}</p><span class="journey-card__tag">${c.tag}</span></a>`).join("")}</div><div class="journey-actions"><button class="btn btn-ghost" id="open-journey-details-2">عرض الرحلة كاملة</button><button class="btn btn-ghost journey-edit" id="edit-journey-survey">تعديل اهتمامات رحلتي</button></div>`;
 }
 
 function openInfoModal(html, extraClass=""){
@@ -112,28 +112,3 @@ export function renderHomePage(root){
 
 function animateCount(el){const end=Number(el.dataset.count)||0,start=performance.now(),duration=900; const tick=now=>{const p=Math.min(1,(now-start)/duration),e=1-Math.pow(1-p,3); el.textContent=arNum(Math.round(end*e)); if(p<1)requestAnimationFrame(tick)}; requestAnimationFrame(tick);}
 
-function initJourneyScrollReveal(){
-  const cards=[...document.querySelectorAll(".journey-winding-path .journey-path-card")];
-  if(!cards.length) return;
-  if(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){
-    cards.forEach(c=>c.classList.add("is-visible")); return;
-  }
-  const io=new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        entry.target.classList.add("is-visible");
-        io.unobserve(entry.target);
-      }
-    });
-  },{threshold:.22,rootMargin:"0px 0px -8% 0px"});
-  cards.forEach((c,i)=>{
-    c.style.transitionDelay=`${Math.min(i,3)*70}ms`;
-    io.observe(c);
-  });
-}
-const _journeyObserver=new MutationObserver(()=>{
-  if(document.querySelector(".journey-winding-path .journey-path-card")){
-    requestAnimationFrame(initJourneyScrollReveal);
-  }
-});
-_journeyObserver.observe(document.documentElement,{childList:true,subtree:true});
