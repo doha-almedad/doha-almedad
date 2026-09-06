@@ -774,3 +774,31 @@
 .home-journey .journey-step-card--4{right:83.3333%!important;top:83.3333%!important;left:auto!important}
 .journey-step-route__line path{stroke-width:2!important}
 @media(max-width:760px){.home-journey .journey-track.journey-step-route{min-height:650px!important;max-width:94%!important}.home-journey .journey-step-card{width:210px!important;min-height:150px!important}}
+
+/* V5 journey — vertical zig-zag based on the user's blue sketch */
+.home-journey .journey-track.journey-step-route{
+  min-height:980px!important;
+  max-width:760px!important;
+  margin:10px auto 30px!important;
+  overflow:hidden!important;
+}
+.home-journey .journey-step-card{
+  width:245px!important;
+  min-height:165px!important;
+  transform:translate(-50%,-50%)!important;
+  z-index:2!important;
+}
+/* Centers sit directly on alternating corners/segments */
+.home-journey .journey-step-card--1{left:75%!important;right:auto!important;top:17.85%!important}
+.home-journey .journey-step-card--2{left:48%!important;right:auto!important;top:35.7%!important}
+.home-journey .journey-step-card--3{left:80%!important;right:auto!important;top:54.6%!important}
+.home-journey .journey-step-card--4{left:43.5%!important;right:auto!important;top:73.5%!important}
+.journey-step-route__line path{stroke-width:2!important;stroke:rgba(185,126,39,.40)!important}
+.home-members-preview{display:none!important}
+@media(max-width:760px){
+ .home-journey .journey-track.journey-step-route{min-height:900px!important;max-width:92%!important}
+ .home-journey .journey-step-card{width:210px!important;min-height:150px!important}
+}
+
+/* Reading/writing streams: remove finite "more" controls; JS auto loader uses these sentinels */
+.infinite-stream-sentinel{height:1px;width:100%;pointer-events:none}
