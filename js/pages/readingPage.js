@@ -10,7 +10,7 @@ import { icon, initial, avatarHtml, arNum } from "../components/icons.js";
 import { cropImageFile } from "../services/mediaService.js";
 import { renderCarousel, bindCarousels } from "../components/carousel.js";
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 12;
 let visibleCount = PAGE_SIZE;
 
 function stars(n){
@@ -75,7 +75,7 @@ function renderFeed(){
     ? ``
     : "";
 
-  return cards + more;
+  return cards + (all.length > reviews.length ? `<div class="infinite-stream-sentinel" id="reading-stream-sentinel" aria-hidden="true"></div>` : "");
 }
 
 function openComposerModal(root, user, paint){
@@ -240,10 +240,13 @@ export function renderReadingPage(root){
       el.addEventListener("click", () => openCommentsModal("review", el.getAttribute("data-comment"), paint));
     });
     feed.querySelectorAll("[data-edit-review]").forEach(el=>el.addEventListener("click",()=>openEditReviewModal(el.dataset.editReview,paint)));
-    feed.querySelector("#load-more-reviews")?.addEventListener("click", () => {
-      visibleCount += PAGE_SIZE;
-      paint();
-    });
+    const sentinel = feed.querySelector("#reading-stream-sentinel");
+    if(sentinel){
+      const observer = new IntersectionObserver(entries => {
+        if(entries.some(e => e.isIntersecting)){ observer.disconnect(); visibleCount += PAGE_SIZE; paint(); }
+      }, { rootMargin: "500px 0px" });
+      observer.observe(sentinel);
+    }
   }
 
   root.innerHTML = `

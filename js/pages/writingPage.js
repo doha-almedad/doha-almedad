@@ -19,7 +19,7 @@ const TEXT_TYPES = [
   { value: "opinion",  label: "مقالة رأي" },
 ];
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 12;
 let visibleCount = PAGE_SIZE;
 
 function timeAgo(iso){
@@ -135,7 +135,7 @@ function renderFeed(){
     ? ``
     : "";
 
-  return cards + more;
+  return cards + (all.length > posts.length ? `<div class="infinite-stream-sentinel" id="writing-stream-sentinel" aria-hidden="true"></div>` : "");
 }
 
 function openComposerModal(root, user, paint){
@@ -299,10 +299,13 @@ export function renderWritingPage(root){
     feed.querySelectorAll("[data-edit-post]").forEach(el => {
       el.addEventListener("click", () => openEditPostModal(el.getAttribute("data-edit-post"), paint));
     });
-    feed.querySelector("#load-more-posts")?.addEventListener("click", () => {
-      visibleCount += PAGE_SIZE;
-      paint();
-    });
+    const sentinel = feed.querySelector("#writing-stream-sentinel");
+    if(sentinel){
+      const observer = new IntersectionObserver(entries => {
+        if(entries.some(e => e.isIntersecting)){ observer.disconnect(); visibleCount += PAGE_SIZE; paint(); }
+      }, { rootMargin: "500px 0px" });
+      observer.observe(sentinel);
+    }
   }
 
   root.innerHTML = `
