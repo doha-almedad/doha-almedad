@@ -4,7 +4,7 @@
    وبثّ التغييرات لبقية أجزاء التطبيق (Pub/Sub بسيط)
    ========================================================= */
 
-import { INITIAL_USERS, INITIAL_EVENTS, INITIAL_ARTICLES, CURRENT_USER_ID, LEVEL_XP_STEP } from "./initialData.js";
+import {INITIAL_USERS, INITIAL_EVENTS, INITIAL_ARTICLES, INITIAL_POSTS, INITIAL_REVIEWS, CURRENT_USER_ID, LEVEL_XP_STEP} from "./initialData.js";
 import { dayKey } from "../services/streakService.js";
 
 const DB_KEY = "dawha_almidad_db_v1";
@@ -21,8 +21,8 @@ function seedDB(){
     events: INITIAL_EVENTS,
     articles: INITIAL_ARTICLES,
     articleSubmissions: [], // مقالات مُرسلة من الأعضاء بانتظار مراجعة الإدارة
-    posts: [],          // القطع الأدبية المنشورة في قسم الكتابة
-    reviews: [],         // مراجعات القراءة
+    posts: JSON.parse(JSON.stringify(INITIAL_POSTS)),          // القطع الأدبية المنشورة في قسم الكتابة
+    reviews: JSON.parse(JSON.stringify(INITIAL_REVIEWS)),         // مراجعات القراءة
     userEvents: [],       // سجلّ الأحداث الخام (user_events)
     eventSubmissions: [], // طلبات إثبات المشاركة بالفعاليات (خصوصاً admin_verification)
     notifications: [],
@@ -45,7 +45,9 @@ function load(){
   }
 }
 
-let db = load();
+function mergeDenseDemoV4(db){const merge=(key,seed)=>{if(!Array.isArray(seed))return;db[key]=Array.isArray(db[key])?db[key]:[];const ids=new Set(db[key].map(x=>x?.id));for(const item of seed){if(item?.id&&!ids.has(item.id)){db[key].push(item);ids.add(item.id)}}};merge("users",INITIAL_USERS);merge("posts",INITIAL_POSTS);merge("reviews",INITIAL_REVIEWS);merge("articles",INITIAL_ARTICLES);merge("events",INITIAL_EVENTS);return db;}
+let db = mergeDenseDemoV4(load());
+try{localStorage.setItem(DB_KEY,JSON.stringify(db))}catch(e){}
 
 // ترحيل البيانات الأولية الجديدة إلى قواعد المتصفحات القديمة دون حذف محتوى المستخدم.
 // مثال: عند إضافة عضو تجريبي جديد إلى INITIAL_USERS سيظهر أيضًا لمن سبق أن فتح الموقع.
@@ -62,6 +64,11 @@ for(const initialUser of INITIAL_USERS){
     existing.username = initialUser.username;
     existing.role = initialUser.role;
   }
+}
+// ترحيل محتوى العرض التجريبي إلى المتصفحات التي سبق أن فتحت نسخة التطوير.
+for(const [key, source] of [["posts",INITIAL_POSTS],["reviews",INITIAL_REVIEWS],["events",INITIAL_EVENTS],["articles",INITIAL_ARTICLES]]){
+  db[key]=db[key]||[]; const ids=new Set(db[key].map(x=>x.id));
+  for(const item of source) if(!ids.has(item.id)) db[key].push(JSON.parse(JSON.stringify(item)));
 }
 db.personalGoals = db.personalGoals || {};
 db.journeyPreferences = db.journeyPreferences || {};
