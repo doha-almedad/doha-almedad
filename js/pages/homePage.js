@@ -57,7 +57,7 @@ function journeyCard(user){
   }
   const cards=journeySuggestions(prefs);
   return `<div class="journey-summary"><button class="journey-summary__open" id="open-journey-details"><span>${icon("compass",{size:18})}</span><b>تفاصيل رحلتي</b><small>اعرف لماذا ظهرت لك هذه الخطوات وإلى أين يقودك مسارك</small></button></div><div class="journey-track journey-step-route">
-      <svg class="journey-step-route__line" viewBox="0 0 1000 980" preserveAspectRatio="none" aria-hidden="true"><path d="M90 900 H315 V650 H610 V385 H860 V120 H970"/></svg>
+      <svg class="journey-step-route__line" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true"><path d="M850 150 H650 V310 H410 V470 H180 V610"/></svg>
       ${cards.slice(0,4).map((c,i)=>`<a href="${c.href}" class="card journey-card journey-step-card reveal-on-scroll journey-step-card--${i+1}" style="--reveal-delay:${i*110}ms"><span class="journey-card__step">${arNum(i+1)}</span><span class="journey-card__icon">${icon(c.ic,{size:20})}</span><small>${c.k}</small><h3>${c.t}</h3><p>${c.d}</p><span class="journey-card__tag">${c.tag}</span></a>`).join("")}
     </div><div class="journey-actions"><button class="btn btn-ghost" id="open-journey-details-2">عرض الرحلة كاملة</button><button class="btn btn-ghost journey-edit" id="edit-journey-survey">تعديل اهتمامات رحلتي</button></div>`;
 }
@@ -94,7 +94,7 @@ function journeySurvey(user){
 
 export function renderHomePage(root){
   const user=store.getCurrentUser(), events=store.getEvents().slice(0,6), posts=store.getPosts().slice(0,6), reviews=store.getReviews().slice(0,6), articles=store.getArticles().slice(0,6);
-  const platformStats=[{n:store.getUsers().length,l:"عضو في الدوحة",ic:"users"},{n:store.getPosts().length+store.getReviews().length+store.getArticles().length,l:"منشور ومراجعة",ic:"quill"},{n:store.getReviews().length,l:"قراءة مسجّلة",ic:"book"},{n:store.getEvents().length,l:"فعالية أدبية",ic:"calendar"}];
+  const allSocial=[...store.getPosts(),...store.getReviews()], interactionCount=allSocial.reduce((sum,item)=>sum+(item.likedBy?.length||0)+(item.comments?.length||0)+(item.views||0),0)+store.getReviews().length; const platformStats=[{n:store.getUsers().length,l:"عضو في الدوحة",ic:"users"},{n:store.getPosts().length+store.getReviews().length+store.getArticles().length,l:"منشور ومراجعة",ic:"quill"},{n:interactionCount,l:"التفاعلات والمناقشات",ic:"heart"},{n:store.getEvents().length,l:"فعالية أدبية",ic:"calendar"}];
   root.innerHTML=`
   <section class="hero home-hero"><div class="container hero__grid"><div class="hero__copy"><span class="hero__eyebrow">أهلًا بك مجددًا، ${user.displayName}</span><h1 class="hero__title">دوحة تظلّلها الكلمة، ويجتمع تحتها الكتّاب والقرّاء</h1><p class="hero__lede">شارك نصوصك، سجّل قراءاتك، وخض التجارب الأدبية جنبًا إلى جنب مع مجتمعك.</p><div class="hero__cta"><a href="#/writing" class="btn btn-outline">${icon("feather",{size:17})}<span>ابدأ الكتابة</span></a><a href="#/reading" class="btn btn-outline">${icon("book",{size:17})}<span>ابدأ القراءة</span></a><a href="#/events" class="btn btn-outline">${icon("calendar",{size:17})}<span>تصفّح الفعاليات</span></a></div></div></div></section>
   <section class="section home-platform-stats reveal-on-scroll"><div class="container"><div class="grid grid-4 hero__stats-grid">${platformStats.map(s=>`<div class="card stat-box stat-box--winkle"><span class="stat-box__icon">${icon(s.ic,{size:17})}</span><b class="count-up" data-count="${s.n}">٠</b><span>${s.l}</span></div>`).join('')}</div></div></section>
