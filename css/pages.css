@@ -764,3 +764,13 @@
  .home-journey .journey-step-card--3{left:39%!important;top:490px!important}
  .home-journey .journey-step-card--4{left:22%!important;top:670px!important}
 }
+
+/* V4: four cards centered exactly on the four bends; route ends hidden beneath cards */
+.home-journey .journey-track.journey-step-route{min-height:720px!important;max-width:900px!important;margin:10px auto 25px!important;overflow:hidden!important}
+.home-journey .journey-step-card{width:260px!important;min-height:170px!important;transform:translate(50%,-50%)!important}
+.home-journey .journey-step-card--1{right:16.6667%!important;top:12.5%!important;left:auto!important}
+.home-journey .journey-step-card--2{right:40%!important;top:36.1111%!important;left:auto!important}
+.home-journey .journey-step-card--3{right:63.3333%!important;top:59.7222%!important;left:auto!important}
+.home-journey .journey-step-card--4{right:83.3333%!important;top:83.3333%!important;left:auto!important}
+.journey-step-route__line path{stroke-width:2!important}
+@media(max-width:760px){.home-journey .journey-track.journey-step-route{min-height:650px!important;max-width:94%!important}.home-journey .journey-step-card{width:210px!important;min-height:150px!important}}
