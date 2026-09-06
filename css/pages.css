@@ -733,3 +733,17 @@
   .home-journey .journey-track.journey-winding-path{padding-inline:3%!important;gap:72px!important}
   .home-journey .journey-winding-path > .journey-path-card{width:84%!important}
 }
+
+/* FINAL journey: stepped path matching the supplied sketch */
+.home-journey .journey-track.journey-step-route{display:block!important;position:relative!important;min-height:980px!important;max-width:1120px!important;margin:20px auto 35px!important;padding:0!important}
+.journey-step-route__line{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0;pointer-events:none}
+.journey-step-route__line path{fill:none;stroke:rgba(185,126,39,.42);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.home-journey .journey-step-card{position:absolute!important;z-index:2!important;width:min(350px,34%)!important;min-height:205px!important;margin:0!important}
+.home-journey .journey-step-card--1{right:2%;top:40px}.home-journey .journey-step-card--2{right:37%;top:300px}.home-journey .journey-step-card--3{left:2%;top:565px}.home-journey .journey-step-card--4{left:16%;top:795px}
+.home-rich-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.home-members-preview{padding-block:45px}.home-member-cloud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.home-member-chip{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid rgba(190,142,68,.22);border-radius:18px;background:rgba(255,252,243,.62);color:inherit;text-decoration:none;min-height:76px}
+.home-member-chip__avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(205,139,35,.14);color:var(--gold);font-weight:700;flex:0 0 auto}
+.home-member-chip span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}.home-member-chip small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-muted)}
+@media(max-width:760px){.home-journey .journey-track.journey-step-route{min-height:1120px!important}.home-journey .journey-step-card{width:72%!important}.home-journey .journey-step-card--1{right:3%;top:35px}.home-journey .journey-step-card--2{left:3%;right:auto;top:300px}.home-journey .journey-step-card--3{right:3%;left:auto;top:570px}.home-journey .journey-step-card--4{left:3%;top:840px}.journey-step-route__line path{stroke-width:2}.home-rich-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.home-member-cloud{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.home-rich-grid,.home-member-cloud{grid-template-columns:1fr!important}}
